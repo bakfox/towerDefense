@@ -1,0 +1,12 @@
+{
+  "name": "player",
+  "version": "1.0.0",
+  "data": {
+    "hp": 3,
+    "atckCooltime": 0.5,
+    "atckReachMax": 3.0,
+    "atckReachgood": 2.0,
+    "atckReachgreat": 1.0,
+    "atckReachExcellent": 0.5
+  }
+}

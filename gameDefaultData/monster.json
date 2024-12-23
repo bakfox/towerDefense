@@ -1,0 +1,46 @@
+{
+  "name": "monster",
+  "version": "1.0.0",
+  "data": [
+    {
+      "stageId": 1,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 2,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 3,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 4,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 5,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 6,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 7,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 8,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 9,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    },
+    {
+      "stageId": 10,
+      "data": { "Spead": 5, "spawnPositon": 11, "spawnCooltime": 2 }
+    }
+  ]
+}
