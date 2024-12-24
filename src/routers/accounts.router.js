@@ -170,9 +170,19 @@ router.put('/tower/upgrade', async (req, res, next) => {
 })
 
 //젬 획득
-router.put('/gem', async (req, res, next) => {
+//현재 시점에선 1000을 추가하는 코드
+router.put('/gem', UserToken, async (req, res, next) => {
     try {
-
+        //usertoken을 통해 인증 하고  req에 들어 있는 user 정보를 불러온다.
+        const user = req.user;
+        await prisma.uSERS.update({
+            where : {
+                ID : user.ID
+            },
+            data : {
+                GEM : {increment : 1000}
+            }
+        })
     }
     catch (err) {
         next(err);
