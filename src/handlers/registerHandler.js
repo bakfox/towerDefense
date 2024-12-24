@@ -3,6 +3,7 @@ import { v4 as uuIdV4 } from "uuId";
 const registerHander = (io) => {
   // 접속후 다음 이벤트를 받기 위해 대기하는 메소드입니다!
   io.on("connection", (socket) => {
+    //uuid를 이용해서 토큰을 설정하도록 하자.
     const userUUID = uuIdV4();
     //접속
     socket.emit("handleConnect", {});

@@ -12,3 +12,47 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model USERS{
+  USER_ID Int @id @default(autoincrement())
+  NAME String 
+  ID  String
+  PASSWORD String
+  GEM Int
+
+  OWN_TOWERS OWN_TOWERS[]
+  SCORES SCORES[]
+
+  @@map("USERS")
+}
+
+model OWN_TOWERS{
+  TOWER_ID Int @id @default(autoincrement())
+  USER_ID Int 
+  ID Int
+  UPGRADE Int
+
+
+  USERS USERS @relation(fields: [USER_ID],references: [USER_ID],onDelete: Cascade,onUpdate: Cascade)
+  EQUIP_TOWERS EQUIP_TOWERS[]
+  @@map("OWN_TOWERS")
+}
+
+model SCORES{
+  USER_ID Int @unique
+  MAX_SCORE Int @default(0)
+  ENDTIME DateTime @updatedAt
+
+  USERS USERS @relation(fields: [USER_ID], references: [USER_ID], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("SCORES")
+}
+
+model EQUIP_TOWERS{
+  EQUIP_TOWER_ID Int @id @default(autoincrement())
+  USER_ID Int
+  TOWER_ID Int
+
+  OWN_TOWERS OWN_TOWERS @relation(fields: [TOWER_ID],references: [TOWER_ID], onDelete: Cascade,onUpdate: Cascade)
+  @@map("EQUIP_TOWERS")
+}
