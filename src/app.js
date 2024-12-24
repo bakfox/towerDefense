@@ -10,6 +10,7 @@ const PORT = 3017;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(express.static('public'));
 initSocket(server); // 소켓 추가
 
 app.get("/", (req, res) => {
