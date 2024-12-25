@@ -17,7 +17,7 @@ socket.on("connection", (data) => {
   userId = data.uuid;
 });
 
-// 서버 이벤트 처리
+// 서버 정보 전달 이벤트 처리
 socket.on("event", (data) => {
   const action = actionMappings[data.handlerId];
 
@@ -37,7 +37,7 @@ const sendEvent = (handlerId, payload) => {
   };
 
   return new Promise((resolve, reject) => {
-    socket.emit("event", obj, (response) => {
+    socket.emit("event", obj, (response) => { // 클라이언트에서 회신받을 때 사용
       if (response.status === "fail") {
         reject(response.message);
       } else {
