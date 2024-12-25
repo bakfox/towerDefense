@@ -29,11 +29,21 @@ socket.on("event", (data) => {
 });
 
 const sendEvent = (handlerId, payload) => {
-  socket.emit("event", {
+  const obj = {
     userId,
     clientVersion: CLIENT_VERSION,
     handlerId,
     payload,
+  };
+
+  return new Promise((resolve, reject) => {
+    socket.emit("event", obj, (response) => {
+      if (response.status === "fail") {
+        reject(response.message);
+      } else {
+        resolve(response);
+      }
+    });
   });
 };
 
