@@ -20,12 +20,12 @@ socket.on("connection", (data) => {
 // 서버 정보 전달 이벤트 처리
 socket.on("event", (data) => {
   const action = actionMappings[data.handlerId];
-
-  if (!handler) {
+  console.log(data.handlerId, action);
+  if (!action) {
     console.log("Handler not found");
   }
 
-  action(data.userId, data.payload);
+  //action(data.userId, data.payload);
 });
 
 const sendEvent = (handlerId, payload) => {
