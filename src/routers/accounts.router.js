@@ -159,10 +159,42 @@ router.post('/tower/draw', async (req, res, next) => {
     }
 })
 
-//타워 스쿼드
+//타워 업그레이드
 router.put('/tower/upgrade', async (req, res, next) => {
     try {
+        //변경할 타워를 받자.
+        const {towerID} = req.body;
 
+        //강화를 할 때 재화로 업그레이드 하는 경우
+        let successCount = Math.floor(Math.random()*100);
+
+        //성공 확률을 해당 확률 안에 들어간다면 성공한다는 식
+        if(successCount < 70)
+        {
+            await prisma.oWN_TOWERS.update({
+                where : {
+                    id : towerID
+                },
+                data : {
+                    UPGRADE : {
+                        increment : 1
+                    }
+                }
+            })
+        }
+        else(successCount > 95)//파괴 확률로 하자
+        {
+            const deleted = await prisma.oWN_TOWERS.delete({
+                where : {
+                    id : towerID
+                }
+            })
+        }
+
+        
+        
+
+        //return res.status(202).json({towerID : 1, payload : {}})
     }
     catch (err) {
         next(err);
