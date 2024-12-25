@@ -19,7 +19,7 @@ let baseHp = 0; // 기지 체력
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 0; // 몬스터 생성 주기
+let monsterSpawnInterval = 3000; // 몬스터 생성 주기
 const monsters = [];
 const towers = [];
 
@@ -251,7 +251,7 @@ Promise.all([
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let somewhere;
-  serverSocket = io("서버주소", {
+  serverSocket = io("http://localhost:3017", {
     auth: {
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
