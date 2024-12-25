@@ -1,22 +1,33 @@
 import { CLIENT_VERSION } from "./Constants.js";
 
-const socket = io("http://localhost:3017", {
-  query: {
-    clientVersion: CLIENT_VERSION,
-  },
-});
-
+let socket = null;
 let userId = null;
-socket.on("response", (data) => {
-  console.log(data);
-});
 
-socket.on("connection", (data) => {
-  console.log("connection: ", data);
-  userId = data.uuid;
-});
+export function initSocket(token) {
+  socket = io("http://localhost:3017", {
+    query: {
+      clientVersion: CLIENT_VERSION,
+      auth: { token },
+    },
+  });
 
-const sendEvent = (handlerId, payload) => {
+  socket.on("response", (data) => {
+    console.log(data);
+  });
+
+  socket.on("connection", (data) => {
+    console.log("connection: ", data);
+    userId = data.uuid;
+  });
+
+  return socket;
+}
+
+export function getSocket() {
+  return socket;
+}
+
+export const sendEvent = (handlerId, payload) => {
   socket.emit("event", {
     userId,
     clientVersion: CLIENT_VERSION,
@@ -24,5 +35,3 @@ const sendEvent = (handlerId, payload) => {
     payload,
   });
 };
-
-export { sendEvent };
