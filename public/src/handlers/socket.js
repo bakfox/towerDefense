@@ -1,5 +1,4 @@
 import { CLIENT_VERSION } from "./Constants.js";
-import { actionMappings } from "./actionMappings.js";
 
 const socket = io("http://localhost:3017", {
   query: {
@@ -8,6 +7,8 @@ const socket = io("http://localhost:3017", {
 });
 
 let userId = null;
+let towerData = null;
+
 socket.on("response", (data) => {
   console.log(data);
 });
@@ -15,9 +16,14 @@ socket.on("response", (data) => {
 socket.on("connection", (data) => {
   console.log("connection: ", data);
   userId = data.uuid;
+  
+  socket.emit("getTowerData");
 });
 
-// 서버 정보 전달 이벤트 처리
+socket.on("towerData", (data) => {
+  towerData = data;
+});
+
 socket.on("event", (data) => {
   const action = actionMappings[data.handlerId];
   console.log(data.handlerId, action);
@@ -48,4 +54,6 @@ const sendEvent = (handlerId, payload) => {
   });
 };
 
-export { sendEvent };
+const getTowerData = () => towerData;
+
+export { sendEvent, towerData };
