@@ -1,5 +1,5 @@
 import { Base } from "./base.js";
-import { Monster } from "./monster.js";
+import { spawnMonster, moveMonsters, drawMonsters } from "./handlers/monsterHandler.js";
 import { Tower } from "./tower.js";
 
 /* 
@@ -48,6 +48,7 @@ for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
 }
 
 let monsterPath;
+
 
 function generateRandomMonsterPath() {
   const path = [];
@@ -169,10 +170,6 @@ function placeBase() {
   base.draw(ctx, baseImage);
 }
 
-function spawnMonster() {
-  monsters.push(new Monster(monsterPath, monsterImages, monsterLevel));
-}
-
 function gameLoop() {
   // 렌더링 시에는 항상 배경 이미지부터 그려야 합니다! 그래야 다른 이미지들이 배경 이미지 위에 그려져요!
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 다시 그리기
@@ -205,21 +202,8 @@ function gameLoop() {
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   base.draw(ctx, baseImage);
 
-  for (let i = monsters.length - 1; i >= 0; i--) {
-    const monster = monsters[i];
-    if (monster.hp > 0) {
-      const isDestroyed = monster.move(base);
-      if (isDestroyed) {
-        /* 게임 오버 */
-        alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
-        location.reload();
-      }
-      monster.draw(ctx);
-    } else {
-      /* 몬스터가 죽었을 때 */
-      monsters.splice(i, 1);
-    }
-  }
+  moveMonsters(base); // 몬스터 이동 처리
+  drawMonsters(ctx); // 몬스터 그리기
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
@@ -251,19 +235,20 @@ Promise.all([
 ]).then(() => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let somewhere;
-  serverSocket = io("서버주소", {
+  serverSocket = io("localhost:3017", {
     auth: {
       token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
     },
   });
-
+  serverSocket.on("connect", () => {
+    console.log("서버 연결 완료");
+  });
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
     e.g. serverSocket.on("...", () => {...});
     이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
     if (!isInitGame) {
       initGame();
-    }
   */
 });
 
@@ -279,3 +264,11 @@ buyTowerButton.style.cursor = "pointer";
 buyTowerButton.addEventListener("click", placeNewTower);
 
 document.body.appendChild(buyTowerButton);
+
+// 몬스터 스폰 예시
+function spawnNewMonster() {
+  spawnMonster(monsterPath, monsterImages, monsterLevel);
+}
+
+// 게임 시작 시 몬스터 스폰
+spawnNewMonster();
