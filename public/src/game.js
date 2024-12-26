@@ -22,7 +22,7 @@ let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
 let monsterLevel = 0; // 몬스터 레벨
 let monsterSpawnInterval = 3000; // 몬스터 생성 주기
-const monsters = [];
+const monsters = new Map();
 const towers = [];
 
 let score = 0; // 게임 점수
@@ -144,11 +144,15 @@ function placeBase() {
 }
 
 export function addMonster(id, type) {
-  monsters.push(new Monster(monsterPath, monsterImages, id, type, stage));
+  monsters.set(id, new Monster(monsterPath, monsterImages, id, type, stage));
 }
 
 export function moveMonsters(locationList) {
-  
+  for(const item of locationList) {
+    const monster = monsters.get(item.id);
+
+    monster.move(item.x, item.y);
+  }
 }
 
 function gameLoop() {
