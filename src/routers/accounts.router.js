@@ -16,26 +16,29 @@ dotenv.config();
 
 //userToken : 검증 미들웨어다. Bearer 검증 방식을 사용하고 있다.
 
+//로그인 요청 확인 
+router.get('/login', async (req, res, next) => {
+
+})
+
 //로그인
 router.post('/login', async (req, res, next) => {
     try {
         const { username, password } = req.body;
 
-        const user = await prisma.uSERS.findFirst({ where: { ID : username } });
+        const user = await prisma.uSERS.findFirst({ where: { ID: username } });
 
         console.log(user);
-        
-        if (!user)
-        {
+
+        if (!user) {
             return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
-        // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
+            // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
         }
-        else if (!(await bcrypt.compare(password, user.PASSWORD)))
-        {
+        else if (!(await bcrypt.compare(password, user.PASSWORD))) {
             return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
         }
-            
-        
+
+
 
         const token = jwt.sign(
             {
@@ -49,9 +52,11 @@ router.post('/login', async (req, res, next) => {
         console.log("로그인 되는지 확인");
 
 
+
+
         return res.status(200).json({ message: `${username} 님의 로그인에 성공했습니다.` });
     }
-    catch(err) {
+    catch (err) {
         console.log(err)
         return res.status(404).json({ message: '로그인 실패' });
     }
@@ -76,7 +81,7 @@ router.delete('/logout', UserToken, async (req, res, next) => {
 //회원가입
 router.post('/signup', async (req, res, next) => {
     try {
-        const { username,nickname, password } = req.body;
+        const { username, nickname, password } = req.body;
         const isExistUser = await prisma.uSERS.findFirst({
             where: {
                 ID: nickname,
@@ -101,10 +106,10 @@ router.post('/signup', async (req, res, next) => {
             // Users 테이블에 사용자를 추가합니다.
             const user = await tx.uSERS.create({
                 data: {
-                    NAME : username,
-                    ID : nickname,
-                    PASSWORD : hashedPassword,
-                    GEM : 10000
+                    NAME: username,
+                    ID: nickname,
+                    PASSWORD: hashedPassword,
+                    GEM: 10000
                 },
             });
 
@@ -206,10 +211,10 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
 
             //3 타워를 생성한다.
             await tx.oWN_TOWERS.create({
-                data : {
-                    USER_ID : user.USER_ID,
-                    ID : 0, //towerGatchard.id를 집어넣도록 한다.
-                    UPGRADE : 1
+                data: {
+                    USER_ID: user.USER_ID,
+                    ID: 0, //towerGatchard.id를 집어넣도록 한다.
+                    UPGRADE: 1
                 }
             })
 
@@ -307,74 +312,70 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
 })
 
 //스쿼드 전체 출력
-router.get('/tower/squad', UserToken, async (req, res, next)=>{
-    try{
+router.get('/tower/squad', UserToken, async (req, res, next) => {
+    try {
         const user = req.user;
         //squad에 등록된 현재 자신의 테이블을 가져온다.
         const mySquad = await prisma.eQUIP_TOWERS.findMany({
-            where : {
-                USER_ID : user.USER_ID
+            where: {
+                USER_ID: user.USER_ID
             }
         })
-        return res.status(201).json({message : mySquad})
+        return res.status(201).json({ message: mySquad })
     }
-    catch(err)
-    {
+    catch (err) {
         next(err);
     }
 })
 
 //스쿼드 하나 변경
-router.put('/tower/squad', UserToken, async (req,res, next) =>{
-    try{
+router.put('/tower/squad', UserToken, async (req, res, next) => {
+    try {
         //변경할 스쿼드를 
-        const {equipTowerId, equipingID} = req.body;
+        const { equipTowerId, equipingID } = req.body;
         const user = req.user;
         //towerData에서 데이터를 받아오도록 하자.
 
         //일단 현재 squad가 차 있는지 확인하고 없다면 없다면 추가, 일정 숫자 이상이면 변경하는 식
 
         const currentUserSquad = await prisma.eQUIP_TOWERS.findMany({
-            where : {
-                USER_ID : user.USER_ID
+            where: {
+                USER_ID: user.USER_ID
             }
         })
 
-        const selectedTower = towerData.data.find((element)=>element.id === equipingID);
+        const selectedTower = towerData.data.find((element) => element.id === equipingID);
 
-        if(currentUserSquad < 3)
-        {
+        if (currentUserSquad < 3) {
             await prisma.eQUIP_TOWERS.create({
-                data : {
-                    USER_ID : user.USER_ID,
-                    TOWER_ID : selectedTower.id
+                data: {
+                    USER_ID: user.USER_ID,
+                    TOWER_ID: selectedTower.id
                 }
             })
         }
-        else
-        {
+        else {
             await prisma.eQUIP_TOWERS.update({
-                where : {
-                    equip_tower_id : equipTowerId
+                where: {
+                    equip_tower_id: equipTowerId
                 },
-                data : {
-                    TOWER_ID : selectedTower.id
+                data: {
+                    TOWER_ID: selectedTower.id
                 }
             })
         }
 
         //추가된 다음의 결과를 리턴하도록 한다.
         const mySquad = await prisma.eQUIP_TOWERS.findMany({
-            where : {
-                USER_ID : user.USER_ID
+            where: {
+                USER_ID: user.USER_ID
             }
         })
-        return res.status(201).json({message : mySquad})
+        return res.status(201).json({ message: mySquad })
 
-        
+
     }
-    catch(err)
-    {
+    catch (err) {
         next(err);
     }
 })
