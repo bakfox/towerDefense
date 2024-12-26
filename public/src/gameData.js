@@ -8,8 +8,10 @@ export function initData(monster, tower, stage) {
   stageData = stage;
 }
 
-export function getMonsterData() {
-  return monsterData;
+export function getMonsterData(id) {
+  const monster = getMonsterData.find((item) => item.id === id);
+
+  return monster;
 }
 
 export function getTowerData() {

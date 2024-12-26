@@ -52,35 +52,6 @@ for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
 
 let monsterPath;
 
-function generateRandomMonsterPath() {
-  const path = [];
-  let currentX = 0;
-  let currentY = Math.floor(Math.random() * 21) + 500; // 500 ~ 520 범위의 y 시작 (캔버스 y축 중간쯤에서 시작할 수 있도록 유도)
-
-  path.push({ x: currentX, y: currentY });
-
-  while (currentX < canvas.width) {
-    currentX += Math.floor(Math.random() * 100) + 50; // 50 ~ 150 범위의 x 증가
-    // x 좌표에 대한 clamp 처리
-    if (currentX > canvas.width) {
-      currentX = canvas.width;
-    }
-
-    currentY += Math.floor(Math.random() * 200) - 100; // -100 ~ 100 범위의 y 변경
-    // y 좌표에 대한 clamp 처리
-    if (currentY < 0) {
-      currentY = 0;
-    }
-    if (currentY > canvas.height) {
-      currentY = canvas.height;
-    }
-
-    path.push({ x: currentX, y: currentY });
-  }
-
-  return path;
-}
-
 function initMap() {
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 그리기
   drawPath();
@@ -172,8 +143,12 @@ function placeBase() {
   base.draw(ctx, baseImage);
 }
 
-function spawnMonster() {
-  monsters.push(new Monster(monsterPath, monsterImages, monsterLevel));
+export function addMonster(id, type) {
+  monsters.push(new Monster(monsterPath, monsterImages, id, type, stage));
+}
+
+export function moveMonsters(locationList) {
+  
 }
 
 function gameLoop() {
@@ -233,7 +208,6 @@ function initGame() {
   }
 
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
-  placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
 
   setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
@@ -264,13 +238,15 @@ Promise.all([
     // 게임 데이터 초기화 TODO
     const { monster, tower, stage, baseLoc } = gameAssets;
 
-    ({ towerDec, monsterPath, playerHp: baseHp } = gameAssets);
+    ({
+      towerDec,
+      monsterPath,
+      playerHp: baseHp,
+      playerGold: userGold,
+    } = gameAssets);
 
     // 기본 데이터 초기화
     initData(monster, tower, stage);
-
-    // 인 게임 데이터 초기화
-    base = new Base(baseLoc.x, baseLoc.y, baseHp);
 
     if (!isInitGame) initGame();
   } catch (error) {
