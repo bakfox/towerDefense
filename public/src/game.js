@@ -143,6 +143,10 @@ function placeHouse() {
   house.draw(ctx, houseImage);
 }
 
+export function setHouseHp(value) {
+  house.setHouseHp(value);
+}
+
 export function addMonster(id, type) {
   monsters.set(id, new Monster(monsterPath, monsterImages, id, type, stage));
 }
