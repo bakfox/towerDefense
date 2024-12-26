@@ -4,6 +4,7 @@ import handlerMappings from "./handlerMapping.js";
 
 export const handleEvent = (io, socket, uuId, data) => {
   const parsedData = JSON.parse(data);
+  const payload = { uuId, socket, parsedData };
   console.log(parsedData.data, parsedData);
   if (!CLIENT_VERSION.includes(parsedData.CLIENT_VERSION)) {
     //클라이언트 버전
@@ -25,7 +26,7 @@ export const handleEvent = (io, socket, uuId, data) => {
     return;
   }
 
-  const response = handler(uuId, parsedData.data);
+  const response = handler(payload);
   console.log(response.broadcast);
   if (response.broadcast) {
     console.log("유저 호출");

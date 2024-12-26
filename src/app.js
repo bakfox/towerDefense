@@ -1,7 +1,6 @@
 import express from "express";
 import { createServer } from "http";
 import initSocket from "./init/socket.js";
-import { loadDefaultData } from "./init/defaultData.js";
 
 const app = express();
 const server = createServer(app);
