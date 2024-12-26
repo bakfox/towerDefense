@@ -1,9 +1,10 @@
 import { Monster } from "../src/monster.js";
+import {monsterData} from "../../gameDefaultData/monster.js";
 
 const monsters = []; // 몬스터를 저장할 배열
 
-export const spawnMonster = (path, monsterImages, level) => {
-  const monster = new Monster(path, monsterImages, level);
+export const spawnMonster = (path, monsterImages, id,monsterData) => {
+  const monster = new Monster(path, monsterImages, id,monsterData);
   monsters.push(monster);
   return monster;
 };

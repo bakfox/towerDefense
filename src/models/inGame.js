@@ -4,7 +4,7 @@ const defaultIngame = {
   score: 0,
   hp: 5,
   stage: 0,
-  monster: [],
+  monster: [], //인게임에 스폰된 몬스터들
   tower: [],
   isSpawn: true,
   isRunning: true,
