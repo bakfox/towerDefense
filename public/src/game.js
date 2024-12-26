@@ -3,6 +3,7 @@ import { initData } from "./default/gameData.js";
 import { Base } from "./base.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
+import { GameManager } from "./gameManager.js";
 
 /* 
   어딘가에 엑세스 토큰이 저장이 안되어 있다면 로그인을 유도하는 코드를 여기에 추가해주세요!
@@ -161,13 +162,13 @@ function gameLoop() {
 
   ctx.font = "25px Times New Roman";
   ctx.fillStyle = "skyblue";
-  ctx.fillText(`최고 기록: ${highScore}`, 100, 50); // 최고 기록 표시
+  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 100, 50); // 최고 기록 표시
   ctx.fillStyle = "white";
-  ctx.fillText(`점수: ${score}`, 100, 100); // 현재 스코어 표시
+  ctx.fillText(`점수: ${GameManager.score}`, 100, 100); // 현재 스코어 표시
   ctx.fillStyle = "yellow";
-  ctx.fillText(`골드: ${userGold}`, 100, 150); // 골드 표시
+  ctx.fillText(`골드: ${GameManager.userGold}`, 100, 150); // 골드 표시
   ctx.fillStyle = "black";
-  ctx.fillText(`현재 레벨: ${monsterLevel}`, 100, 200); // 최고 기록 표시
+  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 100, 200); // 최고 기록 표시
 
   // 타워 그리기 및 몬스터 공격 처리
   towers.forEach((tower) => {
@@ -206,7 +207,7 @@ function gameLoop() {
 }
 
 function initGame() {
-  if (isInitGame) {
+  if (GameManager.isInitGame) {
     return;
   }
 
@@ -214,7 +215,7 @@ function initGame() {
   placeBase(); // 기지 배치
 
   gameLoop(); // 게임 루프 최초 실행
-  isInitGame = true;
+  GameManager.isInitGame = true;
 }
 
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
@@ -244,14 +245,14 @@ Promise.all([
       towerDec,
       monsterPath,
       playerHp: baseHp,
-      playerGold: userGold,
-      stage,
+      playerGold: GameManager.userGold,
+      stage: GameManager.stage,
     } = gameAssets);
 
     // 기본 데이터 초기화
-    initData(monster, tower, stage);
+    initData(monster, tower);
 
-    if (!isInitGame) initGame();
+    if (!GameManager.isInitGame) initGame();
   } catch (error) {
     console.log("게임 데이터 반환 실패!:", error);
   }

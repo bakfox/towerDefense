@@ -1,11 +1,9 @@
 let monsterData;
 let towerData;
-let stageData;
 
-export function initData(monster, tower, stage) {
+export function initData(monster, tower) {
   monsterData = monster;
   towerData = tower;
-  stageData = stage;
 }
 
 export function getMonsterData(id) {
@@ -16,8 +14,4 @@ export function getMonsterData(id) {
 
 export function getTowerData() {
   return towerData;
-}
-
-export function getStageData() {
-  return stageData;
 }
