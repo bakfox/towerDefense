@@ -1,37 +1,92 @@
-import towerData from '../../gameDefaultData/tower.js';
+import { getInGame, createInGame } from "../inGame.js";
+import towerData from "../../gameDefaultData/tower.js";
+import CustomError from "../utils/errors/classes/custom.error.js";
 
-let availableTowers = []; // 플레이어가 사용할 수 있는 타워 리스트
+//특정 타워 데이터가 존재하는지 조회
+const getTowerDataById = (id) => {
+    return towerData.data.find((tower) => tower.id === id);
+};
 
-//게임 시작 시 초기화하며 3개의 리스트를 제공할 예정
-export const initializeGameHandler = (socket) => {
-    // 타워 데이터에서 3개의 랜덤 타워 선택
-    const towerKeys = Object.keys(towerData);
-    //랜덤 데이터를 넣을 배열 생성
-    const selectedTowers = [];
+//시작 시 타워 3개를 가지고 시작하기 위해 랜덤한 3개의 타워 타입 가져오기
+const getRandomTowers = () => {
+    const shuffled = [...towerData.data].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+};
 
-    //랜덤인덱스를 기준으로 3개 추출 후 배열에 넣기
-    while (selectedTowers.length < 3) {
-        const randomIndex = Math.floor(Math.random() * towerKeys.length);
-        const randomTower = towerKeys[randomIndex];
+// 게임 시작 시 랜덤한 타워 초기화
+export const initializeGameHandler = (uuid, socket) => {
+    const initialTowers = getRandomTowers();
+    const gameState = createInGame(uuid);
 
-        if (!selectedTowers.includes(randomTower)) {
-            selectedTowers.push(randomTower);
-        }
+    gameState.gold = 500; // 초기 골드 설정(수정 예정)
+    gameState.tower = initialTowers;
+
+    socket.emit("gameInitialize", {
+        status: "success",
+        tower: initialTowers,
+        gold: gameState.gold,
+    });
+};
+
+// 타워 생성 핸들러
+export const towerCreateHandler = (uuid, payload, socket) => {
+    const { towerType, location } = payload;
+    //const {x, y} = location;
+    const gameState = getInGame(uuid);
+
+    if (!gameState) {
+        throw new CustomError("게임 상태를 찾을 수 없습니다.", "towerCreate");
     }
 
-    // 선택된 타워 리스트 데이터 준비
-    availableTowers = selectedTowers.map((key) => ({
-        type: key,
-        cost: towerData[key].cost,
-        attackPower: towerData[key].attackPower,
-        upgradeValue: towerData[key].upgradeValue,
-    }));
+    const towerInfo = getTowerDataById(towerType);
 
-    // 클라이언트에 초기 데이터 전달
-    socket.emit('initializeGame', {
-        status: 'success',
-        message: '게임이 시작되었습니다.',
-        availableTowers,
-        gold,
+    if (!towerInfo) {
+        throw new CustomError("유효하지 않은 타워 타입입니다.", "towerCreate");
+    }
+
+    if (gameState.gold < towerInfo.price) {
+        socket.emit("towerCreate", { status: "fail", message: "골드 부족" });
+        return;
+    }
+
+    const newTower = {
+        id: gameState.tower.length + 1,
+        type: towerType,
+        location,
+        level: 1,
+        attackPower: towerInfo.atck,
+        attackSpeed: towerInfo.atckSpead,
+    };
+
+    gameState.tower.push(newTower);
+    gameState.gold -= towerInfo.price;
+
+    socket.emit("towerCreate", {
+        status: "success",
+        towerType,
+        towerId: newTower.id,
+        location,
+    });
+};
+
+// 타워 이동 핸들러
+export const towerMoveHandler = (uuid, payload, socket) => {
+    const { towerId, currentLocation, moveLocation } = payload;
+    const gameState = getInGame(uuid);
+
+    const tower = gameState.tower.find(
+        (t) => t.id === towerId && t.location === currentLocation
+    );
+
+    if (!tower) {
+        throw new CustomError("타워를 찾을 수 없거나 위치가 잘못되었습니다.", "towerMove");
+    }
+
+    tower.location = moveLocation;
+
+    socket.emit("towerMove", {
+        status: "success",
+        towerId,
+        moveLocation,
     });
 };
