@@ -23,7 +23,7 @@ router.get('/login', async (req, res, next) => {
         if (!user)
             return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
         // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
-        else if (!(await bcrypt.compare(password, user.password)))
+        else if (!(await bcrypt.compare(password, user.PASSOWRD)))
             return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
 
 
@@ -64,12 +64,14 @@ router.delete('/logout', UserToken, async (req, res, next) => {
 //회원가입
 router.post('/signup', async (req, res, next) => {
     try {
-        const { name, password } = req.body;
+        const { username,nickname, password } = req.body;
         const isExistUser = await prisma.uSERS.findFirst({
             where: {
-                name: name,
+                ID: nickname,
             },
         });
+
+        console.log("회원가입 호출");
 
         if (isExistUser) {
             return res.status(409).json({ message: '이미 존재하는 아이디입니다.' });
@@ -85,10 +87,11 @@ router.post('/signup', async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await prisma.$transaction(async (tx) => {
             // Users 테이블에 사용자를 추가합니다.
-            const user = await tx.users.create({
+            const user = await tx.uSERS.create({
                 data: {
-                    name: name,
-                    password: hashedPassword
+                    NAME : username,
+                    ID : nickname,
+                    PASSWORD : hashedPassword
                 },
             });
 
@@ -382,3 +385,5 @@ router.put('/gem', UserToken, async (req, res, next) => {
         next(err);
     }
 })
+
+export default router;
