@@ -16,4 +16,16 @@ export class GameManager {
     this.score = 0;
     this.highScore = 0;
   }
+
+  static setStage(stage) {
+    this.stage = stage;
+  }
+
+  static setUserGold(gold) {
+    this.userGold = gold;
+  }
+
+  static setScore(score) {
+    this.score = score;
+  }
 }

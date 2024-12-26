@@ -1,10 +1,11 @@
 import { addMonster, moveMonsters } from "../game.js";
-
+import { GameManager } from "../gameManager.js";
 const actionMappings = {
-  3: "changeStage",
+  3: GameManager.setStage,
   4: "changeHouseHp",
-  5: "changeMoney",
-  6: "changeScore",
+  5: GameManager.setUserGold,
+  6: GameManager.setScore,
+  101: "towerAttack",
   201: addMonster,
   202: moveMonsters,
   203: "monsterAttack",
