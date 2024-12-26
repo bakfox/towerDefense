@@ -1,5 +1,5 @@
 import { initSocket, sendEvent } from "./socket.js";
-import { initData } from "./gameData.js";
+import { initData } from "./default/gameData.js";
 import { Base } from "./base.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";

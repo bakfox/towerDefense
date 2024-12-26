@@ -1,4 +1,4 @@
-import { getMonsterData } from "./gameData";
+import { getMonsterData } from "./default/gameData.js";
 
 export class Monster {
   constructor(path, monsterImages, type, id, stage) {
