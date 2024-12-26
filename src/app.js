@@ -19,12 +19,5 @@ app.get("/", (req, res) => {
 
 server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
-  try {
-    const defaultData = await loadDefaultData();
-    console.log(defaultData);
-  } catch (err) {
-    console.error("파일 불러오기 실패!");
-  }
-
   // 이 곳에서 파일 읽으면 됨
 });

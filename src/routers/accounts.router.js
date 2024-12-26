@@ -14,7 +14,7 @@ router.get('/login', async (req, res, next) => {
     try {
         const { name, password } = req.body;
 
-        const user = await prisma.users.findFirst({ where: { name: name } });
+        const user = await prisma.uSERS.findFirst({ where: { name: name } });
 
         if (!user)
             return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
@@ -47,7 +47,7 @@ router.get('/login', async (req, res, next) => {
 router.post('/signup', async (req, res, next) => {
     try {
         const { name, password } = req.body;
-        const isExistUser = await prisma.users.findFirst({
+        const isExistUser = await prisma.uSERS.findFirst({
             where: {
                 name: name,
             },
@@ -94,18 +94,17 @@ router.post('/signup', async (req, res, next) => {
 //유저 정보 조회
 router.get('/users/:id', UserToken, async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const { USER_ID } = req.params;
         console.log(req.body);
 
-        const users = await prisma.user.findFirst({
+        const users = await prisma.uSERS.findFirst({
             where: {
-                id: id
+                USER_ID : USER_ID
             },
             select: {
-                userId: true,
-                email: true,
-                createAt: true,
-                updateAt: true,
+                USER_ID : true,
+                PASSWORD : false,
+                GEM : true
 
             },
         });
@@ -135,13 +134,14 @@ router.get('/rank', UserToken, async (req, res, next) => {
                 }
             ],
             select: {
-                SCORES: true,
+                NAME : true,
+                SCORES: true
 
             },
             take: 10 //랭킹 10위까지만 가져오도록 하자.
         });
 
-        return res.status(200).json({ data: "읽기 성공" });
+        return res.status(200).json({ data: users });
     }
     catch (err) {
         next(err);
@@ -160,15 +160,20 @@ router.post('/tower/draw', async (req, res, next) => {
 })
 
 //타워 업그레이드
-router.put('/tower/upgrade', async (req, res, next) => {
+router.put('/tower/upgrade',UserToken, async (req, res, next) => {
     try {
         //변경할 타워를 받자.
-        const {towerID} = req.body;
+        //const {towerID} = req.body;
+        //재료도 받을 경우는 밑처럼
+        const {towerID, ingredient} = req.body;
+
+        const user = req.user;
 
         //강화를 할 때 재화로 업그레이드 하는 경우
         let successCount = Math.floor(Math.random()*100);
 
         //성공 확률을 해당 확률 안에 들어간다면 성공한다는 식
+
         if(successCount < 70)
         {
             await prisma.oWN_TOWERS.update({
@@ -181,6 +186,8 @@ router.put('/tower/upgrade', async (req, res, next) => {
                     }
                 }
             })
+
+            
         }
         else(successCount > 95)//파괴 확률로 하자
         {
@@ -190,6 +197,36 @@ router.put('/tower/upgrade', async (req, res, next) => {
                 }
             })
         }
+
+        //합성을 통해서 처리할 경우
+        const transaction = await prisma.$transaction(async (tx)=>{
+            //재료가 될 테이블을 찾는다.
+            const ingred = await tx.oWN_TOWERS.findMany({
+                where : {
+                    USER_ID : user.USER_ID,
+                    TOWER_ID : {
+                        in : ingredient
+                    }
+                }
+            })
+
+
+        })
+
+        await prisma.uSERS.update({
+            where : {
+                USER_ID : user.USER_ID
+            },
+            data : {
+                GEM : {
+                    decrement : 1000
+                }
+            }
+        })
+
+
+
+
 
         
         
