@@ -117,3 +117,35 @@ export const towerSellHandler = (uuid, payload, socket) => {
         towerId,
     });
 };
+
+// 타워 업그레이드 핸들러
+export const towerUpgradeHandler = (uuid, payload, socket) => {
+    const { towerId } = payload;
+    const gameState = getInGame(uuid);
+
+    const tower = gameState.tower.find((t) => t.id === towerId);
+    if (!tower) {
+        throw new CustomError("타워를 찾을 수 없습니다.", "towerUpgrade");
+    }
+
+    const towerInfo = getTowerDataById(tower.type);
+    const upgradeCost = towerInfo.upgradeValue * (tower.level + 1);
+
+    if (gameState.gold < upgradeCost) {
+        socket.emit("towerUpgrade", {
+            status: "fail",
+            message: "골드 부족",
+        });
+        return;
+    }
+
+    gameState.gold -= upgradeCost;
+    tower.level += 1;
+    tower.attackPower += towerInfo.upgradeValue;
+
+    socket.emit("towerUpgrade", {
+        status: "success",
+        towerId,
+        towerLevel: tower.level,
+    });
+};
