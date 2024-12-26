@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
 import UserToken from '../middleware/auth.middlewares.js'
 import { Prisma } from '@prisma/client';
+import stageData from '../../gameDefaultData/stage.js';
+import towerData from '../../gameDefaultData/tower.js';
 
 
 
@@ -288,10 +290,71 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
     }
 })
 
+//스쿼드 전체 출력
+router.get('/tower/squad', UserToken, async (req, res, next)=>{
+    try{
+        const user = req.user;
+        //squad에 등록된 현재 자신의 테이블을 가져온다.
+        const mySquad = await prisma.eQUIP_TOWERS.findMany({
+            where : {
+                USER_ID : user.USER_ID
+            }
+        })
+        return res.status(201).json({message : mySquad})
+    }
+    catch(err)
+    {
+        next(err);
+    }
+})
 
-//스쿼드 출력
+//스쿼드 하나 변경
 router.put('/tower/squad', UserToken, async (req,res, next) =>{
     try{
+        //변경할 스쿼드를 
+        const {equipTowerId, equipingID} = req.body;
+        const user = req.user;
+        //towerData에서 데이터를 받아오도록 하자.
+
+        //일단 현재 squad가 차 있는지 확인하고 없다면 없다면 추가, 일정 숫자 이상이면 변경하는 식
+
+        const currentUserSquad = await prisma.eQUIP_TOWERS.findMany({
+            where : {
+                USER_ID : user.USER_ID
+            }
+        })
+
+        const selectedTower = towerData.data.find((element)=>element.id === equipingID);
+
+        if(currentUserSquad < 3)
+        {
+            await prisma.eQUIP_TOWERS.create({
+                data : {
+                    USER_ID : user.USER_ID,
+                    TOWER_ID : selectedTower.id
+                }
+            })
+        }
+        else
+        {
+            await prisma.eQUIP_TOWERS.update({
+                where : {
+                    equip_tower_id : equipTowerId
+                },
+                data : {
+                    TOWER_ID : selectedTower.id
+                }
+            })
+        }
+
+        //추가된 다음의 결과를 리턴하도록 한다.
+        const mySquad = await prisma.eQUIP_TOWERS.findMany({
+            where : {
+                USER_ID : user.USER_ID
+            }
+        })
+        return res.status(201).json({message : mySquad})
+
         
     }
     catch(err)

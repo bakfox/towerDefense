@@ -5,7 +5,7 @@
 //====================================================================================================================
 //====================================================================================================================
 import jwt from 'jsonwebtoken';
-import { prisma } from '../utils/prisma/prisma_client.js';
+import { prisma } from '../utils/prisma_client.js'
 //import { prisma } from '../utils/prisma/index.js';
 import dotenv from 'dotenv';
 
@@ -25,7 +25,7 @@ export default async function (req, res, next) {
         const decodedToken = jwt.verify(token, 'custom-secret-key');
         const id = decodedToken.id;
         
-        const user = await prisma.users.findFirst({
+        const user = await prisma.uSERS.findFirst({
             where: { id: +id },
         });
         if (!user) {
