@@ -1,4 +1,5 @@
 const actionMappings = {
+  1: "gameStart",
   3: "changeStage",
   4: "changeHouseHp",
   5: "changeMoney",
