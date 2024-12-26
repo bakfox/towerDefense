@@ -31,7 +31,9 @@ export const initializeGameHandler = (uuid, socket) => {
 // 타워 생성 핸들러
 export const towerCreateHandler = (uuid, payload, socket) => {
     const { towerType, location } = payload;
-    //const {x, y} = location;
+    //const {x, y} = location; x, y를 기준으로 생성하기 때문에 필요할지 의문
+
+    //gameState에 게임 정보 불러옴
     const gameState = getInGame(uuid);
 
     if (!gameState) {
@@ -88,5 +90,30 @@ export const towerMoveHandler = (uuid, payload, socket) => {
         status: "success",
         towerId,
         moveLocation,
+    });
+};
+
+// 타워 판매 핸들러
+export const towerSellHandler = (uuid, payload, socket) => {
+    const { towerId } = payload;
+    const gameState = getInGame(uuid);
+
+    const towerIndex = gameState.tower.findIndex((t) => t.id === towerId);
+    if (towerIndex === -1) {
+        throw new CustomError("타워를 찾을 수 없습니다.", "towerSell");
+    }
+
+    const tower = gameState.tower[towerIndex];
+    const towerInfo = getTowerDataById(tower.type);
+
+    const refundGold =
+        towerInfo.price + Math.floor(towerInfo.upgradeValue * tower.level * 0.5);
+
+    gameState.gold += refundGold;
+    gameState.tower.splice(towerIndex, 1);
+
+    socket.emit("towerSell", {
+        status: "success",
+        towerId,
     });
 };
