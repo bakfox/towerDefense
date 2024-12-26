@@ -29,7 +29,7 @@ export function initSocket(token) {
       console.log("Handler not found");
     }
 
-    //action(data.userId, data.payload);
+    action(data.userId, data.payload);
   });
 
   return socket;
