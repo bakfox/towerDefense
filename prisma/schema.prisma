@@ -13,46 +13,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model USERS{
-  USER_ID Int @id @default(autoincrement())
-  NAME String 
-  ID  String
-  PASSWORD String
-  GEM Int
+model USERS {
+  USER_ID        Int    @id @default(autoincrement()) @map("user_id")
+  NAME           String @map("name")
+  ID             String @unique @map("id")
+  PASSWORD       String @map("password")
+  GEM            Int @map("gem")
 
+  EQUIP_TOWERS EQUIP_TOWERS[]
   OWN_TOWERS OWN_TOWERS[]
   SCORES SCORES[]
 
-  @@map("USERS")
+  @@map("users")
 }
 
-model OWN_TOWERS{
-  TOWER_ID Int @id @default(autoincrement())
-  USER_ID Int 
-  ID Int
-  UPGRADE Int
+model EQUIP_TOWERS {
+  EQUIP_TOWER_ID  Int @id @default(autoincrement()) @map("equip_tower_id")
+  USER_ID         Int @map("user_id")
+  TOWER_ID        Int @unique @map("tower_id")
 
+  OWN_TOWERS     OWN_TOWERS?   @relation(fields: [TOWER_ID], references: [TOWER_ID],onDelete: Cascade, onUpdate: Cascade)
+  USERS USERS @relation(fields: [USER_ID], references: [USER_ID], onDelete: Cascade, onUpdate: Cascade)
 
-  USERS USERS @relation(fields: [USER_ID],references: [USER_ID],onDelete: Cascade,onUpdate: Cascade)
-  EQUIP_TOWERS EQUIP_TOWERS[]
-  @@map("OWN_TOWERS")
+  @@map("equip_towers")
 }
 
-model SCORES{
-  USER_ID Int @unique
-  MAX_SCORE Int @default(0)
-  ENDTIME DateTime @updatedAt
+model OWN_TOWERS {
+  TOWER_ID        Int @id @default(autoincrement()) @map("tower_id")
+  USER_ID         Int @map("user_id")
+  ID              Int @unique @map("id")
+  UPGRADE         Int @map("upgrade")
+  
+  USERS USERS @relation(fields: [USER_ID], references: [USER_ID], onDelete: Cascade, onUpdate: Cascade)
+  EQUIP_TOWERS  EQUIP_TOWERS?
+  @@map("own_towers")
+}
+
+model SCORES {
+  SCORE_ID     Int @id @default(autoincrement()) @map("score_id")
+  USER_ID       Int  @map("user_id")
+  MAX_SCORE     Int @default(0) @map("max_score")
+  END_TIME      DateTime @map("end_time")
+
 
   USERS USERS @relation(fields: [USER_ID], references: [USER_ID], onDelete: Cascade, onUpdate: Cascade)
 
-  @@map("SCORES")
-}
-
-model EQUIP_TOWERS{
-  EQUIP_TOWER_ID Int @id @default(autoincrement())
-  USER_ID Int
-  TOWER_ID Int
-
-  OWN_TOWERS OWN_TOWERS @relation(fields: [TOWER_ID],references: [TOWER_ID], onDelete: Cascade,onUpdate: Cascade)
-  @@map("EQUIP_TOWERS")
+  @@map("scores")
 }
