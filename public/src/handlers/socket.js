@@ -24,7 +24,7 @@ export function initSocket(token) {
   // 서버 정보 전달 이벤트 처리
   socket.on("event", (data) => {
     const action = actionMappings[data.handlerId];
-    console.log(data.handlerId, action);
+    console.log(action, data);
     if (!action) {
       console.log("Handler not found");
     }
