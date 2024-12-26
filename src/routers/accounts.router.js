@@ -200,8 +200,8 @@ router.put('/tower/upgrade',UserToken, async (req, res, next) => {
 
         //합성을 통해서 처리할 경우
         const transaction = await prisma.$transaction(async (tx)=>{
-            //재료가 될 테이블을 찾는다.
-            const ingred = await tx.oWN_TOWERS.findMany({
+            //재료가 될 테이블을 찾아서 삭제한다
+            const ingred = await tx.oWN_TOWERS.deleteMany({
                 where : {
                     USER_ID : user.USER_ID,
                     TOWER_ID : {
@@ -209,6 +209,21 @@ router.put('/tower/upgrade',UserToken, async (req, res, next) => {
                     }
                 }
             })
+
+            //재료를 삭제한 다음에 강화를 시도해 본다.
+            await tx.oWN_TOWERS.update({
+                where : {
+                    USER_ID : user.USER_ID,
+                    TOWER_ID : towerID
+                },
+                data : {
+                    UPGRADE : {
+                        increment : 1
+                    }
+                }
+            })
+
+            
 
 
         })
