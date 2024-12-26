@@ -7,11 +7,12 @@ export function initData(monster, tower) {
 }
 
 export function getMonsterData(id) {
-  const monster = getMonsterData.find((item) => item.id === id);
+  const monster = monsterData.find((item) => item.id === id);
 
   return monster;
 }
 
-export function getTowerData() {
-  return towerData;
+export function getTowerData(id) {
+  const tower = monsterData.find((item) => item.id === id);
+  return tower;
 }

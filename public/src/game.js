@@ -23,7 +23,7 @@ let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
 let stage = 0; // 스테이지
 const monsters = new Map();
-const towers = [];
+const towers = new Set();
 
 let score = 0; // 게임 점수
 let highScore = 0; // 기존 최고 점수
@@ -161,6 +161,22 @@ export function moveMonsters(locationList) {
 
     monster.move(item.x, item.y);
   }
+}
+
+// 타워 추가가
+async function addTower(x, y, id, type) {
+  
+  // sendEvent()
+
+
+  towers.set(id, new Tower());
+}
+
+export function towerAttack(towerId, monsterId) {
+  const monster = monsters.get(monsterId);
+  const tower = towers.get(towerId);
+
+  tower.attack(monster);
 }
 
 function gameLoop() {
