@@ -3,19 +3,19 @@ let towerData;
 let stageData;
 
 export function initData(monster, tower, stage) {
-    monsterData = monster;
-    towerData = tower;
-    stageData = stage;
+  monsterData = monster;
+  towerData = tower;
+  stageData = stage;
 }
 
 export function getMonsterData() {
-    return monsterData;
+  return monsterData;
 }
 
 export function getTowerData() {
-    return towerData;
+  return towerData;
 }
 
 export function getStageData() {
-    return stageData;
+  return stageData;
 }

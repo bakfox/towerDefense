@@ -1,4 +1,5 @@
-import { initSocket, getSocket, sendEvent } from "./socket.js";
+import { initSocket, sendEvent } from "./socket.js";
+import { initData } from "./gameData.js";
 import { Base } from "./base.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
@@ -27,6 +28,7 @@ const towers = [];
 let score = 0; // 게임 점수
 let highScore = 0; // 기존 최고 점수
 let isInitGame = false;
+let towerDec;
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -195,7 +197,7 @@ function gameLoop() {
     tower.updateCooldown();
     monsters.forEach((monster) => {
       const distance = Math.sqrt(
-        Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2),
+        Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2)
       );
       if (distance < tower.range) {
         tower.attack(monster);
@@ -230,7 +232,6 @@ function initGame() {
     return;
   }
 
-  monsterPath = generateRandomMonsterPath(); // 몬스터 경로 생성
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeInitialTowers(); // 설정된 초기 타워 개수만큼 사전에 타워 배치
   placeBase(); // 기지 배치
@@ -247,28 +248,34 @@ Promise.all([
   new Promise((resolve) => (baseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
   ...monsterImages.map(
-    (img) => new Promise((resolve) => (img.onload = resolve)),
+    (img) => new Promise((resolve) => (img.onload = resolve))
   ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let somewhere;
 
-  serverSocket = io("http://localhost:3017", {
-    auth: {
-      token: somewhere, // 토큰이 저장된 어딘가에서 가져와야 합니다!
-    },
-  });
+  serverSocket = initSocket(somewhere);
 
-  // serverSocket = initSocket(somewhere);
+  if (!serverSocket) console.log("socket 접속 실패!");
 
-  // if (!serverSocket) console.log("socket 접속 실패!");
+  try {
+    const gameAssets = await sendEvent(1, {});
 
-  // try {
-  //   const gameAssets = await sendEvent(1, {});
-  //   //게임 데이터 초기화 TODO
-  // } catch (error) {
-  //   console.log("게임 데이터 반환 실패!:", error);
-  // }
+    // 게임 데이터 초기화 TODO
+    const { monster, tower, stage, baseLoc } = gameAssets;
+
+    ({ towerDec, monsterPath, playerHp: baseHp } = gameAssets);
+
+    // 기본 데이터 초기화
+    initData(monster, tower, stage);
+
+    // 인 게임 데이터 초기화
+    base = new Base(baseLoc.x, baseLoc.y, baseHp);
+
+    if (!isInitGame) initGame();
+  } catch (error) {
+    console.log("게임 데이터 반환 실패!:", error);
+  }
 
   /* 
     서버의 이벤트들을 받는 코드들은 여기다가 쭉 작성해주시면 됩니다! 
