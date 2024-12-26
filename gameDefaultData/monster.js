@@ -1,4 +1,4 @@
-const stageData = {
+const monsterData = {
   version: "1.0.0",
   data: [
     {
@@ -51,4 +51,4 @@ const stageData = {
     },
   ],
 };
-export default stageData;
+export default monsterData;
