@@ -1,16 +1,19 @@
 export class Tower {
-  constructor(x, y, cost) {
-    // 생성자 안에서 타워들의 속성을 정의한다고 생각하시면 됩니다!
-    this.x = x; // 타워 이미지 x 좌표
-    this.y = y; // 타워 이미지 y 좌표
-    this.width = 78; // 타워 이미지 가로 길이 (이미지 파일 길이에 따라 변경 필요하며 세로 길이와 비율을 맞춰주셔야 합니다!)
-    this.height = 150; // 타워 이미지 세로 길이
-    this.attackPower = 40; // 타워 공격력
-    this.range = 300; // 타워 사거리
-    this.cost = cost; // 타워 구입 비용
-    this.cooldown = 0; // 타워 공격 쿨타임
-    this.beamDuration = 0; // 타워 광선 지속 시간
-    this.target = null; // 타워 광선의 목표
+  constructor(x, y, towerData) {
+    this.x = x;
+    this.y = y;
+    this.width = 78;
+    this.height = 150;
+    this.id = towerData.id;
+    this.attackPower = towerData.atck;
+    this.attackSpeed = towerData.atckSpead;
+    this.upgrade = towerData.upgrade;
+    this.upgradeValue = towerData.upgradeValue;
+    this.price = towerData.price;
+    this.range = 300;
+    this.cooldown = 0;
+    this.beamDuration = 0;
+    this.target = null;
   }
 
   draw(ctx, towerImage) {
@@ -44,5 +47,34 @@ export class Tower {
     if (this.cooldown > 0) {
       this.cooldown--;
     }
+  }
+
+  static checkCollision(x, y, existingTowers) {
+    return existingTowers.some(tower => 
+      Math.abs(tower.x - x) < 50 && Math.abs(tower.y - y) < 50
+    );
+  }
+
+  static canCreate(x, y, towerType, userGold, existingTowers) {
+    // 위치 충돌 검사
+    if (this.checkCollision(x, y, existingTowers)) {
+      return {
+        canBuild: false,
+        message: "이미 타워가 존재하는 위치입니다"
+      };
+    }
+
+    // 골드 확인
+    if (userGold < towerType.price) {
+      return {
+        canBuild: false,
+        message: "골드가 부족합니다"
+      };
+    }
+
+    return {
+      canBuild: true,
+      message: "타워를 설치할 수 있습니다"
+    };
   }
 }
