@@ -9,6 +9,7 @@ export const handleEvent = (io, socket, uuId, data) => {
   if (!CLIENT_VERSION.includes(parsedData.CLIENT_VERSION)) {
     //클라이언트 버전
     socket.emit("response", {
+      handlerId: parsedData.handlerId,
       status: "fail",
       message: "클라이언트 버전이 이상합니다!",
       data: {},
@@ -19,6 +20,7 @@ export const handleEvent = (io, socket, uuId, data) => {
   // 핸들러 존재 여부 체크
   if (!handler) {
     socket.emit("response", {
+      handlerId: parsedData.handlerId,
       status: "fail",
       message: "지정된 핸들러가 없어요!",
       data: {},
