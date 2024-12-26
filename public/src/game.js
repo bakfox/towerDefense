@@ -163,13 +163,14 @@ export function moveMonsters(locationList) {
   }
 }
 
-// 타워 추가가
+// 타워 추가
 async function addTower(x, y, id, type) {
-  
-  // sendEvent()
-
-
-  towers.set(id, new Tower());
+  try {
+    await sendEvent(101, { towerId: type, x, y });
+    towers.set(id, new Tower(x, y, id, type));
+  } catch (error) {
+    console.log("타워 설치에 실패했습니다!");
+  }
 }
 
 export function towerAttack(towerId, monsterId) {
