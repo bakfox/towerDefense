@@ -149,3 +149,20 @@ export const towerUpgradeHandler = (uuid, payload, socket) => {
         towerLevel: tower.level,
     });
 };
+
+// 타워 공격 핸들러
+export const towerAttackHandler = (uuid, payload, socket) => {
+    const { towerId, monsterId } = payload;
+    const gameState = getInGame(uuid);
+
+    const tower = gameState.tower.find((t) => t.id === towerId);
+
+    if (!tower) {
+        throw new CustomError("타워를 찾을 수 없습니다.", "towerAttack");
+    }
+
+    socket.emit("towerAttack", {
+        towerId,
+        monsterId,
+    });
+};
