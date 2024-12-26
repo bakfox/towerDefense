@@ -1,4 +1,4 @@
-import { addMonster, moveMonsters, setHouseHp } from "../game.js";
+import { addMonster, moveMonsters, setHouseHp, deleteMonster } from "../game.js";
 import { GameManager } from "../gameManager.js";
 const actionMappings = {
   3: GameManager.setStage,
@@ -9,7 +9,7 @@ const actionMappings = {
   201: addMonster,
   202: moveMonsters,
   203: "monsterAttack",
-  204: "killMonster",
+  204: deleteMonster,
 };
 
 export default actionMappings;

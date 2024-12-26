@@ -151,6 +151,10 @@ export function addMonster(id, type) {
   monsters.set(id, new Monster(monsterPath, monsterImages, id, type, stage));
 }
 
+export function deleteMonster(id) {
+  monsters.delete(id);
+}
+
 export function moveMonsters(locationList) {
   for (const item of locationList) {
     const monster = monsters.get(item.id);
