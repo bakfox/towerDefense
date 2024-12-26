@@ -8,7 +8,7 @@ const actionMappings = {
   101: "towerAttack",
   201: addMonster,
   202: moveMonsters,
-  203: "monsterAttack",
+  //203: "monsterAttack",
   204: deleteMonster,
 };
 
