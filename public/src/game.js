@@ -20,8 +20,7 @@ let baseHp = 0; // 기지 체력
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
-let monsterLevel = 0; // 몬스터 레벨
-let monsterSpawnInterval = 3000; // 몬스터 생성 주기
+let stage = 0; // 스테이지
 const monsters = new Map();
 const towers = [];
 
@@ -148,7 +147,7 @@ export function addMonster(id, type) {
 }
 
 export function moveMonsters(locationList) {
-  for(const item of locationList) {
+  for (const item of locationList) {
     const monster = monsters.get(item.id);
 
     monster.move(item.x, item.y);
@@ -214,7 +213,6 @@ function initGame() {
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeBase(); // 기지 배치
 
-  setInterval(spawnMonster, monsterSpawnInterval); // 설정된 몬스터 생성 주기마다 몬스터 생성
   gameLoop(); // 게임 루프 최초 실행
   isInitGame = true;
 }
@@ -240,13 +238,14 @@ Promise.all([
     const gameAssets = await sendEvent(1, {});
 
     // 게임 데이터 초기화 TODO
-    const { monster, tower, stage, baseLoc } = gameAssets;
+    const { monster, tower } = gameAssets;
 
     ({
       towerDec,
       monsterPath,
       playerHp: baseHp,
       playerGold: userGold,
+      stage,
     } = gameAssets);
 
     // 기본 데이터 초기화
