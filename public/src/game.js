@@ -139,28 +139,83 @@ function getRandomPositionNearPath(maxDistance) {
   };
 }
 
-function placeInitialTowers() {
-  /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
-  for (let i = 0; i < numOfInitialTowers; i++) {
-    const { x, y } = getRandomPositionNearPath(200);
-    const tower = new Tower(x, y, towerCost);
-    towers.push(tower);
-    tower.draw(ctx, towerImage);
-  }
-}
+// function placeInitialTowers() {
+//   /* 
+//     타워를 초기에 배치하는 함수입니다.
+//     무언가 빠진 코드가 있는 것 같지 않나요? 
+//   */
+//   for (let i = 0; i < numOfInitialTowers; i++) {
+//     const { x, y } = getRandomPositionNearPath(200);
+//     const tower = new Tower(x, y, towerCost);
+//     towers.push(tower);
+//     tower.draw(ctx, towerImage);
+//   }
+// }
 
 function placeNewTower() {
-  /* 
-    타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-    빠진 코드들을 채워넣어주세요! 
-  */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
-  towers.push(tower);
-  tower.draw(ctx, towerImage);
+  
+  // 처음 3개의 타워만 표시
+  const availableTowers = towerData.data.slice(0, 3);
+  availableTowers.forEach(tower => {
+    const button = document.createElement("button");
+    button.textContent = `타워 ${tower.id} (${tower.price} Gold)`;
+    button.style.display = "block";
+    button.style.margin = "10px";
+    button.style.padding = "10px";
+    
+    // 골드가 부족한 경우 버튼 비활성화
+    if (userGold < tower.price) {
+      button.disabled = true;
+      button.style.opacity = "0.5";
+    }
+    
+    button.addEventListener("click", () => {
+      towerSelectionUI.remove();
+      
+      // 타워 위치 선택 모드로 전환
+      canvas.style.cursor = "crosshair";
+      //마우스 커서가 십자모양으로 변경되어 위치 선택모드임을 사용자가 인지할 수 있게 함.
+      
+      function handleCanvasClick(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        // Tower 클래스의 메서드를 사용하여 검증
+        const validation = Tower.canCreate(x, y, tower, userGold, towers);
+        if (!validation.canBuild) {
+          alert(validation.message);
+          return;
+        }
+
+        // 골드 차감 및 타워 생성
+        userGold -= tower.price;
+        const newTower = new Tower(x, y, tower);
+        towers.push(newTower);
+        
+        // 이벤트 리스너 제거 및 커서 복구
+        canvas.removeEventListener("click", handleCanvasClick);
+        canvas.style.cursor = "default";
+      }
+      
+      canvas.addEventListener("click", handleCanvasClick);
+    });
+    
+    towerSelectionUI.appendChild(button);
+  });
+
+  // 취소 버튼 추가
+  const cancelButton = document.createElement("button");
+  cancelButton.textContent = "취소";
+  cancelButton.style.display = "block";
+  cancelButton.style.margin = "10px";
+  cancelButton.style.padding = "10px";
+  cancelButton.addEventListener("click", () => {
+    towerSelectionUI.remove();
+  });
+  
+  towerSelectionUI.appendChild(cancelButton);
+  document.body.appendChild(towerSelectionUI);
 }
 
 function placeBase() {
@@ -267,17 +322,20 @@ Promise.all([
   */
 });
 
-const buyTowerButton = document.createElement("button");
-buyTowerButton.textContent = "타워 구입";
-buyTowerButton.style.position = "absolute";
-buyTowerButton.style.top = "10px";
-buyTowerButton.style.right = "10px";
-buyTowerButton.style.padding = "10px 20px";
-buyTowerButton.style.fontSize = "16px";
-buyTowerButton.style.cursor = "pointer";
+// 타워 선택 UI 생성
+const towerSelectionUI = document.createElement("div");
+towerSelectionUI.style.position = "absolute";
+towerSelectionUI.style.top = "50%";
+towerSelectionUI.style.left = "50%";
+towerSelectionUI.style.transform = "translate(-50%, -50%)";
+towerSelectionUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+towerSelectionUI.style.padding = "20px";
+towerSelectionUI.style.borderRadius = "10px";
+towerSelectionUI.style.color = "white";
 
 buyTowerButton.addEventListener("click", placeNewTower);
 
-document.body.appendChild(buyTowerButton);
-
 initGame();
+
+document.body.appendChild(towerSelectionUI);
+
