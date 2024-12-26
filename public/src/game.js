@@ -1,6 +1,6 @@
 import { initSocket, sendEvent } from "./socket.js";
 import { initData } from "./default/gameData.js";
-import { Base } from "./base.js";
+import { House } from "./house.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
 import { GameManager } from "./gameManager.js";
@@ -16,8 +16,8 @@ const ctx = canvas.getContext("2d");
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
 let userGold = 0; // 유저 골드
-let base; // 기지 객체
-let baseHp = 0; // 기지 체력
+let house; // 기지 객체
+let houseHp = 0; // 기지 체력
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
@@ -37,8 +37,8 @@ backgroundImage.src = "images/bg.webp";
 const towerImage = new Image();
 towerImage.src = "images/tower.png";
 
-const baseImage = new Image();
-baseImage.src = "images/base.png";
+const houseImage = new Image();
+houseImage.src = "images/house.png";
 
 const pathImage = new Image();
 pathImage.src = "images/path.png";
@@ -137,10 +137,10 @@ function placeNewTower() {
   tower.draw(ctx, towerImage);
 }
 
-function placeBase() {
+function placeHouse() {
   const lastPoint = monsterPath[monsterPath.length - 1];
-  base = new Base(lastPoint.x, lastPoint.y, baseHp);
-  base.draw(ctx, baseImage);
+  house = new House(lastPoint.x, lastPoint.y, houseHp);
+  house.draw(ctx, houseImage);
 }
 
 export function addMonster(id, type) {
@@ -185,12 +185,12 @@ function gameLoop() {
   });
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  base.draw(ctx, baseImage);
+  house.draw(ctx, houseImage);
 
   for (let i = monsters.length - 1; i >= 0; i--) {
     const monster = monsters[i];
     if (monster.hp > 0) {
-      const isDestroyed = monster.move(base);
+      const isDestroyed = monster.move(house);
       if (isDestroyed) {
         /* 게임 오버 */
         alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
@@ -212,7 +212,7 @@ function initGame() {
   }
 
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
-  placeBase(); // 기지 배치
+  placeHouse(); // 기지 배치
 
   gameLoop(); // 게임 루프 최초 실행
   GameManager.isInitGame = true;
@@ -222,7 +222,7 @@ function initGame() {
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
   new Promise((resolve) => (towerImage.onload = resolve)),
-  new Promise((resolve) => (baseImage.onload = resolve)),
+  new Promise((resolve) => (houseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
   ...monsterImages.map(
     (img) => new Promise((resolve) => (img.onload = resolve))
@@ -244,7 +244,7 @@ Promise.all([
     ({
       towerDec,
       monsterPath,
-      playerHp: baseHp,
+      playerHp: houseHp,
       playerGold: GameManager.userGold,
       stage: GameManager.stage,
     } = gameAssets);

@@ -1,4 +1,4 @@
-export class Base {
+export class House {
   constructor(x, y, maxHp) {
     // 생성자 안에서 기지의 속성을 정의한다고 생각하시면 됩니다!
     this.x = x; // 기지 이미지 x 좌표
@@ -9,9 +9,9 @@ export class Base {
     this.maxHp = maxHp; // 기지의 최대 HP
   }
 
-  draw(ctx, baseImage) {
+  draw(ctx, houseImage) {
     ctx.drawImage(
-      baseImage,
+      houseImage,
       this.x - this.width,
       this.y - this.height / 2,
       this.width,
