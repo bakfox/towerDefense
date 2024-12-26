@@ -1,5 +1,6 @@
 import monsterData from "../../gameDefaultData/monster.js";
 import stageData from "../../gameDefaultData/stage.js";
+import towerData from "../../gameDefaultData/tower.js";
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
 import { createInGame, getInGame } from "../models/inGame.js";
 
@@ -18,6 +19,7 @@ export const gameStart = (payload) => {
     data: {
       nowStageData,
       nowMonsterData,
+      towerData,
     },
   };
 };
