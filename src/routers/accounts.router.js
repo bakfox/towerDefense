@@ -6,26 +6,36 @@ import UserToken from '../middleware/auth.middlewares.js'
 import { Prisma } from '@prisma/client';
 import stageData from '../../gameDefaultData/stage.js';
 import towerData from '../../gameDefaultData/tower.js';
+import dotenv from 'dotenv';
 
 
 
 const router = express.Router();
 
+dotenv.config();
+
 //userToken : 검증 미들웨어다. Bearer 검증 방식을 사용하고 있다.
 
 //로그인
-router.get('/login', async (req, res, next) => {
+router.post('/login', async (req, res, next) => {
     try {
-        const { name, password } = req.body;
+        const { username, password } = req.body;
 
-        const user = await prisma.uSERS.findFirst({ where: { name: name } });
+        const user = await prisma.uSERS.findFirst({ where: { ID : username } });
 
+        console.log(user);
+        
         if (!user)
+        {
             return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
         // 입력받은 사용자의 비밀번호와 데이터베이스에 저장된 비밀번호를 비교합니다.
-        else if (!(await bcrypt.compare(password, user.password)))
+        }
+        else if (!(await bcrypt.compare(password, user.PASSWORD)))
+        {
             return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
-
+        }
+            
+        
 
         const token = jwt.sign(
             {
@@ -36,11 +46,13 @@ router.get('/login', async (req, res, next) => {
 
         res.cookie('authorization', `Bearer ${token}`);
         res.userId = user.UserId
+        console.log("로그인 되는지 확인");
 
 
-        return res.status(200).json({ message: `${name} 님의 로그인에 성공했습니다.` });
+        return res.status(200).json({ message: `${username} 님의 로그인에 성공했습니다.` });
     }
-    catch {
+    catch(err) {
+        console.log(err)
         return res.status(404).json({ message: '로그인 실패' });
     }
 
@@ -64,12 +76,14 @@ router.delete('/logout', UserToken, async (req, res, next) => {
 //회원가입
 router.post('/signup', async (req, res, next) => {
     try {
-        const { name, password } = req.body;
+        const { username,nickname, password } = req.body;
         const isExistUser = await prisma.uSERS.findFirst({
             where: {
-                name: name,
+                ID: nickname,
             },
         });
+
+        console.log("회원가입 호출");
 
         if (isExistUser) {
             return res.status(409).json({ message: '이미 존재하는 아이디입니다.' });
@@ -79,16 +93,18 @@ router.post('/signup', async (req, res, next) => {
             return res.status(409).json({ message: '비밀번호가 6자리 미만입니다.' });
         }
 
-
+        console.log(nickname);
 
 
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await prisma.$transaction(async (tx) => {
             // Users 테이블에 사용자를 추가합니다.
-            const user = await tx.users.create({
+            const user = await tx.uSERS.create({
                 data: {
-                    name: name,
-                    password: hashedPassword
+                    NAME : username,
+                    ID : nickname,
+                    PASSWORD : hashedPassword,
+                    GEM : 10000
                 },
             });
 
@@ -382,3 +398,5 @@ router.put('/gem', UserToken, async (req, res, next) => {
         next(err);
     }
 })
+
+export default router;
