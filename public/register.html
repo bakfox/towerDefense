@@ -39,7 +39,7 @@
       <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
       <h2>회원가입</h2>
       <input type="text" id="username" placeholder="이름" />
-      <input type="text" id="nickname" placeholder="닉네임" />
+      <input type="text" id="id" placeholder="id" />
       <input type="password" id="password" placeholder="비밀번호" />
       <button id="register">회원가입</button>
       <button id="back">뒤로가기</button>
@@ -47,7 +47,7 @@
     <script>
       document.getElementById("register").addEventListener("click", async () => {
         const username = document.getElementById("username").value;
-        const nickname = document.getElementById("nickname").value;
+        const nickname = document.getElementById("id").value;
         const password = document.getElementById("password").value;
 
         const register = await fetch("http://localhost:3017/api/signup", {
