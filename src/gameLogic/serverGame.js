@@ -1,18 +1,20 @@
-import { deleteInGame } from "../models/inGame";
+import { createInGame, deleteInGame } from "../models/inGame.js";
 
-const FPS = 60;
+const FPS = 10;
 const interval = 1000 / FPS;
 
 //이거 호출해서 루프 시작
-async function logicLoop(ingame, uuid, socket) {
+async function logicLoop(ingame, uuid, skt) {
   const start = Date.now();
+  //const socket = skt;
   if (!ingame || !ingame.isRunning) {
     console.log(`클라이언트 ${uuid}의 로직 루프가 종료되었습니다.`);
+    console.log(ingame.isRunning);
     return;
   }
-  console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, start);
-
   const elapsed = Date.now() - start;
+  console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
+  console.log(ingame);
   setTimeout(
     () => process.nextTick(logicLoop),
     Math.max(0, interval - elapsed)
