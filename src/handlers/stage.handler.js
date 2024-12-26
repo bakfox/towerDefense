@@ -1,11 +1,26 @@
+import monsterData from "../../gameDefaultData/monster.js";
+import stageData from "../../gameDefaultData/stage.js";
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
 import { createInGame, getInGame } from "../models/inGame.js";
 
 export const gameStart = (payload) => {
   const inGame = createInGame(payload.uuid);
   startLoop(inGame, payload.uuid, payload.socket);
+  const nowStageData = stageData.data[inGame.stage];
+  const nowMonsterData = [];
+  for (let index = 0; index < nowStageData.length; index++) {
+    nowMonsterData.push(monsterData.data[nowStageData[index].id]);
+  }
+  console.log(nowMonsterData, nowStageData);
+  return {
+    status: "succes",
+    message: "게임을 시작합니다!",
+    data: {
+      nowStageData,
+      nowMonsterData,
+    },
+  };
 };
-
 export const gameEnd = (payload) => {
   const inGame = createInGame(payload.uuid);
   endLoop(inGame, payload.uuid);
