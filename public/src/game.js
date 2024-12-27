@@ -50,7 +50,7 @@ for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
   monsterImages.push(img);
 }
 
-let monsterPath;
+let monsterPath = [];
 
 function initMap() {
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 그리기
@@ -301,8 +301,6 @@ towerSelectionUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
 towerSelectionUI.style.padding = "20px";
 towerSelectionUI.style.borderRadius = "10px";
 towerSelectionUI.style.color = "white";
-
-buyTowerButton.addEventListener("click", placeNewTower);
 
 initGame();
 
