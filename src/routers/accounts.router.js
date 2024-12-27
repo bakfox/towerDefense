@@ -37,11 +37,11 @@ router.post('/login', async (req, res, next) => {
 
         const token = jwt.sign(
             {
-                userId: user.UserId,
+                userId: user.USER_ID,
             },
             process.env.JSONWEBTOKEN_KEY,
             {
-                expiresIn: '1s'
+                expiresIn: '1h'
             }
         );
 
@@ -63,8 +63,14 @@ router.post('/login', async (req, res, next) => {
 });
 
 //게임이 시작되는지 체크
-router.get('/gamestart', UserToken, async (req, res, next) => {
-
+router.get('/gamestart', (req, res, next) => {
+    try {
+        //res.clearCookie('authorization');
+        return res.status(201).json({ message: "연결확인" })
+    }
+    catch (err) {
+        next(err);
+    }
 })
 
 //로그아웃
@@ -193,6 +199,7 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
     try {
         //타워 테이블 가운데에서 출력을 받도록 한다.
         const user = req.user;
+        console.log("1번 넘김")
 
         //1. 유저의 돈을 감소시킨다.
         //2. 타워 리스트에서 한 가지를 뽑는다.
@@ -211,22 +218,30 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
             })
 
             //2 타워 리스트에서 하나 뽑도록 하자.
-            //const towerGatchad
+            const towerindex = Math.floor(Math.random() * towerData.data.length);
+            const towerGachad = towerData.data.length[towerindex];
 
             //3 타워를 생성한다.
             await tx.oWN_TOWERS.create({
                 data: {
                     USER_ID: user.USER_ID,
                     ID: 0, //towerGatchard.id를 집어넣도록 한다.
-                    UPGRADE: 1
+                    UPGRADE: 1,
+                    oWN_TOWERS : {
+                        id
+                    }
                 }
             })
 
-
+            return towerGachad;
         })
+
+        return res.status(201).json({message : `${0}를 뽑았습니다`});
     }
     catch (err) {
-        next(err);
+        console.log(err);
+        //return res.status(404).json({message : err});
+        //next(err);
     }
 })
 
