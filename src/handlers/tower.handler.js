@@ -57,7 +57,7 @@ export const towerCreateHandler = (uuid, payload, socket) => {
         throw new CustomError("게임 상태를 찾을 수 없습니다.", "towerCreate");
     }
 
-    //타워 타입을 기준으로 했지만 id로 변경할 예정
+    //타워 타입을 기준으로 했지만 id로 변경
     const towerInfo = getTowerDataById(towerId);
 
     if (!towerInfo) {
@@ -99,10 +99,10 @@ export const towerCreateHandler = (uuid, payload, socket) => {
 // 타워 이동 핸들러
 export const towerMoveHandler = (uuid, payload, socket) => {
     const { towerId, currentLocation, moveLocation } = payload;
-    const gameState = getInGame(uuid);
+    const towers = getTowers(uuid);
 
     //타워 모델에서 설정한 location의 값을 가져와서 사용할 예정
-    const tower = gameState.tower.find(
+    const tower = towers.find(
         (t) => t.id === towerId && t.location === currentLocation
     );
 
@@ -114,8 +114,11 @@ export const towerMoveHandler = (uuid, payload, socket) => {
 
     socket.emit("towerMove", {
         status: "success",
-        towerId,
-        moveLocation,
+        message: "타워가 이동하였습니다",
+        data: {
+            towerId,
+            moveLocation,
+        }
     });
 };
 
@@ -123,23 +126,19 @@ export const towerMoveHandler = (uuid, payload, socket) => {
 export const towerSellHandler = (uuid, payload, socket) => {
     const { towerId } = payload;
     const gameState = getInGame(uuid);
+    const towers = getTowers(uuid);
     
     //인덱스 값으로 찾기
-    const towerIndex = gameState.tower.findIndex((t) => t.id === towerId);
+    const towerIndex = towers.findIndex((t) => t.id === towerId);
     if (towerIndex === -1) {
         throw new CustomError("타워를 찾을 수 없습니다.", "towerSell");
     }
 
-    const tower = gameState.tower[towerIndex];
-    //추후 id로 변경할 예정
-    const towerInfo = getTowerDataById(tower.type);
+    const tower = removeTower(uuid, towerId)
+    const towerInfo = getTowerDataById(tower.towerId);
 
-    const refundGold =
-        //이 부분은 추후 스테이지에 비례해서 골드를 늘려볼 예정
-        towerInfo.price + Math.floor(towerInfo.upgradeValue * 0.5);
-
+    const refundGold = towerInfo.price + Math.floor(towerInfo.upgradeValue * 0.5);
     gameState.gold += refundGold;
-    gameState.tower.splice(towerIndex, 1);
 
     socket.emit("towerSell", {
         status: "success",
