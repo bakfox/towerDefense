@@ -4,6 +4,7 @@ export class Tower {
   constructor(x, y, id, type) {
     // 생성자 안에서 타워들의 속성을 정의한다고 생각하시면 됩니다!
     this.id = id;
+    this.level = 1;
     this.x = x; // 타워 이미지 x 좌표
     this.y = y; // 타워 이미지 y 좌표
     this.width = 78; // 타워 이미지 가로 길이 (이미지 파일 길이에 따라 변경 필요하며 세로 길이와 비율을 맞춰주셔야 합니다!)
@@ -25,9 +26,15 @@ export class Tower {
     this.cost = item.price; // 타워 구입 비용
   }
 
+  move(location) {
+    this.x = location.x;
+    this.y = location.y;
+  }
+
   upgrade() {
     this.atck += this.upgradeValue;
     this.atckSpeed += this.upgradeValue;
+    this.level += 1;
   }
 
   draw(ctx, towerImage) {

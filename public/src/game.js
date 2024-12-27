@@ -147,14 +147,18 @@ export function setHouseHp(value) {
   house.setHouseHp(value);
 }
 
+// #region 몬스터 기능
+// 몬스터 추가
 export function addMonster(id, type) {
   monsters.set(id, new Monster(monsterPath, monsterImages, id, type, stage));
 }
 
+// 몬스터 삭제
 export function deleteMonster(id) {
   monsters.delete(id);
 }
 
+// 몬스터 이동
 export function moveMonsters(locationList) {
   for (const item of locationList) {
     const monster = monsters.get(item.id);
@@ -162,23 +166,66 @@ export function moveMonsters(locationList) {
     monster.move(item.x, item.y);
   }
 }
+// #endregion
 
+
+// #region 타워 기능
 // 타워 추가
-async function addTower(x, y, id, type) {
+async function addTower(targetLocation, type) {
   try {
-    await sendEvent(101, { towerId: type, x, y });
-    towers.set(id, new Tower(x, y, id, type));
+    const data = await sendEvent(101, { towerId: type, targetLocation });
+    const { towerId, towerType, location } = data;
+    towers.set(id, new Tower(location.x, location.y, towerId, towerType));
   } catch (error) {
     console.log("타워 설치에 실패했습니다!");
   }
 }
 
+// 타워 이동
+async function moveTower(id, curLocation, targetLocation) {
+  try {
+    const data = await sendEvent(102, { id, curLocation, targetLocation });
+    const { towerId, moveLocation } = data;
+
+    towers.get(towerId).move(moveLocation);
+  } catch (error) {
+    console.log("타워 이동에 실패했습니다!");
+  }
+}
+
+// 타워 판매
+async function sellTower(id) {
+  try {
+    const data = await sendEvent(103, { id });
+    const { towerId } = data;
+
+    towers.delete(towerId);
+  } catch (error) {
+    console.log("타워 판매매에 실패했습니다!");
+  }
+}
+
+// 타워 강화
+async function upgradeTower(id) {
+  try {
+    const data = await sendEvent(104, { id });
+    const { towerId } = data;
+
+    towers.get(towerId).upgrade();
+  } catch (error) {
+    console.log("타워 강화에 실패했습니다!");
+  }
+}
+
+// 타워 공격
 export function towerAttack(towerId, monsterId) {
   const monster = monsters.get(monsterId);
   const tower = towers.get(towerId);
 
   tower.attack(monster);
 }
+
+// #endregion
 
 function gameLoop() {
   // 렌더링 시에는 항상 배경 이미지부터 그려야 합니다! 그래야 다른 이미지들이 배경 이미지 위에 그려져요!
