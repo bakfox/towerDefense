@@ -1,6 +1,5 @@
 import { getInGame, createInGame } from "../inGame.js";
 import towerData from "../../gameDefaultData/tower.js";
-import CustomError from "../utils/errors/classes/custom.error.js";
 
 //특정 타워 데이터가 존재하는지 조회
 const getTowerDataById = (id) => {
@@ -40,6 +39,7 @@ export const towerCreateHandler = (uuid, payload, socket) => {
         throw new CustomError("게임 상태를 찾을 수 없습니다.", "towerCreate");
     }
 
+    //타워 타입을 기준으로 했지만 id로 변경할 예정
     const towerInfo = getTowerDataById(towerType);
 
     if (!towerInfo) {
@@ -76,6 +76,7 @@ export const towerMoveHandler = (uuid, payload, socket) => {
     const { towerId, currentLocation, moveLocation } = payload;
     const gameState = getInGame(uuid);
 
+    //타워 모델에서 설정한 location의 값을 가져와서 사용할 예정
     const tower = gameState.tower.find(
         (t) => t.id === towerId && t.location === currentLocation
     );
@@ -97,17 +98,20 @@ export const towerMoveHandler = (uuid, payload, socket) => {
 export const towerSellHandler = (uuid, payload, socket) => {
     const { towerId } = payload;
     const gameState = getInGame(uuid);
-
+    
+    //인덱스 값으로 찾기
     const towerIndex = gameState.tower.findIndex((t) => t.id === towerId);
     if (towerIndex === -1) {
         throw new CustomError("타워를 찾을 수 없습니다.", "towerSell");
     }
 
     const tower = gameState.tower[towerIndex];
+    //추후 id로 변경할 예정
     const towerInfo = getTowerDataById(tower.type);
 
     const refundGold =
-        towerInfo.price + Math.floor(towerInfo.upgradeValue * tower.level * 0.5);
+        //이 부분은 추후 스테이지에 비례해서 골드를 늘려볼 예정
+        towerInfo.price + Math.floor(towerInfo.upgradeValue * 0.5);
 
     gameState.gold += refundGold;
     gameState.tower.splice(towerIndex, 1);
@@ -128,8 +132,9 @@ export const towerUpgradeHandler = (uuid, payload, socket) => {
         throw new CustomError("타워를 찾을 수 없습니다.", "towerUpgrade");
     }
 
+    //id를 기준으로 사용할 예정
     const towerInfo = getTowerDataById(tower.type);
-    const upgradeCost = towerInfo.upgradeValue * (tower.level + 1);
+    const upgradeCost = towerInfo.upgradeValue * (tower.upgrade + 1);
 
     if (gameState.gold < upgradeCost) {
         socket.emit("towerUpgrade", {
@@ -140,13 +145,13 @@ export const towerUpgradeHandler = (uuid, payload, socket) => {
     }
 
     gameState.gold -= upgradeCost;
-    tower.level += 1;
+    tower.upgrade += 1;
     tower.attackPower += towerInfo.upgradeValue;
 
     socket.emit("towerUpgrade", {
         status: "success",
         towerId,
-        towerLevel: tower.level,
+        towerlevel: tower.upgrade,
     });
 };
 
