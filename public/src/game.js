@@ -127,9 +127,9 @@ function placeInitialTowers() {
 }
 
 function placeNewTower() {
-  /* 
-    타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-    빠진 코드들을 채워넣어주세요! 
+  /*
+  타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
+  빠진 코드들을 채워넣어주세요!
   */
   const { x, y } = getRandomPositionNearPath(200);
   const tower = new Tower(x, y);
@@ -288,21 +288,22 @@ Promise.all([
     이 때, 상태 동기화 이벤트의 경우에 아래의 코드를 마지막에 넣어주세요! 최초의 상태 동기화 이후에 게임을 초기화해야 하기 때문입니다! 
     if (!isInitGame) {
       initGame();
-    }
   */
 });
 
-const buyTowerButton = document.createElement("button");
-buyTowerButton.textContent = "타워 구입";
-buyTowerButton.style.position = "absolute";
-buyTowerButton.style.top = "10px";
-buyTowerButton.style.right = "10px";
-buyTowerButton.style.padding = "10px 20px";
-buyTowerButton.style.fontSize = "16px";
-buyTowerButton.style.cursor = "pointer";
+// 타워 선택 UI 생성
+const towerSelectionUI = document.createElement("div");
+towerSelectionUI.style.position = "absolute";
+towerSelectionUI.style.top = "50%";
+towerSelectionUI.style.left = "50%";
+towerSelectionUI.style.transform = "translate(-50%, -50%)";
+towerSelectionUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+towerSelectionUI.style.padding = "20px";
+towerSelectionUI.style.borderRadius = "10px";
+towerSelectionUI.style.color = "white";
 
 buyTowerButton.addEventListener("click", placeNewTower);
 
-document.body.appendChild(buyTowerButton);
-
 initGame();
+
+document.body.appendChild(towerSelectionUI);

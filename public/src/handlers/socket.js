@@ -50,6 +50,8 @@ export const sendEvent = (handlerId, payload) => {
   return new Promise((resolve, reject) => {
     socket.emit("event", obj, (response) => {
       // 클라이언트에서 회신받을 때 사용
+    socket.emit("event", obj, (response) => {
+      // 클라이언트에서 회신받을 때 사용
       if (response.status === "fail") {
         reject(response.message);
       } else {

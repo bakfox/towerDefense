@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import initSocket from "./init/socket.js";
-import { loadDefaultData } from "./init/defaultData.js";
+import accountRouter from './routers/accounts.router.js'
 
 const app = express();
 const server = createServer(app);
@@ -16,6 +16,8 @@ initSocket(server); // 소켓 추가
 app.get("/", (req, res) => {
   res.send("<h1>Hello World</h1>");
 });
+
+app.use('/api', [accountRouter])
 
 server.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT}`);
