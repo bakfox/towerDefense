@@ -6,6 +6,7 @@ export class Monster {
     this.id = id; // 몬스터 고유번호
     this.type = type; // 몬스터 종류
     this.path = path;
+    this.currentIndex = 0; // 현재 위치 인덱스
     this.x = path[0].x;
     this.y = path[0].y;
     this.width = 80; // 몬스터 이미지 가로 길이
