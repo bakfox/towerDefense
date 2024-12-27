@@ -163,11 +163,10 @@ export function moveMonsters(locationList) {
   for (const item of locationList) {
     const monster = monsters.get(item.id);
 
-    monster.move(item.x, item.y);
+    monster.setLocation(item.x, item.y);
   }
 }
 // #endregion
-
 
 // #region 타워 기능
 // 타워 추가
@@ -242,38 +241,34 @@ function gameLoop() {
   ctx.fillStyle = "black";
   ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 100, 200); // 최고 기록 표시
 
-  // 타워 그리기 및 몬스터 공격 처리
+  // 타워 그리기
   towers.forEach((tower) => {
     tower.draw(ctx, towerImage);
-    tower.updateCooldown();
-    monsters.forEach((monster) => {
-      const distance = Math.sqrt(
-        Math.pow(tower.x - monster.x, 2) + Math.pow(tower.y - monster.y, 2)
-      );
-      if (distance < tower.range) {
-        tower.attack(monster);
-      }
-    });
   });
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   house.draw(ctx, houseImage);
 
-  for (let i = monsters.length - 1; i >= 0; i--) {
-    const monster = monsters[i];
-    if (monster.hp > 0) {
-      const isDestroyed = monster.move(house);
-      if (isDestroyed) {
-        /* 게임 오버 */
-        alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
-        location.reload();
-      }
-      monster.draw(ctx);
-    } else {
-      /* 몬스터가 죽었을 때 */
-      monsters.splice(i, 1);
-    }
-  }
+  monsters.forEach((monster) => {
+    monster.move(house);
+    monster.draw(ctx);
+  });
+
+  // for (let i = monsters.length - 1; i >= 0; i--) {
+  //   const monster = monsters[i];
+  //   if (monster.hp > 0) {
+  //     const isDestroyed = monster.move(house);
+  //     if (isDestroyed) {
+  //       /* 게임 오버 */
+  //       alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
+  //       location.reload();
+  //     }
+  //     monster.draw(ctx);
+  //   } else {
+  //     /* 몬스터가 죽었을 때 */
+  //     monsters.splice(i, 1);
+  //   }
+  // }
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
