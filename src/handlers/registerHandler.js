@@ -1,5 +1,6 @@
-import { v4 as uuIdV4 } from "uuId";
+import { v4 as uuIdV4 } from "uuid";
 import { gameStart } from "./stage.handler.js";
+import towerData from '../../gameDefaultData/tower.js';
 //실질적인 실행 코드 입니다.
 const registerHander = (io) => {
   // 접속후 다음 이벤트를 받기 위해 대기하는 메소드입니다!

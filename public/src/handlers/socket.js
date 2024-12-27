@@ -1,9 +1,7 @@
 import { CLIENT_VERSION } from "./Constants.js";
-import { actionMappings } from "./actionMappings.js";
 
 let socket = null;
 let userId = null;
-
 export function initSocket(token) {
   socket = io("http://localhost:3017", {
     query: {
