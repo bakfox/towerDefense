@@ -53,3 +53,5 @@ export const removeTower = (uuid, towerId) => {
 export const resetTowers = (uuid) => {
     towers[uuid] = [];
 };
+
+export default createTowerTemplate

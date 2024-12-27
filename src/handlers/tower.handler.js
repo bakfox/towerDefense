@@ -54,14 +54,14 @@ export const towerCreateHandler = (uuid, payload, socket) => {
     const gameState = getInGame(uuid);
 
     if (!gameState) {
-        throw new CustomError("게임 상태를 찾을 수 없습니다.", "towerCreate");
+        throw new Error("게임 상태를 찾을 수 없습니다.", "towerCreate");
     }
 
     //타워 타입을 기준으로 했지만 id로 변경
     const towerInfo = getTowerDataById(towerId);
 
     if (!towerInfo) {
-        throw new CustomError("유효하지 않은 타워 타입입니다.", "towerCreate");
+        throw new Error("유효하지 않은 타워 타입입니다.", "towerCreate");
     }
 
     if (gameState.gold < towerInfo.price) {
@@ -70,16 +70,17 @@ export const towerCreateHandler = (uuid, payload, socket) => {
     }
 
     const userTowers = getTowers(uuid);
-    const newTower = {
-        id: userTowers.length + 1,
-        type: userTowers.length + 1,
-        atckSpead: towerInfo.atckSpead,
-        atck: towerInfo.atck,
-        upgrade: 0,
-        upgradeValue: towerInfo.upgradeValue,
-        price: towerInfo.price,
-        location,
-    };
+    // createTowerTemplate을 사용하여 타워 생성
+    const newTower = createTowerTemplate(
+        userTowers.length + 1,  // 고유 ID
+        userTowers.length + 1,  // 고유 Type 번호
+        towerInfo.atckSpead,    // 공격 속도
+        towerInfo.atck,         // 공격력
+        0,                      // 업그레이드 초기화
+        towerInfo.upgradeValue, // 업그레이드 값
+        towerInfo.price         // 가격
+    );
+    newTower.location = location; // 위치는 별도로 설정
 
     gameState.tower.push(newTower);
     gameState.gold -= towerInfo.price;
@@ -107,7 +108,7 @@ export const towerMoveHandler = (uuid, payload, socket) => {
     );
 
     if (!tower) {
-        throw new CustomError("타워를 찾을 수 없거나 위치가 잘못되었습니다.", "towerMove");
+        throw new Error("타워를 찾을 수 없거나 위치가 잘못되었습니다.", "towerMove");
     }
 
     tower.location = moveLocation;
@@ -131,7 +132,7 @@ export const towerSellHandler = (uuid, payload, socket) => {
     //인덱스 값으로 찾기
     const towerIndex = towers.findIndex((t) => t.id === towerId);
     if (towerIndex === -1) {
-        throw new CustomError("타워를 찾을 수 없습니다.", "towerSell");
+        throw new Error("타워를 찾을 수 없습니다.", "towerSell");
     }
 
     const tower = removeTower(uuid, towerId)
@@ -154,7 +155,7 @@ export const towerUpgradeHandler = (uuid, payload, socket) => {
 
     const tower = towers.find((t) => t.id === towerId);
     if (!tower) {
-        throw new CustomError("타워를 찾을 수 없습니다.", "towerUpgrade");
+        throw new Error("타워를 찾을 수 없습니다.", "towerUpgrade");
     }
 
     //id를 기준으로 사용할 예정
@@ -187,7 +188,7 @@ export const towerAttackHandler = (uuid, payload, socket) => {
     const tower = towers.find((t) => t.id === towerId);
 
     if (!tower) {
-        throw new CustomError("타워를 찾을 수 없습니다.", "towerAttack");
+        throw new Error("타워를 찾을 수 없습니다.", "towerAttack");
     }
 
     socket.emit("towerAttack", {
