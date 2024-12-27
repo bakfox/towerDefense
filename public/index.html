@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -41,7 +41,70 @@
       <button id="playButton">게임 플레이</button>
     </div>
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="src/game.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script type="module">
+      //쿠키를 읽는 함수
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      //localstorage에서 token을 집어 넣는 방법
+      const SetCookie = (name) => {};
+
+      document
+        .getElementById("registerButton")
+        .addEventListener("click", () => {
+          window.location.href = "register.html";
+        });
+
+      document.getElementById("loginButton").addEventListener("click", () => {
+        //const instantToken = JSON.parse(localStorage.getItem("authorization"));
+        //const now = new Date();
+        // if (instantToken === null) {
+        //   alert("토큰 없음");
+        // }
+
+        //alert(instantToken['token']);
+        //alert(getCookie("authorization"));
+
+        // if(typeof instantToken.expired === 'undefined')
+        // {
+        //   alert('undefined');
+        // }
+
+        // if (instantToken.expired <= now) {
+        //   alert("만료됨");
+        // }
+        // else
+        // {
+        //   alert("남은 시간 :", now - instantToken.expired);
+        // }
+
+        window.location.href = "login.html";
+      });
+
+      document
+        .getElementById("playButton")
+        .addEventListener("click", async () => {
+          //토큰이 현재 존재하는지를 체크해보도록 하자.
+          if (getCookie(authorization) === null) {
+            alert("토큰이 등록되지 않았습니다.")
+            return;
+          }
+          //토큰이 올바른 토큰인지도 검증읋 해봐야 한다.
+
+          document.querySelector(".button-container").style.display = "none";
+          document.getElementById("gameCanvas").style.display = "block";
+          await import("./src/game.js");
+        });
+
+      //로그아웃 기능이 필요하다면 이걸 사용하자.
+      // document.getElementById("logoutButton").addEventListener("click", () => {
+      //   localStorage.removeItem("authorization");
+      // })
+    </script>
   </body>
 </html>

@@ -1,40 +1,43 @@
 import { CLIENT_VERSION } from "./Constants.js";
 
-const socket = io("http://localhost:3017", {
-  query: {
-    clientVersion: CLIENT_VERSION,
-  },
-});
-
+let socket = null;
 let userId = null;
-let towerData = null;
+export function initSocket(token) {
+  socket = io("http://localhost:3017", {
+    query: {
+      clientVersion: CLIENT_VERSION,
+      auth: { token },
+    },
+  });
 
-socket.on("response", (data) => {
-  console.log(data);
-});
+  socket.on("response", (data) => {
+    console.log(data);
+  });
 
-socket.on("connection", (data) => {
-  console.log("connection: ", data);
-  userId = data.uuid;
-  
-  socket.emit("getTowerData");
-});
+  socket.on("connection", (data) => {
+    console.log("connection: ", data);
+    userId = data.uuid;
+  });
 
-socket.on("towerData", (data) => {
-  towerData = data;
-});
+  // 서버 정보 전달 이벤트 처리
+  socket.on("event", (data) => {
+    const action = actionMappings[data.handlerId];
+    console.log(action, data);
+    if (!action) {
+      console.log("Handler not found");
+    }
 
-socket.on("event", (data) => {
-  const action = actionMappings[data.handlerId];
-  console.log(data.handlerId, action);
-  if (!action) {
-    console.log("Handler not found");
-  }
+    action(data.userId, data.payload);
+  });
 
-  //action(data.userId, data.payload);
-});
+  return socket;
+}
 
-const sendEvent = (handlerId, payload) => {
+export function getSocket() {
+  return socket;
+}
+
+export const sendEvent = (handlerId, payload) => {
   const obj = {
     userId,
     clientVersion: CLIENT_VERSION,
@@ -45,15 +48,14 @@ const sendEvent = (handlerId, payload) => {
   return new Promise((resolve, reject) => {
     socket.emit("event", obj, (response) => {
       // 클라이언트에서 회신받을 때 사용
-      if (response.status === "fail") {
-        reject(response.message);
-      } else {
-        resolve(response);
-      }
+      socket.emit("event", obj, (response) => {
+        // 클라이언트에서 회신받을 때 사용
+        if (response.status === "fail") {
+          reject(response.message);
+        } else {
+          resolve(response);
+        }
+      });
     });
   });
 };
-
-const getTowerData = () => towerData;
-
-export { sendEvent, towerData };

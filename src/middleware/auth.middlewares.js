@@ -5,7 +5,7 @@
 //====================================================================================================================
 //====================================================================================================================
 import jwt from 'jsonwebtoken';
-import { prisma } from '../utils/prisma/prisma_client.js';
+import { prisma } from '../utils/prisma_client.js'
 //import { prisma } from '../utils/prisma/index.js';
 import dotenv from 'dotenv';
 
@@ -14,6 +14,8 @@ dotenv.config();
 export default async function (req, res, next) {
     /* TODO */
     try {
+        //클라이언트에서 localstorage에 등록되어 있으니 그 쪽으로 접근하게 해보자.
+        //const { authorization } = req.body;
         const { authorization } = req.cookies;
         if (!authorization) throw new Error('토큰이 존재하지 않습니다.');
 
@@ -25,7 +27,7 @@ export default async function (req, res, next) {
         const decodedToken = jwt.verify(token, 'custom-secret-key');
         const id = decodedToken.id;
         
-        const user = await prisma.users.findFirst({
+        const user = await prisma.uSERS.findFirst({
             where: { id: +id },
         });
         if (!user) {
