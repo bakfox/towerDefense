@@ -5,7 +5,6 @@ const CLIENT_VERSION = "1.0.0";
 
 let socket = null;
 let userId = null;
-
 export function initSocket(token) {
   socket = io("http://localhost:3017", {
     query: {
