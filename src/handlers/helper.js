@@ -3,8 +3,9 @@ import { CLIENT_VERSION } from "../constants.js";
 import handlerMappings from "./handlerMapping.js";
 
 export const handleEvent = (io, socket, uuId, data) => {
-  console.log("data : " , typeof data , data);
-  const payload = { uuId, socket, data };
+  console.log("data : ", typeof data, data);
+  const payload = { uuId, socket, data: data.payload };
+  console.log(data);
   //console.log(parsedData.data, parsedData);
   if (!CLIENT_VERSION.includes(data.CLIENT_VERSION)) {
     //클라이언트 버전

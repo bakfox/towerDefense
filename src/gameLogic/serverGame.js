@@ -24,7 +24,7 @@ async function logicLoop(ingame, uuid, path, socket) {
   );
 }
 
-export const startLoop = (ingame, uuid, socket) => {
+export const startLoop = (ingame, uuid, path, socket) => {
   logicLoop(ingame, uuid, path, socket);
 };
 
