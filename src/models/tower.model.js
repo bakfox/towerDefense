@@ -5,7 +5,7 @@ const towers = {}; // 사용자별 타워 데이터 저장
 
 // 타워 기본 구조 생성
 const createTowerTemplate = (id, type, atckSpead, atck, upgrade, upgradeValue, price) => ({
-    id,
+    id, 
     type,
     atckSpead,
     atck,
