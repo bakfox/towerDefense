@@ -16,11 +16,6 @@ dotenv.config();
 
 //userToken : 검증 미들웨어다. Bearer 검증 방식을 사용하고 있다.
 
-//로그인 요청 확인 
-router.get('/login', async (req, res, next) => {
-
-})
-
 //로그인
 router.post('/login', async (req, res, next) => {
     try {
@@ -45,6 +40,9 @@ router.post('/login', async (req, res, next) => {
                 userId: user.UserId,
             },
             process.env.JSONWEBTOKEN_KEY,
+            {
+                expiresIn : '1s'
+            }
         );
 
         res.cookie('authorization', `Bearer ${token}`);
@@ -64,10 +62,16 @@ router.post('/login', async (req, res, next) => {
 
 });
 
+//게임이 시작되는지 체크
+router.get('/gamestart', UserToken, async (req,res,next) => {
+
+})
+
 //로그아웃
 router.delete('/logout', UserToken, async (req, res, next) => {
     //토큰을 말소시키자.
     try {
+        
         res.clearCookie('authorization');
 
         return res.status(201).json({ message: "로그아웃되었습니다." })
