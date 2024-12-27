@@ -72,19 +72,19 @@
         //alert("클릭함");
 
         if (register.ok) {
-          const token = getCookie('authorization');
-          const now = new Date();
-          const item = {
-            token : token,
-            expired : now + 60
-          }
+          // const token = getCookie('authorization');
+          // const now = new Date();
+          // const item = {
+          //   token : token,
+          //   expired : now + 60
+          // }
 
           //console.log(item);
-          localStorage.setItem('authorization', JSON.stringify(item));
+          //localStorage.setItem('authorization', JSON.stringify(item));
           //console.log('token : ', token);
-          const check = JSON.parse(localStorage.getItem("authorization"));
+          //const check = JSON.parse(localStorage.getItem("authorization"));
           //alert(check['token']);
-          alert(check['token'])
+          //alert(check['token'])
           window.location.href = "index.html";
         } else {
           alert(register.message);

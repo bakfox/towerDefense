@@ -14,6 +14,8 @@ dotenv.config();
 export default async function (req, res, next) {
     /* TODO */
     try {
+        //클라이언트에서 localstorage에 등록되어 있으니 그 쪽으로 접근하게 해보자.
+        //const { authorization } = req.body;
         const { authorization } = req.cookies;
         if (!authorization) throw new Error('토큰이 존재하지 않습니다.');
 
