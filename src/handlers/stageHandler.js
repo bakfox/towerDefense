@@ -69,7 +69,6 @@ export const gameEnd = (payload) => {
 export const gameStageChange = (socket) => {
   const inGame = getInGame(uuid);
   inGame.stage++;
-  const nextStageData = stageData.data[inGame.stage];
   const nextMonsterData = [];
   for (let index = 0; index < nowStageData.length; index++) {
     nextMonsterData.push(monsterData.data[nowStageData[index].id]);
@@ -81,7 +80,6 @@ export const gameStageChange = (socket) => {
     message: "스테이지 변경에 성공했습니다",
     data: {
       stage: inGame.stage,
-      nextStageData,
       nextMonsterData,
     },
   });
