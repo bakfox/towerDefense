@@ -1,4 +1,4 @@
-export class Base {
+export class House {
   constructor(x, y, maxHp) {
     // 생성자 안에서 기지의 속성을 정의한다고 생각하시면 됩니다!
     this.x = x; // 기지 이미지 x 좌표
@@ -9,9 +9,9 @@ export class Base {
     this.maxHp = maxHp; // 기지의 최대 HP
   }
 
-  draw(ctx, baseImage) {
+  draw(ctx, houseImage) {
     ctx.drawImage(
-      baseImage,
+      houseImage,
       this.x - this.width,
       this.y - this.height / 2,
       this.width,
@@ -27,10 +27,7 @@ export class Base {
     );
   }
 
-  takeDamage(amount) {
-    // 기지가 데미지를 입는 메소드입니다.
-    // 몬스터가 기지의 HP를 감소시키고, HP가 0 이하가 되면 게임 오버 처리를 해요!
-    this.hp -= amount;
-    return this.hp <= 0; // 기지의 HP가 0 이하이면 true, 아니면 false
+  setHp(value) {
+    this.hp = value;
   }
 }
