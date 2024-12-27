@@ -1,9 +1,10 @@
-import { CLIENT_VERSION } from "./Constants.js";
-import { actionMappings } from "./actionMappings.js";
+//import { CLIENT_VERSION } from "./Constants.js";
+import actionMappings from "./actionMappings.js";
+
+const CLIENT_VERSION = "1.0.0";
 
 let socket = null;
 let userId = null;
-
 export function initSocket(token) {
   socket = io("http://localhost:3017", {
     query: {

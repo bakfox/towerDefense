@@ -1,4 +1,4 @@
-import { getTowerData } from "./default/gameData";
+//import { getTowerData } from "./default/gameData";
 
 export class Tower {
   constructor(x, y, id, type) {

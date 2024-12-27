@@ -1,4 +1,4 @@
-import { initSocket, sendEvent } from "./socket.js";
+import { initSocket, sendEvent } from "./handlers/socket.js";
 import { initData } from "./default/gameData.js";
 import { House } from "./house.js";
 import { Monster } from "./monster.js";

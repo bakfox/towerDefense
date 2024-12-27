@@ -16,7 +16,7 @@ const registerHander = (io) => {
     //접속 해제
     socket.on("disconnect", (socket) => {});
 
-    gameStart({ uuid: userUUID, socket });
+    //gameStart({ uuid: userUUID, socket });
   });
 };
 export default registerHander;
