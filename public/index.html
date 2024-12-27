@@ -90,10 +90,10 @@
         .getElementById("playButton")
         .addEventListener("click", async () => {
           //토큰이 현재 존재하는지를 체크해보도록 하자.
-          if (getCookie(authorization) === null) {
-            alert("토큰이 등록되지 않았습니다.")
-            return;
-          }
+          // if (getCookie(authorization) === null) {
+          //   alert("토큰이 등록되지 않았습니다.")
+          //   return;
+          // }
           //토큰이 올바른 토큰인지도 검증읋 해봐야 한다.
 
           document.querySelector(".button-container").style.display = "none";

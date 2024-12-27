@@ -8,7 +8,7 @@ let userId = null;
 export function initSocket(token) {
   socket = io("http://localhost:3017", {
     query: {
-      clientVersion: CLIENT_VERSION,
+      CLIENT_VERSION,
       auth: { token },
     },
   });
@@ -47,7 +47,7 @@ export function getSocket() {
 export const sendEvent = (handlerId, payload) => {
   const obj = {
     userId,
-    clientVersion: CLIENT_VERSION,
+    CLIENT_VERSION,
     handlerId,
     payload,
   };
