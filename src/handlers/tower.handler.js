@@ -135,7 +135,7 @@ export const towerSellHandler = (uuid, payload, socket) => {
     }
 
     const tower = removeTower(uuid, towerId)
-    const towerInfo = getTowerDataById(tower.towerId);
+    const towerInfo = getTowerDataById(tower.id);
 
     const refundGold = towerInfo.price + Math.floor(towerInfo.upgradeValue * 0.5);
     gameState.gold += refundGold;
@@ -150,14 +150,15 @@ export const towerSellHandler = (uuid, payload, socket) => {
 export const towerUpgradeHandler = (uuid, payload, socket) => {
     const { towerId } = payload;
     const gameState = getInGame(uuid);
+    const towers = getTowers(uuid);
 
-    const tower = gameState.tower.find((t) => t.id === towerId);
+    const tower = towers.find((t) => t.id === towerId);
     if (!tower) {
         throw new CustomError("타워를 찾을 수 없습니다.", "towerUpgrade");
     }
 
     //id를 기준으로 사용할 예정
-    const towerInfo = getTowerDataById(tower.type);
+    const towerInfo = getTowerDataById(tower.id);
     const upgradeCost = towerInfo.upgradeValue * (tower.upgrade + 1);
 
     if (gameState.gold < upgradeCost) {
@@ -170,21 +171,20 @@ export const towerUpgradeHandler = (uuid, payload, socket) => {
 
     gameState.gold -= upgradeCost;
     tower.upgrade += 1;
-    tower.attackPower += towerInfo.upgradeValue;
+    // tower.attackPower += towerInfo.upgradeValue; 추후 성능 업그레이드 설정
 
     socket.emit("towerUpgrade", {
         status: "success",
         towerId,
-        towerlevel: tower.upgrade,
+        towerlevel: tower.upgrade,  
     });
 };
 
 // 타워 공격 핸들러
 export const towerAttackHandler = (uuid, payload, socket) => {
     const { towerId, monsterId } = payload;
-    const gameState = getInGame(uuid);
-
-    const tower = gameState.tower.find((t) => t.id === towerId);
+    const towers = getTowers(uuid);
+    const tower = towers.find((t) => t.id === towerId);
 
     if (!tower) {
         throw new CustomError("타워를 찾을 수 없습니다.", "towerAttack");
@@ -193,5 +193,6 @@ export const towerAttackHandler = (uuid, payload, socket) => {
     socket.emit("towerAttack", {
         towerId,
         monsterId,
+        broadcast: true
     });
 };
