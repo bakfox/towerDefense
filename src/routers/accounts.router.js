@@ -41,7 +41,7 @@ router.post('/login', async (req, res, next) => {
             },
             process.env.JSONWEBTOKEN_KEY,
             {
-                expiresIn : '1s'
+                expiresIn: '1s'
             }
         );
 
@@ -63,7 +63,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 //게임이 시작되는지 체크
-router.get('/gamestart', UserToken, async (req,res,next) => {
+router.get('/gamestart', UserToken, async (req, res, next) => {
 
 })
 
@@ -71,7 +71,7 @@ router.get('/gamestart', UserToken, async (req,res,next) => {
 router.delete('/logout', UserToken, async (req, res, next) => {
     //토큰을 말소시키자.
     try {
-        
+
         res.clearCookie('authorization');
 
         return res.status(201).json({ message: "로그아웃되었습니다." })
@@ -246,6 +246,7 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
         //성공 확률을 해당 확률 안에 들어간다면 성공한다는 식
 
         if (successCount < 70) {
+            //단순하게 돈만 사용하여 업그레이드 처리를 하는 경우
             await prisma.oWN_TOWERS.update({
                 where: {
                     id: towerID
@@ -255,6 +256,34 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
                         increment: 1
                     }
                 }
+            })
+
+            //합성을 통해서 처리할 경우
+            const transaction = await prisma.$transaction(async (tx) => {
+                //재료가 될 테이블을 찾아서 삭제한다
+                const ingred = await tx.oWN_TOWERS.deleteMany({
+                    where: {
+                        USER_ID: user.USER_ID,
+                        TOWER_ID: {
+                            in: ingredient
+                        }
+                    }
+                })
+
+                //재료를 삭제한 다음에 강화를 시도해 본다.
+                await tx.oWN_TOWERS.update({
+                    where: {
+                        USER_ID: user.USER_ID,
+                        TOWER_ID: towerID
+                    },
+                    data: {
+                        UPGRADE: {
+                            increment: 1
+                        }
+                    }
+                })
+            },{
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted
             })
 
 
@@ -268,35 +297,7 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
             })
         }
 
-        //합성을 통해서 처리할 경우
-        const transaction = await prisma.$transaction(async (tx) => {
-            //재료가 될 테이블을 찾아서 삭제한다
-            const ingred = await tx.oWN_TOWERS.deleteMany({
-                where: {
-                    USER_ID: user.USER_ID,
-                    TOWER_ID: {
-                        in: ingredient
-                    }
-                }
-            })
 
-            //재료를 삭제한 다음에 강화를 시도해 본다.
-            await tx.oWN_TOWERS.update({
-                where: {
-                    USER_ID: user.USER_ID,
-                    TOWER_ID: towerID
-                },
-                data: {
-                    UPGRADE: {
-                        increment: 1
-                    }
-                }
-            })
-
-
-
-
-        })
 
         await prisma.uSERS.update({
             where: {
