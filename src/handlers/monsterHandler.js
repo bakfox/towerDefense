@@ -3,10 +3,9 @@ import monsterData from "../../gameDefaultData/monster.js";
 import { getInGame } from "../models/inGame.js";
 import stageData from "../../gameDefaultData/stage.js";
 
-
 let nowMonsterData = []; // 스폰할 몬스터를 데이터 저장할 배열 고유아이디 부여 1234567...
 let nowStageData = []; // 스폰할 스테이지 데이터
-let uniqueId =0; //몬스터 고유번호
+let uniqueId = 0; //몬스터 고유번호
 
 export class Monster {
   constructor(path, id, monsterData, uniqueId) {
@@ -73,27 +72,37 @@ export class Monster {
   }
 }
 
-
 let monsterData = monsterData;
 
 //인게임정보 받아오기
 //path받아오기
 
 //몬스터 생성 nowStageData여기에 적힌 스폰량만큼 nowMonsterData에 객체 갯수만큼 넣기 넣을때 각 객체에 고유번호 부여
-const makeMonster = (path, monsterImages, id,monsterData,uniqueId) => {
-  return new Monster(path, monsterImages, id,monsterData,uniqueId);
+const makeMonster = (path, monsterImages, id, monsterData, uniqueId) => {
+  return new Monster(path, monsterImages, id, monsterData, uniqueId);
   //nowMonsterData.push(monster);
 };
 
-
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (inGame,path, monsterImages,monsterData,stageData) =>{
+export const spawnMonsters = (
+  inGame,
+  path,
+  monsterImages,
+  monsterData,
+  stageData
+) => {
   nowMonsterData = [];
   nowStageData = stageData.data[inGame.stage]; //[{ stageId: 1, id: 1, count: 10 }]
   for (let index = 0; index < nowStageData.length; index++) {
-    let monsterType =nowStageData[index].id;
-    for(let i=0;i<nowStageData[index].count;i++){
-      const monster = makeMonster(path,monsterImages,monsterType,monsterData,uniqueId);
+    let monsterType = nowStageData[index].id;
+    for (let i = 0; i < nowStageData[index].count; i++) {
+      const monster = makeMonster(
+        path,
+        monsterImages,
+        monsterType,
+        monsterData,
+        uniqueId
+      );
       nowMonsterData.push(monster);
       uniqueId++;
     }
@@ -111,53 +120,59 @@ export const spawnMonsters = (inGame,path, monsterImages,monsterData,stageData) 
   return nowMonsterData;
 };
 //스폰하면서 ingame monster배열에 넣어주기
-const spawnNextMonster = (inGame, socket) => {
-  if (nowMonsterData.length > 0) {
-    const monster = nowMonsterData.shift(); // 배열에서 첫 번째 몬스터 꺼내기
-    // 몬스터를 게임에 추가하는 로직 (예: addMonster(monster);)
-    console.log(`몬스터 스폰: ${monster.id}`);
+const spawnNextMonster = (ingame, socket) => {
+  if (ingame.isSpawn === true) {
+    if (monsterCoolTime === 0) {
+      if (nowMonsterData.length > 0) {
+        const monster = nowMonsterData.shift(); // 배열에서 첫 번째 몬스터 꺼내기
+        // 몬스터를 게임에 추가하는 로직 (예: addMonster(monster);)
+        console.log(`몬스터 스폰: ${monster.id}`);
 
-    // 클라이언트에 몬스터 ID와 uniqueId 전송
-    socket.emit('spawnedMonster', {
-      id: monster.id,
-      uniqueId: monster.uniqueId
-    });
-  } else {
-    // 모든 몬스터가 스폰되었으면 isSpawn을 false로 변경
-    const ingame = getInGame(inGame.uuid);
-    ingame.isSpawn = false;
-  }
+        // 클라이언트에 몬스터 ID와 uniqueId 전송
+        socket.emit("spawnedMonster", {
+          id: monster.id,
+          uniqueId: monster.uniqueId,
+        });
+      } else {
+        // 모든 몬스터가 스폰되었으면 isSpawn을 false로 변경
+        const ingame = getInGame(inGame.uuid);
+        ingame.isSpawn = false;
+      }
+    }
+    monsterCoolTime = 10;
+  } else monsterCoolTime--;
 };
-
 
 //몬스터 공격 base랑 좌표가 같으면(충돌) gameHouseChange 호출해서 hp변경 / 몬스터 isdead true/자본변경
 const monsterAttacked = (uniqueId) => {
-  const monster = nowMonsterData.find(m => m.uniqueId === uniqueId);
-  
-  if (monster && monster.hp <= 0) { // 몬스터 사망시
+  const monster = nowMonsterData.find((m) => m.uniqueId === uniqueId);
+
+  if (monster && monster.hp <= 0) {
+    // 몬스터 사망시
     monster.isDead = true;
     //리워드 지급
     //사망한 몬스터 id와 uniqueId 클라에 통보
-  } 
+  }
 
-  if (monster && monster.x === base.x && monster.y === base.y && !monster.isDead) {
+  if (
+    monster &&
+    monster.x === base.x &&
+    monster.y === base.y &&
+    !monster.isDead
+  ) {
     // Call gameHouseChange or other logic here
   }
-}
+};
 
 export const getMonsters = () => {
   return nowMonsterData;
 };
-
 
 export const drawMonsters = (ctx) => {
   for (const monster of nowMonsterData) {
     monster.draw(ctx);
   }
 };
-
-
-
 
 //=====================================================================================================================
 
@@ -176,8 +191,4 @@ export const moveMonsters = (base) => {
   }
 };
 
-
 //몬스터 이동 상우님이 알아봐주신다고 함
-
-
-
