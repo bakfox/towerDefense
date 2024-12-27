@@ -298,7 +298,10 @@ Promise.all([
   if (!serverSocket) console.log("socket 접속 실패!");
 
   try {
-    const gameAssets = await sendEvent(1, {});
+    const gameAssets = await sendEvent(1, {
+      width: canvas.width,
+      height: canvas.height,
+    });
 
     // 게임 데이터 초기화 TODO
     const { monster, tower } = gameAssets;
