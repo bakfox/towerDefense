@@ -256,7 +256,7 @@ Promise.all([
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let somewhere;
 
-  serverSocket = initSocket(somewhere);
+  serverSocket = await initSocket(somewhere);
 
   if (!serverSocket) console.log("socket 접속 실패!");
 

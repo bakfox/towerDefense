@@ -8,7 +8,7 @@ let userId = null;
 export function initSocket(token) {
   socket = io("http://localhost:3017", {
     query: {
-      clientVersion: CLIENT_VERSION,
+      CLIENT_VERSION,
       auth: { token },
     },
   });
@@ -30,7 +30,11 @@ export function initSocket(token) {
       console.log("Handler not found");
     }
 
-    action(data.userId, data.payload);
+    if (data.payload.status === "fail") {
+      new Error();
+    } else {
+      action(data.userId, data.payload.data);
+    }
   });
 
   return socket;
@@ -43,7 +47,7 @@ export function getSocket() {
 export const sendEvent = (handlerId, payload) => {
   const obj = {
     userId,
-    clientVersion: CLIENT_VERSION,
+    CLIENT_VERSION,
     handlerId,
     payload,
   };
