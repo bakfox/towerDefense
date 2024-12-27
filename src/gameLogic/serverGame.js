@@ -4,7 +4,7 @@ const FPS = 1;
 const interval = 1000 / FPS;
 
 //이거 호출해서 루프 시작
-async function logicLoop(ingame, uuid, socket) {
+async function logicLoop(ingame, uuid, path, socket) {
   const start = Date.now();
   if (!ingame || !ingame.isRunning) {
     console.log(`클라이언트 ${uuid}의 로직 루프가 종료되었습니다.`);
@@ -25,7 +25,7 @@ async function logicLoop(ingame, uuid, socket) {
 }
 
 export const startLoop = (ingame, uuid, socket) => {
-  logicLoop(ingame, uuid, socket);
+  logicLoop(ingame, uuid, path, socket);
 };
 
 // 실행시 루프 종료
