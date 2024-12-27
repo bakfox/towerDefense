@@ -15,19 +15,14 @@ const ctx = canvas.getContext("2d");
 
 const NUM_OF_MONSTERS = 5; // 몬스터 개수
 
-let userGold = 0; // 유저 골드
 let house; // 기지 객체
 let houseHp = 0; // 기지 체력
 
 let towerCost = 0; // 타워 구입 비용
 let numOfInitialTowers = 0; // 초기 타워 개수
-let stage = 0; // 스테이지
 const monsters = new Map();
 const towers = new Set();
 
-let score = 0; // 게임 점수
-let highScore = 0; // 기존 최고 점수
-let isInitGame = false;
 let towerDec;
 
 // 이미지 로딩 파트
