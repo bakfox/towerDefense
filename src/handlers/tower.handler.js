@@ -1,35 +1,53 @@
 import { getInGame, createInGame } from "../inGame.js";
 import towerData from "../../gameDefaultData/tower.js";
+import { getTowers, addTower, removeTower } from "../models/tower.model.js";
 
 //특정 타워 데이터가 존재하는지 조회
 const getTowerDataById = (id) => {
     return towerData.data.find((tower) => tower.id === id);
 };
 
-//시작 시 타워 3개를 가지고 시작하기 위해 랜덤한 3개의 타워 타입 가져오기
+//시작 시 타워 3개를 가지고 시작하기 위해 랜덤한 3개의 타워 가져오기
 const getRandomTowers = () => {
     const shuffled = [...towerData.data].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
 };
 
-// 게임 시작 시 랜덤한 타워 초기화
+// 게임 시작 시 초기화 핸들러
 export const initializeGameHandler = (uuid, socket) => {
     const initialTowers = getRandomTowers();
     const gameState = createInGame(uuid);
 
     gameState.gold = 500; // 초기 골드 설정(수정 예정)
-    gameState.tower = initialTowers;
+    gameState.tower = [];
+
+    // 초기 타워 데이터 추가 및 고유 Type 부여
+    initialTowers.forEach((towerData, index) => {
+        addTower(uuid, {
+            id: index + 1, // 고유 ID (사용자 타워 배열 내 순서)
+            type: index + 1, // 고유 Type 번호
+            atckSpead: towerData.atckSpead,
+            atck: towerData.atck,
+            upgrade: 0,
+            upgradeValue: towerData.upgradeValue,
+            price: towerData.price,
+            location: null, // 초기 위치 없음
+        });
+    });
 
     socket.emit("gameInitialize", {
         status: "success",
-        tower: initialTowers,
-        gold: gameState.gold,
+        message: "게임이 초기화 되었습니다.",
+        data: {
+            tower: getTowers(uuid),
+            gold: gameState.gold,
+        }
     });
 };
 
 // 타워 생성 핸들러
 export const towerCreateHandler = (uuid, payload, socket) => {
-    const { towerType, location } = payload;
+    const { towerId, location } = payload;
     //const {x, y} = location; x, y를 기준으로 생성하기 때문에 필요할지 의문
 
     //gameState에 게임 정보 불러옴
@@ -40,7 +58,7 @@ export const towerCreateHandler = (uuid, payload, socket) => {
     }
 
     //타워 타입을 기준으로 했지만 id로 변경할 예정
-    const towerInfo = getTowerDataById(towerType);
+    const towerInfo = getTowerDataById(towerId);
 
     if (!towerInfo) {
         throw new CustomError("유효하지 않은 타워 타입입니다.", "towerCreate");
@@ -51,13 +69,16 @@ export const towerCreateHandler = (uuid, payload, socket) => {
         return;
     }
 
+    const userTowers = getTowers(uuid);
     const newTower = {
-        id: gameState.tower.length + 1,
-        type: towerType,
+        id: userTowers.length + 1,
+        type: userTowers.length + 1,
+        atckSpead: towerInfo.atckSpead,
+        atck: towerInfo.atck,
+        upgrade: 0,
+        upgradeValue: towerInfo.upgradeValue,
+        price: towerInfo.price,
         location,
-        level: 1,
-        attackPower: towerInfo.atck,
-        attackSpeed: towerInfo.atckSpead,
     };
 
     gameState.tower.push(newTower);
@@ -65,9 +86,13 @@ export const towerCreateHandler = (uuid, payload, socket) => {
 
     socket.emit("towerCreate", {
         status: "success",
-        towerType,
-        towerId: newTower.id,
-        location,
+        message: "타워가 생성되었습니다.",
+        data: {
+            towerId: newTower.id,
+            towerType: newTower.type,
+            location: newTower.location
+            
+        }
     });
 };
 
