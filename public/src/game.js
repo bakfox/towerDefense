@@ -87,51 +87,6 @@ function drawRotatedImage(image, x, y, width, height, angle) {
   ctx.restore();
 }
 
-function getRandomPositionNearPath(maxDistance) {
-  // 타워 배치를 위한 몬스터가 지나가는 경로 상에서 maxDistance 범위 내에서 랜덤한 위치를 반환하는 함수!
-  const segmentIndex = Math.floor(Math.random() * (monsterPath.length - 1));
-  const startX = monsterPath[segmentIndex].x;
-  const startY = monsterPath[segmentIndex].y;
-  const endX = monsterPath[segmentIndex + 1].x;
-  const endY = monsterPath[segmentIndex + 1].y;
-
-  const t = Math.random();
-  const posX = startX + t * (endX - startX);
-  const posY = startY + t * (endY - startY);
-
-  const offsetX = (Math.random() - 0.5) * 2 * maxDistance;
-  const offsetY = (Math.random() - 0.5) * 2 * maxDistance;
-
-  return {
-    x: posX + offsetX,
-    y: posY + offsetY,
-  };
-}
-
-function placeInitialTowers() {
-  /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
-  for (let i = 0; i < numOfInitialTowers; i++) {
-    const { x, y } = getRandomPositionNearPath(200);
-    const tower = new Tower(x, y, towerCost);
-    towers.push(tower);
-    tower.draw(ctx, towerImage);
-  }
-}
-
-function placeNewTower() {
-  /*
-  타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-  빠진 코드들을 채워넣어주세요!
-  */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
-  towers.push(tower);
-  tower.draw(ctx, towerImage);
-}
-
 function placeHouse() {
   const lastPoint = monsterPath[monsterPath.length - 1];
   house = new House(lastPoint.x, lastPoint.y, houseHp);
@@ -169,7 +124,9 @@ async function addTower(targetLocation, type) {
   try {
     const data = await sendEvent(101, { towerId: type, targetLocation });
     const { towerId, towerType, location } = data;
-    towers.set(id, new Tower(location.x, location.y, towerId, towerType));
+    const tower = new Tower(location.x, location.y, towerId, towerType);
+    towers.set(id, tower);
+    tower.draw(ctx, towerImage);
   } catch (error) {
     console.log("타워 설치에 실패했습니다!");
   }
@@ -331,17 +288,6 @@ Promise.all([
   */
 });
 
-// 타워 선택 UI 생성
-const towerSelectionUI = document.createElement("div");
-towerSelectionUI.style.position = "absolute";
-towerSelectionUI.style.top = "50%";
-towerSelectionUI.style.left = "50%";
-towerSelectionUI.style.transform = "translate(-50%, -50%)";
-towerSelectionUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-towerSelectionUI.style.padding = "20px";
-towerSelectionUI.style.borderRadius = "10px";
-towerSelectionUI.style.color = "white";
+canvas.addEventListener("click", (e) => {});
 
 initGame();
-
-document.body.appendChild(towerSelectionUI);
