@@ -8,7 +8,7 @@ const defaultIngame = {
     y: 0,
   },
   stage: 0,
-  monster: [],
+  monster: [], //인게임에 스폰된 몬스터들
   tower: [],
   ownTower: [],
   isSpawn: true,
