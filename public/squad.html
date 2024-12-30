@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Changmin Kang" />
+    <title>내일배움캠프 Node.js 트랙 타워 디펜스 게임</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <style>
+      #squadCard {
+        display: flex;
+        justify-content: space-between; /* 요소 간의 간격 조절 */
+        align-items: center; /* 세로 정렬 */
+        gap: 10px; /* 요소 간 간격 */
+        width: 100%; /* 부모 요소 너비에 맞게 */
+        padding: 10px;
+        background-color: #f0f0f0; /* 배경 색 */
+      }
+
+      header {
+        position: fixed; /* 고정 위치 */
+        top: 0; /* 화면의 맨 위로 설정 */
+        left: 0;
+        width: 100%; /* 화면 전체 너비 */
+        background-color: #333; /* 헤더 배경 색 */
+        color: white; /* 텍스트 색 */
+        padding: 10px 20px; /* 패딩 설정 */
+        z-index: 1000; /* 다른 요소 위로 올라오도록 설정 */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* 그림자 효과 */
+      }
+      main {
+        margin-top: 60px; /* 헤더 높이만큼 여백 추가 */
+        padding: 20px;
+        background-color: #f4f4f4; /* 메인 콘텐츠 배경 색 */
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #2d2d2d;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .form-container input {
+        margin: 10px;
+        padding: 10px;
+        font-size: 16px;
+      }
+      .form-container button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
+    </header>
+    <main>
+      <div id="squadCard">
+        <button id="squad1">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+        <button id="squad2">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+        <button id="squad3">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+      </div>
+      <div class="form-container">
+        <h2>로그인</h2>
+        <input type="text" id="changeSqaud" placeholder="스쿼드 변경" />
+        <input type="password" id="inhanceSquad" placeholder="스쿼드 강화" />
+        <button id="back">뒤로가기</button>
+      </div>
+    </main>
+
+    <script>
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      //squad 정보를 받아오도록 해보자.
+      const getSquad = async () => {
+        const register = await fetch("http://localhost:3017/api/tower/squad", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (register.ok) {
+          //각각의 id의 squad 칸들에 데이터를 채워넣도록 하자.
+          const result = await register.json();
+
+          for (let i = 1; i <= 3; i++) {
+            const squadId = `squad${i}`;
+            if (result.data.length > i - 1) {
+              const towerId = result.data[i-1].TOWER_ID;
+              document.getElementById(squadId).innerHTML =
+                `<img src="./images/tower${towerId}.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              현재 이런 카드를 가지고 있음.
+            </p>
+          </div>`;
+            }
+            else
+            {
+              `<img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              빈 슬롯
+            </p>
+          </div>`
+            }
+          }
+        }
+      };
+
+      // setTimeout(() => {
+      //   getSquad();
+      // }, 1000);
+
+      document.getElementById("squad1").addEventListener("click", async () => {
+        const equipTowerId = 1;
+        let equipingID = 1;
+
+        const register = await fetch("http://localhost:3017/api/tower/squad", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ equipTowerId, equipingID }),
+        });
+
+        if (register.ok) {
+          getSquad();
+        } else {
+          alert(register.message);
+        }
+      });
+
+      document.getElementById("squad2").addEventListener("click", async () => {
+        const equipTowerId = 2;
+        let equipingID = 2;
+
+        const register = await fetch("http://localhost:3017/api/tower/squad", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ equipTowerId, equipingID }),
+        });
+
+        if (register.ok) {
+          getSquad();
+        } else {
+          alert(register.message);
+        }
+      });
+
+      document.getElementById("squad3").addEventListener("click", async () => {
+        const equipTowerId = 3;
+        let equipingID = 3;
+        const register = await fetch("http://localhost:3017/api/tower/squad", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ equipTowerId, equipingID }),
+        });
+
+        if (register.ok) {
+          getSquad();
+          //window.location.href = "index.html";
+        } else {
+          alert(register.message);
+        }
+      });
+
+      document.getElementById("back").addEventListener("click", () => {
+        window.location.href = "beforeGame.html";
+      });
+    </script>
+  </body>
+</html>

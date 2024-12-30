@@ -40,6 +40,7 @@
       <button id="gacha">타워 가챠</button>
       <button id="inhance">타워 강화</button>
       <button id="rank">랭크 조회</button>
+      <button id="gemGet">잼 획득</button>
       <button id="gamestart">게임 시작</button>
     </div>
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>
@@ -52,45 +53,59 @@
         return null;
       };
       //가챠 담당 함수
-      document
-        .getElementById("gacha")
-        .addEventListener("click", async () => {
-          alert(getCookie("authorization"))
-          const gacha = await fetch("http://localhost:3017/api/tower/draw", {
-          method : "POST",
+      document.getElementById("gacha").addEventListener("click", async () => {
+        //alert(getCookie("authorization"))
+        const gacha = await fetch("http://localhost:3017/api/tower/draw", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body : JSON.stringify({authorization : getCookie("authorization")})
+          body: JSON.stringify({ authorization: getCookie("authorization") }),
         });
-
-       
 
         if (gacha.ok) {
           alert("연결됨");
         } else {
           alert("연결 안 됨");
         }
-        });
+      });
 
       document
         .getElementById("squad")
-        .addEventListener("click", async () => {});
+        .addEventListener("click", async () => {
+          window.location.href = "squad.html";
+        });
 
       document
         .getElementById("inhance")
         .addEventListener("click", async () => {});
 
       //rank 조회
-      document
-        .getElementById("rank")
-        .addEventListener("click", async () => {});
+      document.getElementById("rank").addEventListener("click", async () => {});
+
+      //gem을 획득하기
+      document.getElementById("gemGet").addEventListener("click", async () => {
+        const gacha = await fetch("http://localhost:3017/api/gem", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+
+        if (gacha.ok) {
+          const result = await gacha.json();
+          alert(result.message);
+          
+          
+        } else {
+          alert("연결 안 됨");
+        }
+      });
 
       //설정이 다 확인되면 게임 시작
       document
         .getElementById("gamestart")
         .addEventListener("click", async () => {
-
           window.location.href = "game.html";
         });
     </script>

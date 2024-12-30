@@ -339,9 +339,13 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
         const mySquad = await prisma.eQUIP_TOWERS.findMany({
             where: {
                 USER_ID: user.USER_ID
+            },
+            select : {
+                TOWER_ID : true,
+                USER_ID : false,
             }
         })
-        return res.status(201).json({ message: mySquad })
+        return res.status(201).json({ data: mySquad })
     }
     catch (err) {
         next(err);
@@ -349,6 +353,7 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
 })
 
 //스쿼드 하나 변경
+//3개의 스쿼드를 출력하는 건 그 id 값을 가지고 있다는 의미
 router.put('/tower/squad', UserToken, async (req, res, next) => {
     try {
         //변경할 스쿼드를 
@@ -377,7 +382,7 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
         else {
             await prisma.eQUIP_TOWERS.update({
                 where: {
-                    equip_tower_id: equipTowerId
+                    EQUIP_TOWER_ID: +equipTowerId
                 },
                 data: {
                     TOWER_ID: selectedTower.id
@@ -406,7 +411,7 @@ router.put('/gem', UserToken, async (req, res, next) => {
     try {
         //usertoken을 통해 인증 하고  req에 들어 있는 user 정보를 불러온다.
         const user = req.user;
-        await prisma.uSERS.update({
+        const data = await prisma.uSERS.update({
             where: {
                 ID: user.ID
             },
@@ -414,6 +419,8 @@ router.put('/gem', UserToken, async (req, res, next) => {
                 GEM: { increment: 1000 }
             }
         })
+
+        return res.status(201).json({message : "1000젬을 얻었습니다."})
     }
     catch (err) {
         next(err);
