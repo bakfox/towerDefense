@@ -1,6 +1,7 @@
-class Button {
-  constructor(label, x, y, width, height, image = null, onClick) {
+export class Button {
+  constructor(label, id = -1, x, y, width, height, image = null, onClick) {
     this.label = label;
+    this.id = id;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -20,7 +21,7 @@ class Button {
   }
 
   draw(ctx) {
-    if (image)
+    if (this.image)
       ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     else ctx.fillRect(this.x, this.y, this.width, this.height);
   }
