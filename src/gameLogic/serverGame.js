@@ -1,4 +1,5 @@
-import { createInGame, deleteInGame, getInGame } from "../models/inGame.js";
+import { createInGame, deleteInGame } from "../models/inGame.js";
+import { spawnNextMonster } from "../handlers/monsterHandler.js";
 
 const FPS = 1;
 const interval = 1000 / FPS;
