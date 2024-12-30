@@ -4,7 +4,6 @@ import { getMonsterData } from "./default/gameData.js";
 
 export class Monster {
   constructor(path, monsterImages, type, id, stage) {
-  constructor(path, monsterImages, type, id, stage) {
     // 생성자 안에서 몬스터의 속성을 정의한다고 생각하시면 됩니다!
     this.id = id; // 몬스터 고유번호
     this.type = type; // 몬스터 종류
