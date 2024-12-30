@@ -1,57 +1,54 @@
 //타워 테이블을 local 정보로 처리한다.
 //타워는 각각의 사용자에 따라 하나씩 가지고 있는 식이다.
 
-const towers = {}; // 사용자별 타워 데이터 저장
-
-// 타워 기본 구조 생성
-const createTowerTemplate = (id, type, atckSpead, atck, upgrade, upgradeValue, price) => ({
-    id, 
-    type,
-    atckSpead,
-    atck,
-    upgrade,
-    upgradeValue,
-    price
-});
-
-// 사용자 타워 리스트 초기화
-export const initializeTowers = (uuid) => {
-    towers[uuid] = [];
-};
-
-// 특정 사용자의 타워 리스트 가져오기
-export const getTowers = (uuid) => {
-    return towers[uuid] || [];
-};
-
-// 특정 타워 가져오기
-export const getTowerById = (uuid, towerId) => {
-    const userTowers = towers[uuid] || [];
-    return userTowers.find((tower) => tower.id === towerId);
-};
-
-// 타워 추가
-export const addTower = (uuid, tower) => {
-    if (!towers[uuid]) {
-        towers[uuid] = [];
+class Tower {
+    constructor(id, attackSpeed, attack, upgrade, upgradeValue, price, location) {
+        this.id = id;
+        this.attackSpeed = attackSpeed;
+        this.attack = attack;
+        this.upgrade = upgrade;
+        this.upgradeValue = upgradeValue;
+        this.price = price;
+        this.location = location;  // 타워 위치
+        this.cooldown = 0;  // 타워의 초기 쿨타임
     }
-    towers[uuid].push(tower);
-};
 
-// 타워 삭제
-export const removeTower = (uuid, towerId) => {
-    const userTowers = towers[uuid];
-    if (!userTowers) throw new Error("타워 데이터를 찾을 수 없습니다.");
+    // 타워의 업그레이드 비용 계산
+    getUpgradeCost() {
+        return Math.floor(this.upgradeValue * this.price);
+    }
 
-    const index = userTowers.findIndex((tower) => tower.id === towerId);
-    if (index === -1) throw new Error("타워를 찾을 수 없습니다.");
+    // 타워 업그레이드 메서드
+    upgradeTower() {
+        this.upgrade++;  // 업그레이드 레벨 증가
+        this.attack += this.upgradeValue;  // 공격력 증가
+        this.attackSpeed -= 0.1;  // 공격 속도 약간 증가
+    }
 
-    return userTowers.splice(index, 1)[0]; // 삭제된 타워 반환
-};
+    // 쿨타임 감소
+    decreaseCooldown() {
+        if (this.cooldown > 0) {
+            this.cooldown--;
+        }
+    }
 
-// 타워 데이터 리셋
-export const resetTowers = (uuid) => {
-    towers[uuid] = [];
-};
+    // 타워 공격 메서드 (공격 가능 시 공격 실행)
+    attackTarget(target) {
+        if (this.cooldown === 0 && this.isInRange(target)) {
+            target.takeDamage(this.attack);  // 타겟에 피해를 입힘
+            this.cooldown = this.attackSpeed;  // 쿨타임 설정
+            return true;
+        }
+        return false;
+    }
 
-export default createTowerTemplate
+    // 타워의 공격 범위 내에 적이 있는지 확인
+    isInRange(target) {
+        const distance = Math.sqrt(
+            Math.pow(this.location.x - target.x, 2) + Math.pow(this.location.y - target.y, 2)
+        );
+        return distance <= this.range;
+    }
+}
+
+export default Tower;
