@@ -14,11 +14,16 @@ async function logicLoop(ingame, uuid, path, socket) {
   const elapsed = Date.now() - start;
   console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
   console.log(ingame);
-  
+
   //타워 공격 호출
-  ingame.towers.forEach((tower) => {
+  ingame.tower.forEach((tower) => {
     tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
   });
+
+  ingame.monster.forEach((monster) => {
+    monster.move(socket);
+  });
+  spawnNextMonster(socket, ingame);
 
   if (!ingame.isSpawn) {
     const checkMonster = ingame.monster.every(
@@ -26,10 +31,9 @@ async function logicLoop(ingame, uuid, path, socket) {
     );
     if (checkMonster) {
       gameStageChange(ingame, socket);
-      ingame.isSpawn = false;
+      ingame.isSpawn = true;
     }
   }
-
   setTimeout(
     () => {
       logicLoop(ingame, uuid, socket).catch((err) => {
