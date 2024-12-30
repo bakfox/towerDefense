@@ -122,7 +122,8 @@
         });
 
         if (gacha.ok) {
-          alert("연결됨");
+          const result = await gacha.json();
+          alert(result.message);
         } else {
           alert("연결 안 됨");
         }
@@ -145,10 +146,13 @@
           },
         });
 
-        if (ranKReward.ok) {
+        if (rankReward.ok) {
           const result = await rankReward.json();
+          let innertext = ``;
           result.datas.forEach(element => {
-            
+            const id = element.USER_ID;
+            const score = element.
+            innertext += `${id} : `
           });
           alert(result.message);
           modal.style.display = 'flex';

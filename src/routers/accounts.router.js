@@ -172,17 +172,16 @@ router.get('/rank', UserToken, async (req, res, next) => {
         const { id } = req.params;
         console.log(req.body);
 
-        const users = await prisma.uSERS.findMany({
+        const users = await prisma.sCORES.findMany({
             where: [
                 {
                     SCORES: 'desc'
                 }
             ],
-            select: {
-                NAME: true,
-                SCORES: true
-
+            include : {
+                USERS : true
             },
+            
             take: 10 //랭킹 10위까지만 가져오도록 하자.
         });
 
@@ -199,7 +198,7 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
     try {
         //타워 테이블 가운데에서 출력을 받도록 한다.
         const user = req.user;
-        console.log("1번 넘김")
+        //console.log("1번 넘김")
 
         //1. 유저의 돈을 감소시킨다.
         //2. 타워 리스트에서 한 가지를 뽑는다.
@@ -219,24 +218,23 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
 
             //2 타워 리스트에서 하나 뽑도록 하자.
             const towerindex = Math.floor(Math.random() * towerData.data.length);
-            const towerGachad = towerData.data.length[towerindex];
+            const towerGachad = towerData.data[towerindex];
+            console.log(towerindex);
+            console.log(towerGachad);
 
             //3 타워를 생성한다.
             await tx.oWN_TOWERS.create({
                 data: {
                     USER_ID: user.USER_ID,
-                    ID: 0, //towerGatchard.id를 집어넣도록 한다.
-                    UPGRADE: 1,
-                    oWN_TOWERS : {
-                        id
-                    }
+                    ID: parseInt(towerGachad.id), //towerGatchard.id를 집어넣도록 한다.
+                    UPGRADE: 1
                 }
             })
 
             return towerGachad;
         })
 
-        return res.status(201).json({message : `${0}를 뽑았습니다`});
+        return res.status(201).json({message : `${gatcha.id}번을 뽑았습니다`});
     }
     catch (err) {
         console.log(err);
