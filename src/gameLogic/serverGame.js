@@ -14,6 +14,16 @@ async function logicLoop(ingame, uuid, path, socket) {
   console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
   console.log(ingame);
 
+  if (!ingame.isSpawn) {
+    const checkMonster = ingame.monster.every(
+      (monster) => monster.isDead === true
+    );
+    if (checkMonster) {
+      gameStageChange(ingame, socket);
+      ingame.isSpawn = false;
+    }
+  }
+
   setTimeout(
     () => {
       logicLoop(ingame, uuid, socket).catch((err) => {
