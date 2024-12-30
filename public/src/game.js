@@ -23,7 +23,11 @@ let numOfInitialTowers = 0; // 초기 타워 개수
 const monsters = new Map();
 const towers = new Set();
 
-let towerDec = [0,0,0];
+//입출력 이벤트
+let ioBuffer = { action: "", id: -1, location: { x: 0, y: 0 } };
+let hoverLoc = {x : 0, y:0};
+
+let towerDec = [0, 1, 2];
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -178,6 +182,9 @@ export function towerAttack(towerId, monsterId) {
 
 // #endregion
 
+const decX = canvas.width - 100;
+const decY = canvas.height / 2 - 50 - 130;
+
 function gameLoop() {
   // 렌더링 시에는 항상 배경 이미지부터 그려야 합니다! 그래야 다른 이미지들이 배경 이미지 위에 그려져요!
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 다시 그리기
@@ -196,13 +203,24 @@ function gameLoop() {
   // 타워 덱 그리기 TODO
   for(let i=0; i<towerDec.length; i++) {
     const id = towerDec[i];
-    ctx.drawImage(towerImage, canvas.width - towerImage.width/2, 300 + i*120, 50, 100);
+
+    ctx.globalAlpha = "0.5";
+    ctx.fillStyle = "white";
+    ctx.fillRect(decX, decY + i * 130, 110, 120);
+
+    ctx.globalAlpha = "1";
+    ctx.drawImage(towerImage, decX + 25, decY + 10 + i * 130, 50, 100);
   }
 
   // 타워 그리기
   towers.forEach((tower) => {
     tower.draw(ctx, towerImage);
   });
+
+  // 호버 이미지 그리기(타워)
+  if(ioBuffer.action === 'create') {
+    ctx.drawImage(towerImage, hoverLoc.x - 25, hoverLoc.y - 50, 50, 100);
+  }
 
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
   house.draw(ctx, houseImage);
@@ -294,6 +312,43 @@ Promise.all([
   */
 });
 
-canvas.addEventListener("click", (e) => {});
+canvas.addEventListener("click", (e) => {
+  const x = e.offsetX;
+  const y = e.offsetY;
+
+  console.log(decX, decY);  
+  if (x >= decX) {
+    // x 좌표가 타워 설치 버튼 부근
+    if (y >= decY && y <= decY + 120) {
+      ioBuffer.action = "create";
+      ioBuffer.id = towerDec[0];
+      console.log(1,ioBuffer, x, y);
+    } else if (y >= decY + 130 && y <= decY + 250) {
+      ioBuffer.action = "create";
+      ioBuffer.id = towerDec[1];
+      console.log(2,ioBuffer, x, y);
+    } else if (y >= decY + 260 && y <= decY + 480) {
+      ioBuffer.action = "create";
+      ioBuffer.id = towerDec[2];
+      console.log(3,ioBuffer, x, y);
+    } else {
+      
+    }
+  }
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  const x = e.offsetX;
+  const y = e.offsetY;
+
+  console.log(x,y);
+
+  if(ioBuffer.action === 'create') {
+    hoverLoc.x = x;
+    hoverLoc.y = y;
+  } else {
+    hoverLoc = {x : 0, y : 0};
+  }
+})
 
 initGame();
