@@ -3,7 +3,6 @@ import { spawnNextMonster } from "../handlers/monsterHandler.js";
 
 const FPS = 1;
 const interval = 1000 / FPS;
-const monsterCoolTime =10;
 
 //이거 호출해서 루프 시작
 async function logicLoop(ingame, uuid, skt) {
@@ -18,14 +17,7 @@ async function logicLoop(ingame, uuid, skt) {
   console.log(ingame);
 
   //함수 들어갈 자리
-  //핸들러로 옮기기
-  if(ingame.isSpawn === true){
-    if(monsterCoolTime ===0){
-      spawnNextMonster(ingame, skt);
-      monsterCoolTime = 10;
-    }else monsterCoolTime--;
-  }
- 
+
 
 
 

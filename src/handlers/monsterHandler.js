@@ -2,8 +2,9 @@ import { Monster } from "../src/monster.js";
 import monsterData from "../../gameDefaultData/monster.js";
 import { getInGame } from "../models/inGame.js";
 import stageData from "../../gameDefaultData/stage.js";
+import { gameGoldChange, gameHouseChange } from "./stage.handler.js";
 
-let nowMonsterData = []; // 스폰할 몬스터를 데이터 저장할 배열 고유아이디 부여 1234567...
+let nowMonsterData = []; // 스폰할 몬스터를 데이터 저장할 배열 고유아이디 부여해서 넣을것 1234567...
 let nowStageData = []; // 스폰할 스테이지 데이터
 let uniqueId = 0; //몬스터 고유번호
 
@@ -33,6 +34,7 @@ export class Monster {
     this.attackPower = selectedMonsterData.atck; // id 기반의 몬스터 공격력
     this.maxHp = selectedMonsterData.hp; // id 기반의 몬스터 최대 HP
     this.hp = this.maxHp; // 몬스터의 현재 HP
+    this.reward = selectedMonsterData.reward;
     this.isDead = false;
   }
 
@@ -119,49 +121,81 @@ export const spawnMonsters = (
 
   return nowMonsterData;
 };
-//스폰하면서 ingame monster배열에 넣어주기
 const spawnNextMonster = (ingame, socket) => {
+  const ingame = getInGame(ingame.uuid);
+
   if (ingame.isSpawn === true) {
     if (monsterCoolTime === 0) {
       if (nowMonsterData.length > 0) {
         const monster = nowMonsterData.shift(); // 배열에서 첫 번째 몬스터 꺼내기
-        // 몬스터를 게임에 추가하는 로직 (예: addMonster(monster);)
+        // 몬스터를 게임에 추가하는 로직 
         console.log(`몬스터 스폰: ${monster.id}`);
+        //스폰하면서 ingame monster배열에 넣어주기
+        ingame.monster.push(monster);
 
         // 클라이언트에 몬스터 ID와 uniqueId 전송
         socket.emit("spawnedMonster", {
-          id: monster.id,
-          uniqueId: monster.uniqueId,
+          status: "success",
+          message: `${monster.id}번 몬스터 스폰 성공`,
+          data:{
+            id: monster.id,
+            uniqueId: monster.uniqueId,
+          },
         });
+        monsterCoolTime = 10;
       } else {
         // 모든 몬스터가 스폰되었으면 isSpawn을 false로 변경
-        const ingame = getInGame(inGame.uuid);
         ingame.isSpawn = false;
       }
-    }
-    monsterCoolTime = 10;
-  } else monsterCoolTime--;
+    }else monsterCoolTime--;
+  } 
 };
 
 //몬스터 공격 base랑 좌표가 같으면(충돌) gameHouseChange 호출해서 hp변경 / 몬스터 isdead true/자본변경
-const monsterAttacked = (uniqueId) => {
+const monsterDead = (ingame, socket,uniqueId) => {
   const monster = nowMonsterData.find((m) => m.uniqueId === uniqueId);
+
+  socket.on("MonsterDead", (payload) => {
+    const { uniqueId } = payload;
+    // Handle the monster death logic here
+  });
 
   if (monster && monster.hp <= 0) {
     // 몬스터 사망시
     monster.isDead = true;
     //리워드 지급
+    let ingame = getInGame(ingame.uuid);
+    gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: monster.reward } });
     //사망한 몬스터 id와 uniqueId 클라에 통보
-  }
-
-  if (
+    socket.emit("DeadMonster", {
+      status: "success",
+      message: `${monster.id}번 몬스터 사망`,
+      data:{
+        id: monster.id,
+        uniqueId: monster.uniqueId,
+      },
+    });
+  }else if (
     monster &&
     monster.x === base.x &&
     monster.y === base.y &&
     !monster.isDead
   ) {
     // Call gameHouseChange or other logic here
+    gameHouseChange({ uuid: ingame.uuid, parsedData: { damage: monster.attackPower } });
+    monster.isDead = true;
+    socket.emit("MonsterAttack", {
+      status: "success",
+      message: `${monster.id}번 몬스터의 공격`,
+      data:{
+        id: monster.id,
+        uniqueId: monster.uniqueId,
+      },
+    });
+    
   }
+
+  
 };
 
 export const getMonsters = () => {
