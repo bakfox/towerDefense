@@ -37,11 +37,11 @@ router.post('/login', async (req, res, next) => {
 
         const token = jwt.sign(
             {
-                userId: user.UserId,
+                userId: user.USER_ID,
             },
             process.env.JSONWEBTOKEN_KEY,
             {
-                expiresIn : '1s'
+                expiresIn: '1h'
             }
         );
 
@@ -63,15 +63,21 @@ router.post('/login', async (req, res, next) => {
 });
 
 //게임이 시작되는지 체크
-router.get('/gamestart', UserToken, async (req,res,next) => {
-
+router.get('/gamestart', (req, res, next) => {
+    try {
+        //res.clearCookie('authorization');
+        return res.status(201).json({ message: "연결확인" })
+    }
+    catch (err) {
+        next(err);
+    }
 })
 
 //로그아웃
 router.delete('/logout', UserToken, async (req, res, next) => {
     //토큰을 말소시키자.
     try {
-        
+
         res.clearCookie('authorization');
 
         return res.status(201).json({ message: "로그아웃되었습니다." })
@@ -193,6 +199,7 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
     try {
         //타워 테이블 가운데에서 출력을 받도록 한다.
         const user = req.user;
+        console.log("1번 넘김")
 
         //1. 유저의 돈을 감소시킨다.
         //2. 타워 리스트에서 한 가지를 뽑는다.
@@ -211,22 +218,30 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
             })
 
             //2 타워 리스트에서 하나 뽑도록 하자.
-            //const towerGatchad
+            const towerindex = Math.floor(Math.random() * towerData.data.length);
+            const towerGachad = towerData.data.length[towerindex];
 
             //3 타워를 생성한다.
             await tx.oWN_TOWERS.create({
                 data: {
                     USER_ID: user.USER_ID,
                     ID: 0, //towerGatchard.id를 집어넣도록 한다.
-                    UPGRADE: 1
+                    UPGRADE: 1,
+                    oWN_TOWERS : {
+                        id
+                    }
                 }
             })
 
-
+            return towerGachad;
         })
+
+        return res.status(201).json({message : `${0}를 뽑았습니다`});
     }
     catch (err) {
-        next(err);
+        console.log(err);
+        //return res.status(404).json({message : err});
+        //next(err);
     }
 })
 
@@ -246,6 +261,7 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
         //성공 확률을 해당 확률 안에 들어간다면 성공한다는 식
 
         if (successCount < 70) {
+            //단순하게 돈만 사용하여 업그레이드 처리를 하는 경우
             await prisma.oWN_TOWERS.update({
                 where: {
                     id: towerID
@@ -255,6 +271,34 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
                         increment: 1
                     }
                 }
+            })
+
+            //합성을 통해서 처리할 경우
+            const transaction = await prisma.$transaction(async (tx) => {
+                //재료가 될 테이블을 찾아서 삭제한다
+                const ingred = await tx.oWN_TOWERS.deleteMany({
+                    where: {
+                        USER_ID: user.USER_ID,
+                        TOWER_ID: {
+                            in: ingredient
+                        }
+                    }
+                })
+
+                //재료를 삭제한 다음에 강화를 시도해 본다.
+                await tx.oWN_TOWERS.update({
+                    where: {
+                        USER_ID: user.USER_ID,
+                        TOWER_ID: towerID
+                    },
+                    data: {
+                        UPGRADE: {
+                            increment: 1
+                        }
+                    }
+                })
+            },{
+                isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted
             })
 
 
@@ -268,35 +312,7 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
             })
         }
 
-        //합성을 통해서 처리할 경우
-        const transaction = await prisma.$transaction(async (tx) => {
-            //재료가 될 테이블을 찾아서 삭제한다
-            const ingred = await tx.oWN_TOWERS.deleteMany({
-                where: {
-                    USER_ID: user.USER_ID,
-                    TOWER_ID: {
-                        in: ingredient
-                    }
-                }
-            })
 
-            //재료를 삭제한 다음에 강화를 시도해 본다.
-            await tx.oWN_TOWERS.update({
-                where: {
-                    USER_ID: user.USER_ID,
-                    TOWER_ID: towerID
-                },
-                data: {
-                    UPGRADE: {
-                        increment: 1
-                    }
-                }
-            })
-
-
-
-
-        })
 
         await prisma.uSERS.update({
             where: {
@@ -323,9 +339,13 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
         const mySquad = await prisma.eQUIP_TOWERS.findMany({
             where: {
                 USER_ID: user.USER_ID
+            },
+            select : {
+                TOWER_ID : true,
+                USER_ID : false,
             }
         })
-        return res.status(201).json({ message: mySquad })
+        return res.status(201).json({ data: mySquad })
     }
     catch (err) {
         next(err);
@@ -333,6 +353,7 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
 })
 
 //스쿼드 하나 변경
+//3개의 스쿼드를 출력하는 건 그 id 값을 가지고 있다는 의미
 router.put('/tower/squad', UserToken, async (req, res, next) => {
     try {
         //변경할 스쿼드를 
@@ -361,7 +382,7 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
         else {
             await prisma.eQUIP_TOWERS.update({
                 where: {
-                    equip_tower_id: equipTowerId
+                    EQUIP_TOWER_ID: +equipTowerId
                 },
                 data: {
                     TOWER_ID: selectedTower.id
@@ -390,7 +411,7 @@ router.put('/gem', UserToken, async (req, res, next) => {
     try {
         //usertoken을 통해 인증 하고  req에 들어 있는 user 정보를 불러온다.
         const user = req.user;
-        await prisma.uSERS.update({
+        const data = await prisma.uSERS.update({
             where: {
                 ID: user.ID
             },
@@ -398,6 +419,8 @@ router.put('/gem', UserToken, async (req, res, next) => {
                 GEM: { increment: 1000 }
             }
         })
+
+        return res.status(201).json({message : "1000젬을 얻었습니다."})
     }
     catch (err) {
         next(err);

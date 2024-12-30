@@ -10,6 +10,7 @@ import { GameManager } from "./gameManager.js";
 */
 
 let serverSocket; // 서버 웹소켓 객체
+const buyTowerButton = document.getElementById('buyButton');
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
