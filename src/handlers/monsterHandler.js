@@ -66,10 +66,7 @@ export class Monster {
 //hit(피격) 함수 데미지랑 소켓을 보내줌 받아서 데미지 처리  받은 몬스터와 hp반환
 //attack
 //move
- hitByTower(socket,payload){
-  const {damage} = payload;
-  let ingame = getInGame(ingame.uuid);
-
+ hitByTower(socket,ingame,damage){
  // const monster = nowMonsterData.find((m) => m.uniqueId === uniqueId);
 
   this.hp -= damage;
@@ -87,7 +84,8 @@ export class Monster {
     // 몬스터 사망시
     this.isDead = true;
     //리워드 지급
-    gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: this.reward } });
+    gameGoldChange(this.reward);
+    gameScoreChange();
     //사망한 몬스터 id와 uniqueId 클라에 통보
     socket.emit("MonsterDead", {
       status: "success",
@@ -101,8 +99,15 @@ export class Monster {
  //몬스터가 베이스에 닿았을때 gameHouseChange
  attack(){
   gameHouseChange({parsedData: { damage: this.attackPower } });
+  this.isDead = true;
 
-
+  socket.emit("MonsterAtack", {
+    status: "success",
+    message: `${this.id}번 몬스터가 공격`,
+    data:{
+      uniqueId: this.uniqueId,
+    },
+  });
  }
 }
 
