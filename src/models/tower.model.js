@@ -15,7 +15,7 @@ export class Tower {
 
         // 고유 ID를 순차적으로 증가시키는 방식으로 설정
         this.towerId = towerIdCounter++;  // 유니크 ID는 순차적으로 증가 //현재는 유니크 아이디로 적음, 추후 type이나 다른 걸로 수정
-        this.towerType = towerId;  // 타워 종류 (ID)
+        this.towerType = tower.id;  // 타워 종류 (ID)
         this.atckSpeed = tower.atckSpead;
         this.atck = tower.atck;
         this.upgrade = tower.upgrade;
@@ -26,14 +26,14 @@ export class Tower {
     }
     attack(monster, socket) {
         monster.hp -= this.atck; // 몬스터의 체력 감소
-            socket.emit("monsterAttacked", {
-                status: "success",
-                message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
-                data: {
-                    monsterId: monster.uniqueId,
-                    damage: this.atck,
-                }
-            });
+        socket.emit("monsterAttacked", {
+            status: "success",
+            message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
+            data: {
+                monsterId: monster.uniqueId,
+                damage: this.atck,
+            }
+        });
     }
     //몬스터 피격 호출
 
