@@ -10,6 +10,7 @@ const defaultIngame = {
   stage: 0,
   monster: [],
   tower: [],
+  ownTower: [],
   isSpawn: true,
   isRunning: true,
 };

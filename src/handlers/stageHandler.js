@@ -3,6 +3,7 @@ import stageData from "../../gameDefaultData/stage.js";
 import towerData from "../../gameDefaultData/tower.js";
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
 import { createInGame, getInGame } from "../models/inGame.js";
+import { prisma } from "../utils/index.js";
 
 // 경로 만드는 함수 처음에 canvas width , height 값 받아와서 객체 형테로 사용
 function monsterPathMake(canvas) {
@@ -34,13 +35,31 @@ function monsterPathMake(canvas) {
   return path;
 }
 
-export const gameStart = (payload) => {
+export const gameStart = async (payload) => {
   const inGame = createInGame(payload.uuid);
   const newPath = monsterPathMake({
     width: payload.data.width,
     height: payload.data.height,
   });
-  console.log(newPath.length);
+  const ownTowersData = await prisma.uSERS.findUnique({
+    where: {
+      USER_ID: +payload.USER_ID,
+    },
+    include: {
+      EQUIP_TOWERS: {
+        include: {
+          OWN_TOWERS: true,
+        },
+      },
+    },
+  });
+  const towerDec = [];
+  if (ownTowersData) {
+    ownTowersData.EQUIP_TOWERS.forEach((Towers) => {
+      towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
+    });
+  }
+  inGame.ownTower = towerDec;
   startLoop(inGame, payload.uuid, newPath, payload.socket);
   const nowStageData = stageData.data[inGame.stage];
   const nowMonsterData = [];
@@ -49,10 +68,10 @@ export const gameStart = (payload) => {
   }
   console.log(nowMonsterData, nowStageData);
   return {
-    handlerId: 1,
     status: "succes",
     message: "게임을 시작합니다!",
     data: {
+      towerDec,
       stage: inGame.stage,
       playerHp: inGame.house.hp,
       playerGold: inGame.gold,
@@ -73,8 +92,7 @@ export const gameEnd = (payload) => {
 
 // 여기 아래는 서버에서 핸들러가 따로 없음 객체 형태로 보내기
 
-export const gameStageChange = (socket) => {
-  const inGame = getInGame(uuid);
+export const gameStageChange = (socket, inGame) => {
   inGame.stage++;
   const nextStageData = stageData.data[inGame.stage];
   const nextMonsterData = [];
@@ -87,51 +105,45 @@ export const gameStageChange = (socket) => {
     status: "succes",
     message: "스테이지 변경에 성공했습니다",
     data: {
-      stage: inGame.stage,
+      playerStage: inGame.stage,
       monster: nextMonsterData,
     },
   });
 };
-export const gameHouseChange = (socket, damage) => {
-  const inGame = getInGame(uuid);
+
+export const gameHouseChange = (socket, inGame, damage) => {
   inGame.hp -= damage;
   console.log(inGame);
   socket.emit("event", {
     handlerId: 4,
     status: "succes",
-    message: "스테이지 변경에 성공했습니다",
+    message: "하우스 체력 변경에 성공했습니다",
     data: {
-      stage: inGame.stage,
+      playerHp: inGame.house.hp,
     },
   });
 };
-export const gameGoldChange = (socket, gold) => {
-  const inGame = getInGame(payload.uuid);
+export const gameGoldChange = (socket, inGame, gold) => {
   inGame.gold += gold;
   console.log(inGame);
   socket.emit("event", {
     handlerId: 5,
     status: "succes",
-    message: "스테이지 변경에 성공했습니다",
+    message: "골드 변경에 성공했습니다",
     data: {
-      stage: inGame.stage,
-      nextStageData,
-      nextMonsterData,
+      playerGold: inGame.gold,
     },
   });
 };
-export const gameScoreChange = (socket, score) => {
-  const inGame = getInGame(payload.uuid);
+export const gameScoreChange = (socket, inGame, score) => {
   inGame.score += score;
   console.log(inGame);
   socket.emit("event", {
     handlerId: 6,
     status: "succes",
-    message: "스테이지 변경에 성공했습니다",
+    message: "점수 변경에 성공했습니다",
     data: {
-      stage: inGame.stage,
-      nextStageData,
-      nextMonsterData,
+      score: inGame.score,
     },
   });
 };
