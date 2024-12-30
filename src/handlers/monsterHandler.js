@@ -56,22 +56,54 @@ export class Monster {
       }
       return false;
     } else {
-      const isDestroyed = base.takeDamage(this.attackPower); // 기지에 도달하면 기지에 데미지를 입힙니다!
+      const isDestroyed = this.attack(); // 기지에 도달하면 기지에 데미지를 입힙니다!
       this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
+      this.isDead = true;
       return isDestroyed;
     }
   }
+//클래스내 메소드
+//hit(피격) 함수 데미지랑 소켓을 보내줌 받아서 데미지 처리  받은 몬스터와 hp반환
+//attack
+//move
+ hitByTower(socket,payload){
+  const {damage} = payload;
+  let ingame = getInGame(ingame.uuid);
 
-  draw(ctx) {
-    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-    ctx.font = "12px Arial";
-    ctx.fillStyle = "white";
-    ctx.fillText(
-      `(레벨 ${this.id}) ${this.hp}/${this.maxHp}`,
-      this.x,
-      this.y - 5
-    );
-  }
+ // const monster = nowMonsterData.find((m) => m.uniqueId === uniqueId);
+
+  this.hp -= damage;
+
+  socket.emit("hitByTower", {
+    status: "success",
+    message: `${this.id}번 몬스터 피격`,
+    data:{
+      uniqueId: this.uniqueId,
+      hp : this.hp,
+    },
+  });
+
+  if (this.hp <= 0) {
+    // 몬스터 사망시
+    this.isDead = true;
+    //리워드 지급
+    gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: this.reward } });
+    //사망한 몬스터 id와 uniqueId 클라에 통보
+    socket.emit("MonsterDead", {
+      status: "success",
+      message: `${this.id}번 몬스터 사망`,
+      data:{
+        uniqueId: this.uniqueId,
+      },
+    });
+ }
+}
+ //몬스터가 베이스에 닿았을때 gameHouseChange
+ attack(){
+  gameHouseChange({parsedData: { damage: this.attackPower } });
+
+
+ }
 }
 
 let monsterData = monsterData;
@@ -121,6 +153,7 @@ export const spawnMonsters = (
 
   return nowMonsterData;
 };
+
 const spawnNextMonster = (ingame, socket) => {
   const ingame = getInGame(ingame.uuid);
 
@@ -190,6 +223,7 @@ const monsterDead = (ingame, socket,uniqueId) => {
       data:{
         id: monster.id,
         uniqueId: monster.uniqueId,
+        hp: monster.hp,
       },
     });
     
@@ -197,6 +231,7 @@ const monsterDead = (ingame, socket,uniqueId) => {
 
   
 };
+
 
 export const getMonsters = () => {
   return nowMonsterData;
@@ -224,5 +259,3 @@ export const moveMonsters = (base) => {
     }
   }
 };
-
-//몬스터 이동 상우님이 알아봐주신다고 함
