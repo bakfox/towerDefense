@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
@@ -44,7 +44,15 @@
       <button id="back">뒤로가기</button>
     </div>
     <script>
-      document.getElementById("login").addEventListener("click", () => {
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      document.getElementById("login").addEventListener("click", async () => {
+        //username : id라 생각하자.
         const username = document.getElementById("username").value;
         const password = document.getElementById("password").value;
 
@@ -52,6 +60,20 @@
           로그인 API 호출 후 로그인 성공 시 index.html로 이동시켜주세요!
           이 때, 엑세스 토큰은 어딘가에 저장을 해놔야겠죠?! 
         */
+
+        const register = await fetch("http://localhost:3017/api/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (register.ok) {
+          window.location.href = "index.html";
+        } else {
+          alert(register.message);
+        }
       });
 
       document.getElementById("back").addEventListener("click", () => {

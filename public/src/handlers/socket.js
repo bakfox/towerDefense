@@ -1,37 +1,53 @@
-import { CLIENT_VERSION } from "./Constants.js";
-import { actionMappings } from "./actionMappings.js";
+//import { CLIENT_VERSION } from "./Constants.js";
+import actionMappings from "./actionMappings.js";
 
-const socket = io("http://localhost:3017", {
-  query: {
-    clientVersion: CLIENT_VERSION,
-  },
-});
+const CLIENT_VERSION = "1.0.0";
 
+let socket = null;
 let userId = null;
-socket.on("response", (data) => {
-  console.log(data);
-});
+export function initSocket(token) {
+  socket = io("http://localhost:3017", {
+    query: {
+      CLIENT_VERSION,
+      auth: { token },
+    },
+  });
 
-socket.on("connection", (data) => {
-  console.log("connection: ", data);
-  userId = data.uuid;
-});
+  socket.on("response", (data) => {
+    console.log(data);
+  });
 
-// 서버 정보 전달 이벤트 처리
-socket.on("event", (data) => {
-  const action = actionMappings[data.handlerId];
-  console.log(data.handlerId, action);
-  if (!action) {
-    console.log("Handler not found");
-  }
+  socket.on("connection", (data) => {
+    console.log("connection: ", data);
+    userId = data.uuid;
+  });
 
-  //action(data.userId, data.payload);
-});
+  // 서버 정보 전달 이벤트 처리
+  socket.on("event", (data) => {
+    const action = actionMappings[data.handlerId];
+    console.log(action, data);
+    if (!action) {
+      console.log("Handler not found");
+    }
 
-const sendEvent = (handlerId, payload) => {
+    if (data.payload.status === "fail") {
+      new Error();
+    } else {
+      action(data.userId, data.payload.data);
+    }
+  });
+
+  return socket;
+}
+
+export function getSocket() {
+  return socket;
+}
+
+export const sendEvent = (handlerId, payload) => {
   const obj = {
     userId,
-    clientVersion: CLIENT_VERSION,
+    CLIENT_VERSION,
     handlerId,
     payload,
   };
@@ -47,5 +63,3 @@ const sendEvent = (handlerId, payload) => {
     });
   });
 };
-
-export { sendEvent };

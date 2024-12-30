@@ -1,11 +1,16 @@
-const ingame = [];
+const ingame = {};
 const defaultIngame = {
   gold: 0,
   score: 0,
-  hp: 5,
+  house: {
+    hp: 5,
+    x: 0,
+    y: 0,
+  },
   stage: 0,
   monster: [], //인게임에 스폰된 몬스터들
   tower: [],
+  ownTower: [],
   isSpawn: true,
   isRunning: true,
 };
@@ -19,8 +24,7 @@ export const getInGame = (uuid) => {
 };
 
 export const deleteInGame = (uuid) => {
-  const index = ingame.findIndex((game) => game.uuid === uuid);
-  if (index !== -1) {
-    ingame.splice(uuid, 1);
+  if (ingame[uuid]) {
+    delete ingame[uuid];
   }
 };
