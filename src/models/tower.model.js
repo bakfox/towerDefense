@@ -1,54 +1,78 @@
-//타워 테이블을 local 정보로 처리한다.
-//타워는 각각의 사용자에 따라 하나씩 가지고 있는 식이다.
+// models/tower.js
 
-class Tower {
-    constructor(id, attackSpeed, attack, upgrade, upgradeValue, price, location) {
-        this.id = id;
-        this.attackSpeed = attackSpeed;
-        this.attack = attack;
-        this.upgrade = upgrade;
-        this.upgradeValue = upgradeValue;
-        this.price = price;
-        this.location = location;  // 타워 위치
-        this.cooldown = 0;  // 타워의 초기 쿨타임
+import towerData from "../../gameDefaultData/tower.js";
+
+// 타워 생성 시마다 증가하는 유니크 ID 관리 변수
+let towerIdCounter = 1;  // 최초 타워 ID는 1부터 시작
+
+export class Tower {
+    constructor(towerType, location) {
+        const tower = towerData.data.find(t => t.id === towerType);
+
+        if (!tower) {
+            throw new Error("타워 정보를 찾을 수 없습니다.");
+        }
+
+        // 고유 ID를 순차적으로 증가시키는 방식으로 설정
+        this.towerId = towerIdCounter++;  // 유니크 ID는 순차적으로 증가 //현재는 유니크 아이디로 적음, 추후 type이나 다른 걸로 수정
+        this.towerType = towerId;  // 타워 종류 (ID)
+        this.atckSpeed = tower.atckSpead;
+        this.atck = tower.atck;
+        this.upgrade = tower.upgrade;
+        this.upgradeValue = tower.upgradeValue;
+        this.price = tower.price;
+        this.location = location;  // {x, y} 위치 정보
+        this.cooldown = this.atckSpeed;  // 타워의 초기 쿨타임
+    }
+    attack(monster, socket) {
+        monster.hp -= this.atck; // 몬스터의 체력 감소
+            socket.emit("monsterAttacked", {
+                status: "success",
+                message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
+                data: {
+                    monsterId: monster.uniqueId,
+                    damage: this.atck,
+                }
+            });
+    }
+    //몬스터 피격 호출
+
+    // 쿨타임 감소 함수
+    decreaseCooldown(monsters, socket) {
+        this.cooldown--;
+        if (this.cooldown <= 0) {
+            monsters.forEach((monster) => {
+                const distance = Math.sqrt(
+                    Math.pow(this.location.x - monster.x, 2) +
+                    Math.pow(this.location.y - monster.y, 2)
+                );
+                if (distance < this.range) {
+                    this.attack(monster, socket); // 타워 공격
+                    this.cooldown = this.atckSpeed; // 쿨타임 초기화
+                }
+            });
+        }
     }
 
-    // 타워의 업그레이드 비용 계산
-    getUpgradeCost() {
-        return Math.floor(this.upgradeValue * this.price);
-    }
-
-    // 타워 업그레이드 메서드
+    // 타워 업그레이드 함수
     upgradeTower() {
-        this.upgrade++;  // 업그레이드 레벨 증가
-        this.attack += this.upgradeValue;  // 공격력 증가
-        this.attackSpeed -= 0.1;  // 공격 속도 약간 증가
+        this.atck += this.upgradeValue;
+        this.upgrade++;
+        this.cooldown = this.atckSpeed;  // 업그레이드 후 쿨타임 초기화
+        console.log(`타워 ${this.uniqueId}가 업그레이드되었습니다.`);
     }
 
-    // 쿨타임 감소
-    decreaseCooldown() {
-        if (this.cooldown > 0) {
-            this.cooldown--;
+    // 타워 이동 메서드
+    moveTower(newLocation) {
+        if (!newLocation || typeof newLocation.x !== "number" || typeof newLocation.y !== "number") {
+            throw new Error("타워 이동 위치 정보가 유효하지 않습니다.");
         }
-    }
-
-    // 타워 공격 메서드 (공격 가능 시 공격 실행)
-    attackTarget(target) {
-        if (this.cooldown === 0 && this.isInRange(target)) {
-            target.takeDamage(this.attack);  // 타겟에 피해를 입힘
-            this.cooldown = this.attackSpeed;  // 쿨타임 설정
-            return true;
-        }
-        return false;
-    }
-
-    // 타워의 공격 범위 내에 적이 있는지 확인
-    isInRange(target) {
-        const distance = Math.sqrt(
-            Math.pow(this.location.x - target.x, 2) + Math.pow(this.location.y - target.y, 2)
-        );
-        return distance <= this.range;
+        this.location = newLocation;
+        console.log(`타워 ${this.uniqueId}가 위치를 ${JSON.stringify(newLocation)}로 이동했습니다.`);
     }
 }
 
-export default Tower;
+// 타워 객체 생성 함수 (타워 ID와 위치를 받아서 타워 객체 생성)
+export const createTowerFromData = (towerId, location) => {
+    return new Tower(towerId, location);
+};
