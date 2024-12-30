@@ -23,7 +23,7 @@ let numOfInitialTowers = 0; // 초기 타워 개수
 const monsters = new Map();
 const towers = new Set();
 
-let towerDec;
+let towerDec = [0,0,0];
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -185,13 +185,19 @@ function gameLoop() {
 
   ctx.font = "25px Times New Roman";
   ctx.fillStyle = "skyblue";
-  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 100, 50); // 최고 기록 표시
+  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 50, 50); // 최고 기록 표시
   ctx.fillStyle = "white";
-  ctx.fillText(`점수: ${GameManager.score}`, 100, 100); // 현재 스코어 표시
+  ctx.fillText(`점수: ${GameManager.score}`, 50, 200); // 현재 스코어 표시
   ctx.fillStyle = "yellow";
-  ctx.fillText(`골드: ${GameManager.userGold}`, 100, 150); // 골드 표시
+  ctx.fillText(`골드: ${GameManager.userGold}`, 50, 250); // 골드 표시
   ctx.fillStyle = "black";
-  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 100, 200); // 최고 기록 표시
+  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 50, 300); // 최고 기록 표시
+
+  // 타워 덱 그리기 TODO
+  for(let i=0; i<towerDec.length; i++) {
+    const id = towerDec[i];
+    ctx.drawImage(towerImage, canvas.width - towerImage.width/2, 300 + i*120, 50, 100);
+  }
 
   // 타워 그리기
   towers.forEach((tower) => {
