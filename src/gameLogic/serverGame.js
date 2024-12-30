@@ -19,6 +19,16 @@ async function logicLoop(ingame, uuid, path, socket) {
     tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
   });
 
+  if (!ingame.isSpawn) {
+    const checkMonster = ingame.monster.every(
+      (monster) => monster.isDead === true
+    );
+    if (checkMonster) {
+      gameStageChange(ingame, socket);
+      ingame.isSpawn = false;
+    }
+  }
+
   setTimeout(
     () => {
       logicLoop(ingame, uuid, socket).catch((err) => {
