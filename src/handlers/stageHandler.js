@@ -59,7 +59,7 @@ export const gameStart = async (payload) => {
       towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
     });
   }
-
+  inGame.ownTower = towerDec;
   startLoop(inGame, payload.uuid, newPath, payload.socket);
   const nowStageData = stageData.data[inGame.stage];
   const nowMonsterData = [];
@@ -112,7 +112,6 @@ export const gameStageChange = (socket, inGame) => {
 };
 
 export const gameHouseChange = (socket, inGame, damage) => {
-  const inGame = getInGame(uuid);
   inGame.hp -= damage;
   console.log(inGame);
   socket.emit("event", {
@@ -125,7 +124,6 @@ export const gameHouseChange = (socket, inGame, damage) => {
   });
 };
 export const gameGoldChange = (socket, inGame, gold) => {
-  const inGame = getInGame(payload.uuid);
   inGame.gold += gold;
   console.log(inGame);
   socket.emit("event", {
@@ -138,7 +136,6 @@ export const gameGoldChange = (socket, inGame, gold) => {
   });
 };
 export const gameScoreChange = (socket, inGame, score) => {
-  const inGame = getInGame(payload.uuid);
   inGame.score += score;
   console.log(inGame);
   socket.emit("event", {
