@@ -351,8 +351,8 @@ Promise.all([
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let token = getCookie('authorization');
   console.log("token : ", token);
+
   serverSocket = await initSocket(token);
-  serverSocket = await initSocket(somewhere);
 
   if (!serverSocket) console.log("socket 접속 실패!");
 
@@ -366,8 +366,8 @@ Promise.all([
     const { monster, tower } = gameAssets;
 
     ({
-      towerDec,
-      monsterPath,
+      //towerDec,
+      path: monsterPath,
       playerHp: houseHp,
       playerGold: GameManager.userGold,
       stage: GameManager.stage,
