@@ -1,4 +1,4 @@
-import { v4 as uuIdV4 } from "uuId";
+import { v4 as uuIdV4 } from "uuid";
 import { gameStart } from "./stageHandler.js";
 import { handleEvent } from "./helper.js";
 
