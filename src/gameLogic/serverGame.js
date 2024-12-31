@@ -1,4 +1,5 @@
-import { createInGame, deleteInGame, getInGame } from "../models/inGame.js";
+import { createInGame, deleteInGame } from "../models/inGame.js";
+import { spawnNextMonster } from "../handlers/monsterHandler.js";
 
 const FPS = 1;
 const interval = 1000 / FPS;
@@ -13,12 +14,28 @@ async function logicLoop(ingame, uuid, path, socket) {
   const elapsed = Date.now() - start;
   console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
   console.log(ingame);
-  
-  //타워 공격 호출
-  ingame.towers.forEach((tower) => {
-    tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
-  });
 
+  //타워 공격 호출
+  if (ingame.tower.length !== 0) {
+    ingame.tower.forEach((tower) => {
+      tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
+    });
+  }
+
+  ingame.monster.forEach((monster) => {
+    monster.move(socket);
+  });
+  spawnNextMonster(socket, ingame);
+
+  if (!ingame.isSpawn) {
+    const checkMonster = ingame.monster.every(
+      (monster) => monster.isDead === true
+    );
+    if (checkMonster) {
+      gameStageChange(ingame, socket);
+      ingame.isSpawn = true;
+    }
+  }
   setTimeout(
     () => {
       logicLoop(ingame, uuid, socket).catch((err) => {
@@ -29,7 +46,7 @@ async function logicLoop(ingame, uuid, path, socket) {
   );
 }
 
-export const startLoop = (ingame, uuid, socket) => {
+export const startLoop = (ingame, uuid, path, socket) => {
   logicLoop(ingame, uuid, path, socket);
 };
 
