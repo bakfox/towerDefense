@@ -14,7 +14,7 @@ export class Monster {
     }
 
     // id를 기반으로 monsterData에서 해당 몬스터 데이터를 찾음
-    const selectedMonsterData = monsterData.data.find(
+    const selectedMonsterData = monsterData.find(
       (monster) => monster.id === id
     );
     if (!selectedMonsterData) {
@@ -114,31 +114,20 @@ export class Monster {
 //path받아오기
 
 //몬스터 생성 nowStageData여기에 적힌 스폰량만큼 nowMonsterData에 객체 갯수만큼 넣기 넣을때 각 객체에 고유번호 부여
-const makeMonster = (path, monsterImages, id, monsterData, uniqueId) => {
-  return new Monster(path, monsterImages, id, monsterData, uniqueId);
+const makeMonster = (path, id, monsterData, uniqueId) => {
+  return new Monster(path, id, monsterData, uniqueId);
   //nowMonsterData.push(monster);
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (
-  ingame,
-  path,
-  monsterImages,
-  monsterData,
-  stageData
-) => {
+export const spawnMonsters = (ingame, path, monsterData, stageData) => {
   ingame.nowMonsterData = [];
-  ingame.nowStageData = stageData.data[ingame.stage]; //[{ stageId: 1, id: 1, count: 10 }]
+  ingame.nowStageData = stageData; //[{ stageId: 1, id: 1, count: 10 }]
+  console.log(monsterData);
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
-      const monster = makeMonster(
-        path,
-        monsterImages,
-        monsterType,
-        monsterData,
-        uniqueId
-      );
+      const monster = makeMonster(path, monsterType, monsterData, uniqueId);
       ingame.nowMonsterData.push(monster);
       uniqueId++;
     }
