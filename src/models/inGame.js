@@ -11,8 +11,11 @@ const defaultIngame = {
   monster: [], //인게임에 스폰된 몬스터들
   tower: [],
   ownTower: [],
+  nowMonsterData: [], // 스폰할 몬스터를 저장할 데이터 풀
+  nowStageData: [], // 스폰할 스테이지 데이터
   isSpawn: true,
   isRunning: true,
+  monsterCoolTime: 1,
 };
 
 export const createInGame = (uuid) => {
