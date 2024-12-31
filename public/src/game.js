@@ -1,6 +1,7 @@
 import { initSocket, sendEvent } from "./handlers/socket.js";
-import { initData } from "./default/gameData.js";
+import { initMonsterData, initTowerData } from "./default/gameData.js";
 import { House } from "./house.js";
+import { Button } from "./button.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
 import { GameManager } from "./gameManager.js";
@@ -10,21 +11,34 @@ import { GameManager } from "./gameManager.js";
 */
 
 let serverSocket; // 서버 웹소켓 객체
-const buyTowerButton = document.getElementById('buyButton');
+const buyTowerButton = document.getElementById("buyButton");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const NUM_OF_MONSTERS = 5; // 몬스터 개수
+const NUM_OF_MONSTERS = 6; // 몬스터 개수
+const NUM_OF_TOWERS = 5; // 타워 개수수
 
 let house; // 기지 객체
 let houseHp = 0; // 기지 체력
 
-let towerCost = 0; // 타워 구입 비용
-let numOfInitialTowers = 0; // 초기 타워 개수
 const monsters = new Map();
-const towers = new Set();
+const towers = new Map();
 
-let towerDec;
+//입출력 이벤트
+let ioBuffer = {
+  action: "",
+  id: -1,
+  location: { x: 0, y: 0 },
+  reset() {
+    this.action = "";
+    this.id = -1;
+    this.location = { x: 0, y: 0 };
+  },
+};
+let hoverLoc = { x: 0, y: 0 };
+let buttons = [];
+
+let towerDec = [1, 2, 3];
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -42,8 +56,15 @@ pathImage.src = "images/path.png";
 const monsterImages = [];
 for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
   const img = new Image();
-  img.src = `images/monster${i}.png`;
+  img.src = `images/monster_${i}.png`;
   monsterImages.push(img);
+}
+
+const towerImages = [];
+for (let i = 1; i <= NUM_OF_TOWERS; i++) {
+  const img = new Image();
+  img.src = `images/tower_${i}.png`;
+  towerImages.push(img);
 }
 
 let monsterPath = [];
@@ -88,59 +109,53 @@ function drawRotatedImage(image, x, y, width, height, angle) {
   ctx.restore();
 }
 
-function getRandomPositionNearPath(maxDistance) {
-  // 타워 배치를 위한 몬스터가 지나가는 경로 상에서 maxDistance 범위 내에서 랜덤한 위치를 반환하는 함수!
-  const segmentIndex = Math.floor(Math.random() * (monsterPath.length - 1));
-  const startX = monsterPath[segmentIndex].x;
-  const startY = monsterPath[segmentIndex].y;
-  const endX = monsterPath[segmentIndex + 1].x;
-  const endY = monsterPath[segmentIndex + 1].y;
-
-  const t = Math.random();
-  const posX = startX + t * (endX - startX);
-  const posY = startY + t * (endY - startY);
-
-  const offsetX = (Math.random() - 0.5) * 2 * maxDistance;
-  const offsetY = (Math.random() - 0.5) * 2 * maxDistance;
-
-  return {
-    x: posX + offsetX,
-    y: posY + offsetY,
-  };
-}
-
-function placeInitialTowers() {
-  /* 
-    타워를 초기에 배치하는 함수입니다.
-    무언가 빠진 코드가 있는 것 같지 않나요? 
-  */
-  for (let i = 0; i < numOfInitialTowers; i++) {
-    const { x, y } = getRandomPositionNearPath(200);
-    const tower = new Tower(x, y, towerCost);
-    towers.push(tower);
-    tower.draw(ctx, towerImage);
-  }
-}
-
-function placeNewTower() {
-  /*
-  타워를 구입할 수 있는 자원이 있을 때 타워 구입 후 랜덤 배치하면 됩니다.
-  빠진 코드들을 채워넣어주세요!
-  */
-  const { x, y } = getRandomPositionNearPath(200);
-  const tower = new Tower(x, y);
-  towers.push(tower);
-  tower.draw(ctx, towerImage);
-}
-
 function placeHouse() {
   const lastPoint = monsterPath[monsterPath.length - 1];
-  house = new House(lastPoint.x, lastPoint.y, houseHp);
-  house.draw(ctx, houseImage);
+  //house = new House(lastPoint.x, lastPoint.y, houseHp);
+  //house.draw(ctx, houseImage);
 }
 
 export function setHouseHp(value) {
   house.setHouseHp(value);
+}
+
+const decX = canvas.width - 125;
+const decY = canvas.height / 2 - 50 - 130;
+
+const TOWER_WIDTH = 100;
+const TOWER_HEIGHT = 100;
+
+function initTowerDecButton() {
+  // 타워 버튼 추가
+  for (let i = 0; i < towerDec.length; i++) {
+    const id = towerDec[i];
+
+    buttons.push(
+      new Button(
+        "defaultTower",
+        id,
+        decX,
+        decY + i * 130,
+        TOWER_WIDTH,
+        TOWER_HEIGHT,
+        towerImages[id],
+        function () {
+          ioBuffer.action = "create";
+          ioBuffer.id = id;
+        }
+      )
+    );
+  }
+}
+
+initTowerDecButton();
+
+// 스테이지 변경
+export function moveStage(payload) {
+  const { stage, monsterDefaultData } = payload;
+  GameManager.setStage(stage);
+
+  initMonsterData(monsterDefaultData);
 }
 
 // #region 몬스터 기능
@@ -166,11 +181,27 @@ export function moveMonsters(locationList) {
 
 // #region 타워 기능
 // 타워 추가
-async function addTower(targetLocation, type) {
+async function addTower(targetLocation) {
   try {
+    const type = ioBuffer.id;
+    ioBuffer.reset();
     const data = await sendEvent(101, { towerId: type, targetLocation });
     const { towerId, towerType, location } = data;
-    towers.set(id, new Tower(location.x, location.y, towerId, towerType));
+    const tower = new Tower(
+      location.x,
+      location.y,
+      towerId,
+      towerType,
+      TOWER_WIDTH,
+      TOWER_HEIGHT,
+      towerImages[towerType],
+      function () {
+        ioBuffer.action = "tower";
+        ioBuffer.id = this.id;
+      }
+    );
+    towers.set(id, tower);
+    tower.draw(ctx, towerImage);
   } catch (error) {
     console.log("타워 설치에 실패했습니다!");
   }
@@ -229,25 +260,51 @@ function gameLoop() {
 
   ctx.font = "25px Times New Roman";
   ctx.fillStyle = "skyblue";
-  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 100, 50); // 최고 기록 표시
+  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 50, 50); // 최고 기록 표시
   ctx.fillStyle = "white";
-  ctx.fillText(`점수: ${GameManager.score}`, 100, 100); // 현재 스코어 표시
+  ctx.fillText(`점수: ${GameManager.score}`, 50, 100); // 현재 스코어 표시
   ctx.fillStyle = "yellow";
-  ctx.fillText(`골드: ${GameManager.userGold}`, 100, 150); // 골드 표시
+  ctx.fillText(`골드: ${GameManager.userGold}`, 50, 150); // 골드 표시
   ctx.fillStyle = "black";
-  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 100, 200); // 최고 기록 표시
+  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 50, 200); // 최고 기록 표시
+
+  // 버튼 그리기
+  for (let i = buttons.length - 1; i >= 0; i--) {
+    const button = buttons[i];
+
+    if (button.label === "defaultTower") {
+      ctx.globalAlpha = "0.5";
+      ctx.fillStyle = "white";
+      ctx.fillRect(button.x - 10, button.y - 10, 120, 120);
+
+      ctx.globalAlpha = "1";
+    }
+
+    button.draw(ctx);
+  }
 
   // 타워 그리기
   towers.forEach((tower) => {
     tower.draw(ctx, towerImage);
   });
 
+  // 호버 이미지 그리기(타워)
+  if (ioBuffer.action === "create") {
+    ctx.drawImage(
+      towerImages[ioBuffer.id],
+      hoverLoc.x - TOWER_WIDTH / 2,
+      hoverLoc.y - TOWER_WIDTH / 2,
+      TOWER_WIDTH,
+      TOWER_HEIGHT
+    );
+  }
+
   // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  house.draw(ctx, houseImage);
+  //house.draw(ctx, houseImage);
 
   monsters.forEach((monster) => {
     monster.move(house);
-    monster.draw(ctx);
+    //monster.draw(ctx);
   });
 
   // for (let i = monsters.length - 1; i >= 0; i--) {
@@ -281,6 +338,14 @@ function initGame() {
   GameManager.isInitGame = true;
 }
 
+//쿠키를 읽는 함수
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
@@ -292,14 +357,16 @@ Promise.all([
   ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  let somewhere;
+  let token = getCookie("authorization");
+  console.log("token : ", token);
 
-  serverSocket = await initSocket(somewhere);
+  serverSocket = await initSocket(token);
 
   if (!serverSocket) console.log("socket 접속 실패!");
 
   try {
     const gameAssets = await sendEvent(1, {
+      cookies: token,
       width: canvas.width,
       height: canvas.height,
     });
@@ -309,14 +376,17 @@ Promise.all([
 
     ({
       towerDec,
-      monsterPath,
+      path: monsterPath,
       playerHp: houseHp,
       playerGold: GameManager.userGold,
       stage: GameManager.stage,
     } = gameAssets);
 
     // 기본 데이터 초기화
-    initData(monster, tower);
+    initMonsterData(monster);
+    initTowerData(tower);
+
+    initTowerDecButton();
 
     if (!GameManager.isInitGame) initGame();
   } catch (error) {
@@ -332,17 +402,39 @@ Promise.all([
   */
 });
 
-// 타워 선택 UI 생성
-const towerSelectionUI = document.createElement("div");
-towerSelectionUI.style.position = "absolute";
-towerSelectionUI.style.top = "50%";
-towerSelectionUI.style.left = "50%";
-towerSelectionUI.style.transform = "translate(-50%, -50%)";
-towerSelectionUI.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-towerSelectionUI.style.padding = "20px";
-towerSelectionUI.style.borderRadius = "10px";
-towerSelectionUI.style.color = "white";
+canvas.addEventListener("click", (e) => {
+  const x = e.offsetX;
+  const y = e.offsetY;
+
+  let isButtonClicked = false;
+  for (let i = buttons.length - 1; i >= 0; i--) {
+    const button = buttons[i];
+    if (button.isClicked(x, y)) {
+      button.onClick();
+      isButtonClicked = true;
+      break; // 첫 번째로 클릭된 버튼에서 순회 중단
+    }
+  }
+
+  if (isButtonClicked) return;
+
+  // TODO 허공 클릭하면 처리할 이벤트
+  if (ioBuffer.action === "create")
+    addTower({ x: x + TOWER_WIDTH / 2, y: y + TOWER_HEIGHT / 2 });
+});
+
+canvas.addEventListener("mousemove", (e) => {
+  const x = e.offsetX;
+  const y = e.offsetY;
+
+  console.log(x, y);
+
+  if (ioBuffer.action === "create") {
+    hoverLoc.x = x;
+    hoverLoc.y = y;
+  } else {
+    hoverLoc = { x: 0, y: 0 };
+  }
+});
 
 initGame();
-
-document.body.appendChild(towerSelectionUI);
