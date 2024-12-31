@@ -1,57 +1,84 @@
-//타워 테이블을 local 정보로 처리한다.
-//타워는 각각의 사용자에 따라 하나씩 가지고 있는 식이다.
+// models/tower.js
 
-const towers = {}; // 사용자별 타워 데이터 저장
+import towerData from "../../gameDefaultData/tower.js";
 
-// 타워 기본 구조 생성
-const createTowerTemplate = (id, type, atckSpead, atck, upgrade, upgradeValue, price) => ({
-    id, 
-    type,
-    atckSpead,
-    atck,
-    upgrade,
-    upgradeValue,
-    price
-});
+// 타워 생성 시마다 증가하는 유니크 ID 관리 변수
+let towerIdCounter = 1; // 최초 타워 ID는 1부터 시작
 
-// 사용자 타워 리스트 초기화
-export const initializeTowers = (uuid) => {
-    towers[uuid] = [];
-};
+export class Tower {
+  constructor(towerType, location) {
+    const tower = towerData.data.find((t) => t.id === towerType);
 
-// 특정 사용자의 타워 리스트 가져오기
-export const getTowers = (uuid) => {
-    return towers[uuid] || [];
-};
-
-// 특정 타워 가져오기
-export const getTowerById = (uuid, towerId) => {
-    const userTowers = towers[uuid] || [];
-    return userTowers.find((tower) => tower.id === towerId);
-};
-
-// 타워 추가
-export const addTower = (uuid, tower) => {
-    if (!towers[uuid]) {
-        towers[uuid] = [];
+    if (!tower) {
+      throw new Error("타워 정보를 찾을 수 없습니다.");
     }
-    towers[uuid].push(tower);
+
+    // 고유 ID를 순차적으로 증가시키는 방식으로 설정
+    this.towerId = towerIdCounter++; // 유니크 ID는 순차적으로 증가 //현재는 유니크 아이디로 적음, 추후 type이나 다른 걸로 수정
+    this.towerType = tower.id; // 타워 종류 (ID)
+    this.atckSpeed = tower.atckSpead;
+    this.atck = tower.atck;
+    this.upgrade = tower.upgrade;
+    this.upgradeValue = tower.upgradeValue;
+    this.price = tower.price;
+    this.location = location; // {x, y} 위치 정보
+    this.cooldown = this.atckSpeed; // 타워의 초기 쿨타임
+  }
+  attack(monster, socket, ingame) {
+    monster.hitByTower(socket, ingame, this.atck);
+    socket.emit("monsterAttacked", {
+      status: "success",
+      message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
+      data: {
+        towerId: this.towerId,
+        monsterId: monster.uniqueId,
+      },
+    });
+  }
+  //몬스터 피격 호출
+
+  // 쿨타임 감소 함수
+  decreaseCooldown(socket, ingame) {
+    this.cooldown--;
+    if (this.cooldown <= 0) {
+      ingame.monster.forEach((monster) => {
+        const distance = Math.sqrt(
+          Math.pow(this.location.x - monster.x, 2) +
+            Math.pow(this.location.y - monster.y, 2)
+        );
+        if (distance < this.range) {
+          this.attack(monster, socket, ingame); // 타워 공격
+          this.cooldown = this.atckSpeed; // 쿨타임 초기화
+        }
+      });
+    }
+  }
+
+  // 타워 업그레이드 함수
+  upgradeTower() {
+    this.atck += this.upgradeValue;
+    this.upgrade++;
+    this.cooldown = this.atckSpeed; // 업그레이드 후 쿨타임 초기화
+    console.log(`타워 ${this.uniqueId}가 업그레이드되었습니다.`);
+  }
+
+  // 타워 이동 메서드
+  moveTower(newLocation) {
+    if (
+      !newLocation ||
+      typeof newLocation.x !== "number" ||
+      typeof newLocation.y !== "number"
+    ) {
+      throw new Error("타워 이동 위치 정보가 유효하지 않습니다.");
+    }
+    this.location = newLocation;
+    console.log(
+      `타워 ${this.uniqueId}가 위치를 ${JSON.stringify(newLocation)}로 이동했습니다.`
+    );
+  }
+}
+
+// 타워 객체 생성 함수 (타워 ID와 위치를 받아서 타워 객체 생성)
+export const createTowerFromData = (towerId, location) => {
+  return new Tower(towerId, location);
 };
-
-// 타워 삭제
-export const removeTower = (uuid, towerId) => {
-    const userTowers = towers[uuid];
-    if (!userTowers) throw new Error("타워 데이터를 찾을 수 없습니다.");
-
-    const index = userTowers.findIndex((tower) => tower.id === towerId);
-    if (index === -1) throw new Error("타워를 찾을 수 없습니다.");
-
-    return userTowers.splice(index, 1)[0]; // 삭제된 타워 반환
-};
-
-// 타워 데이터 리셋
-export const resetTowers = (uuid) => {
-    towers[uuid] = [];
-};
-
-export default createTowerTemplate

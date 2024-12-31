@@ -1,199 +1,154 @@
-import { getInGame, createInGame } from "../inGame.js";
-import towerData from "../../gameDefaultData/tower.js";
-import { getTowers, addTower, removeTower } from "../models/tower.model.js";
+import { getInGame } from "../models/inGame.js";
+import { createTowerFromData } from "../models/tower.js"; // 타워 생성 함수
+import towerData from "../../gameDefaultData/tower.js"; // 타워 기본 데이터
+import { gameGoldChange } from "./stageHandler.js";
 
-//특정 타워 데이터가 존재하는지 조회
-const getTowerDataById = (id) => {
-    return towerData.data.find((tower) => tower.id === id);
+// 타워가 인게임 데이터에 존재하는지 확인하는 함수
+const existTowerHandler = (towerId, inGame) => {
+  const tower = inGame.tower.find((t) => t.towerId === towerId);
+  if (!tower) {
+    throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
+  }
+  return tower;
 };
 
-//시작 시 타워 3개를 가지고 시작하기 위해 랜덤한 3개의 타워 가져오기
-const getRandomTowers = () => {
-    const shuffled = [...towerData.data].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
+// 골드가 충분한지 확인하는 함수
+const haveGold = (inGame, cost) => {
+  if (inGame.gold < cost) {
+    throw new Error("골드가 부족합니다.");
+  }
+  return true;
 };
 
-// 게임 시작 시 초기화 핸들러
-export const initializeGameHandler = (uuid, socket) => {
-    const initialTowers = getRandomTowers();
-    const gameState = createInGame(uuid);
+// 타워를 게임에 설치하는 함수
+export const installTowerHandler = (uuid, payload) => {
+  const { socket, towerType, location } = payload.data;
+  const inGame = getInGame(uuid);
 
-    gameState.gold = 500; // 초기 골드 설정(수정 예정)
-    gameState.tower = [];
+  try {
+    // 타워 객체 생성
+    const newTower = createTowerFromData(towerType, location);
 
-    // 초기 타워 데이터 추가 및 고유 Type 부여
-    initialTowers.forEach((towerData, index) => {
-        addTower(uuid, {
-            id: index + 1, // 고유 ID (사용자 타워 배열 내 순서)
-            type: index + 1, // 고유 Type 번호
-            atckSpead: towerData.atckSpead,
-            atck: towerData.atck,
-            upgrade: 0,
-            upgradeValue: towerData.upgradeValue,
-            price: towerData.price,
-            location: null, // 초기 위치 없음
-        });
-    });
+    // 타워 설치 비용 확인 (타워의 price 사용)
+    const installCost = newTower.price;
 
-    socket.emit("gameInitialize", {
-        status: "success",
-        message: "게임이 초기화 되었습니다.",
-        data: {
-            tower: getTowers(uuid),
-            gold: gameState.gold,
-        }
-    });
-};
+    // 골드가 충분한지 확인
+    haveGold(inGame, installCost);
 
-// 타워 생성 핸들러
-export const towerCreateHandler = (uuid, payload, socket) => {
-    const { towerId, location } = payload;
-    //const {x, y} = location; x, y를 기준으로 생성하기 때문에 필요할지 의문
+    // 골드 차감
+    gameGoldChange(socket, inGame, installCost);
 
-    //gameState에 게임 정보 불러옴
-    const gameState = getInGame(uuid);
-
-    if (!gameState) {
-        throw new Error("게임 상태를 찾을 수 없습니다.", "towerCreate");
-    }
-
-    //타워 타입을 기준으로 했지만 id로 변경
-    const towerInfo = getTowerDataById(towerId);
-
-    if (!towerInfo) {
-        throw new Error("유효하지 않은 타워 타입입니다.", "towerCreate");
-    }
-
-    if (gameState.gold < towerInfo.price) {
-        socket.emit("towerCreate", { status: "fail", message: "골드 부족" });
-        return;
-    }
-
-    const userTowers = getTowers(uuid);
-    // createTowerTemplate을 사용하여 타워 생성
-    const newTower = createTowerTemplate(
-        userTowers.length + 1,  // 고유 ID
-        userTowers.length + 1,  // 고유 Type 번호
-        towerInfo.atckSpead,    // 공격 속도
-        towerInfo.atck,         // 공격력
-        0,                      // 업그레이드 초기화
-        towerInfo.upgradeValue, // 업그레이드 값
-        towerInfo.price         // 가격
-    );
-    newTower.location = location; // 위치는 별도로 설정
-
-    gameState.tower.push(newTower);
-    gameState.gold -= towerInfo.price;
-
-    socket.emit("towerCreate", {
-        status: "success",
-        message: "타워가 생성되었습니다.",
-        data: {
-            towerId: newTower.id,
-            towerType: newTower.type,
-            location: newTower.location
-            
-        }
-    });
-};
-
-// 타워 이동 핸들러
-export const towerMoveHandler = (uuid, payload, socket) => {
-    const { towerId, currentLocation, moveLocation } = payload;
-    const towers = getTowers(uuid);
-
-    //타워 모델에서 설정한 location의 값을 가져와서 사용할 예정
-    const tower = towers.find(
-        (t) => t.id === towerId && t.location === currentLocation
-    );
-
-    if (!tower) {
-        throw new Error("타워를 찾을 수 없거나 위치가 잘못되었습니다.", "towerMove");
-    }
-
-    tower.location = moveLocation;
-
-    socket.emit("towerMove", {
-        status: "success",
-        message: "타워가 이동하였습니다",
-        data: {
-            towerId,
-            moveLocation,
-        }
-    });
+    // 타워를 게임에 설치
+    inGame.towers.push(newTower); // 타워 객체 자체를 저장
+    return {
+      status: "success",
+      message: "타워가 설치되었습니다.",
+      data: {
+        tower: newTower, // 고유 ID 포함된 타워 정보 반환
+      },
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      message: error.message,
+      data: {},
+    };
+  }
 };
 
 // 타워 판매 핸들러
-export const towerSellHandler = (uuid, payload, socket) => {
-    const { towerId } = payload;
-    const gameState = getInGame(uuid);
-    const towers = getTowers(uuid);
-    
-    //인덱스 값으로 찾기
-    const towerIndex = towers.findIndex((t) => t.id === towerId);
-    if (towerIndex === -1) {
-        throw new Error("타워를 찾을 수 없습니다.", "towerSell");
-    }
+export const refundTowerHandler = (uuid, payload) => {
+  const { towerId } = payload.data;
+  const inGame = getInGame(uuid);
 
-    const tower = removeTower(uuid, towerId)
-    const towerInfo = getTowerDataById(tower.id);
+  try {
+    // 타워가 인게임 데이터에 존재하는지 확인
+    const tower = existTowerHandler(towerId, inGame);
 
-    const refundGold = towerInfo.price + Math.floor(towerInfo.upgradeValue * 0.5);
-    gameState.gold += refundGold;
+    // 환불 금액 계산 (기본 가격 + 업그레이드 값에 비례하는 금액)
+    const refundValue = tower.price + (tower.upgradeValue * tower.price) / 2;
 
-    socket.emit("towerSell", {
-        status: "success",
-        towerId,
-    });
+    // 골드 환불
+    inGame.gold += refundValue;
+
+    // 타워 삭제
+    inGame.towers = inGame.towers.filter((t) => t.towerId !== towerId);
+
+    return {
+      status: "success",
+      message: `타워가 환불되었습니다. 환불 금액: ${refundValue} 골드`,
+      data: {
+        refundedGold: refundValue,
+      },
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      message: error.message,
+      data: {},
+    };
+  }
 };
 
-// 타워 업그레이드 핸들러
-export const towerUpgradeHandler = (uuid, payload, socket) => {
-    const { towerId } = payload;
-    const gameState = getInGame(uuid);
-    const towers = getTowers(uuid);
+// 타워 이동 핸들러
+export const moveTowerHandler = (uuid, payload) => {
+  const { towerId, currentLocation, moveLocation } = payload.data;
+  const inGame = getInGame(uuid);
 
-    const tower = towers.find((t) => t.id === towerId);
-    if (!tower) {
-        throw new Error("타워를 찾을 수 없습니다.", "towerUpgrade");
-    }
+  try {
+    // 타워가 인게임 데이터에 존재하는지 확인
+    const tower = existTowerHandler(towerId, inGame);
 
-    //id를 기준으로 사용할 예정
-    const towerInfo = getTowerDataById(tower.id);
-    const upgradeCost = towerInfo.upgradeValue * (tower.upgrade + 1);
-
-    if (gameState.gold < upgradeCost) {
-        socket.emit("towerUpgrade", {
-            status: "fail",
-            message: "골드 부족",
-        });
-        return;
-    }
-
-    gameState.gold -= upgradeCost;
-    tower.upgrade += 1;
-    // tower.attackPower += towerInfo.upgradeValue; 추후 성능 업그레이드 설정
-
-    socket.emit("towerUpgrade", {
-        status: "success",
-        towerId,
-        towerlevel: tower.upgrade,  
-    });
+    // 타워 이동
+    tower.moveTower(moveLocation);
+    return {
+      status: "success",
+      message: "타워가 이동되었습니다.",
+      data: {
+        tower: tower, // 이동된 타워 정보 반환
+      },
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      message: error.message,
+      data: {},
+    };
+  }
 };
 
-// 타워 공격 핸들러
-export const towerAttackHandler = (uuid, payload, socket) => {
-    const { towerId, monsterId } = payload;
-    const towers = getTowers(uuid);
-    const tower = towers.find((t) => t.id === towerId);
+// 타워 업그레이드를 처리하는 함수
+export const upgradeTowerHandler = (uuid, payload) => {
+  const { socket, towerId } = payload.data;
+  const inGame = getInGame(uuid);
 
-    if (!tower) {
-        throw new Error("타워를 찾을 수 없습니다.", "towerAttack");
-    }
+  try {
+    // 타워가 인게임 데이터에 존재하는지 확인
+    const tower = existTowerHandler(towerId, inGame);
 
-    socket.emit("towerAttack", {
-        towerId,
-        monsterId,
-        broadcast: true
-    });
+    // 업그레이드 비용 계산 (타워의 price * upgradeValue 사용)
+    const upgradeCost = tower.upgradeValue * tower.price;
+
+    // 골드가 충분한지 확인
+    haveGold(inGame, upgradeCost);
+
+    // 골드 차감
+    gameGoldChange(socket, inGame, upgradeCost);
+
+    // 타워 업그레이드
+    tower.upgradeTower();
+    return {
+      status: "success",
+      message: "타워가 업그레이드되었습니다.",
+      data: {
+        tower: tower, // 업그레이드된 타워 정보 반환
+      },
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      message: error.message,
+      data: {},
+    };
+  }
 };
