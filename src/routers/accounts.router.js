@@ -240,6 +240,24 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
     }
 })
 
+//현재 보유한 타워들의 리스트를 보내는 함수
+router.get('/tower/ownTower', UserToken, async (req,res, next)=> {
+    try{
+        const user = req.user;
+        const ownTowerList = await prisma.oWN_TOWERS.findMany({
+            where : {
+                USER_ID : user.USER_ID
+            }
+        })
+
+        return res.status(201).json({data : ownTowerList});
+    }
+    catch(err)
+    {
+        return res.status(404).json({})
+    }
+})
+
 //타워 업그레이드
 router.put('/tower/upgrade', UserToken, async (req, res, next) => {
     try {
