@@ -366,7 +366,7 @@ Promise.all([
     const { monster, tower } = gameAssets;
 
     ({
-      //towerDec,
+      towerDec,
       path: monsterPath,
       playerHp: houseHp,
       playerGold: GameManager.userGold,
