@@ -4,7 +4,7 @@ import { getInGame } from "../models/inGame.js";
 import stageData from "../../gameDefaultData/stage.js";
 import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
-let uniqueId = 0; //몬스터 고유번호
+let uniqueId = 1; //몬스터 고유번호
 
 export class Monster {
   constructor(path, id, monsterData, uniqueId) {
@@ -36,7 +36,7 @@ export class Monster {
     this.isDead = false;
   }
 
-  move(socket) {
+  move(socket, ingame) {
     if (this.currentIndex < this.path.length - 1) {
       const nextPoint = this.path[this.currentIndex + 1];
       const deltaX = nextPoint.x - this.x;
@@ -54,7 +54,7 @@ export class Monster {
       }
       return false;
     } else {
-      this.attack(socket); // 기지에 도달하면 기지에 데미지를 입힙니다!
+      this.attack(socket, ingame); // 기지에 도달하면 기지에 데미지를 입힙니다!
       this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
       this.isDead = true;
     }
@@ -82,9 +82,10 @@ export class Monster {
       this.isDead = true;
       //리워드 지급
       gameGoldChange(socket, ingame, this.reward);
-      gameScoreChange(socket, ingame, this.reward);
+      gameScoreChange(socket, ingame, this.reward / 10);
       //사망한 몬스터 id와 uniqueId 클라에 통보
-      socket.emit("MonsterDead", {
+      socket.emit("event", {
+        handlerId: 204,
         status: "success",
         message: `${this.id}번 몬스터 사망`,
         data: {
@@ -94,11 +95,12 @@ export class Monster {
     }
   }
   //몬스터가 베이스에 닿았을때 gameHouseChange
-  attack(socket) {
-    gameHouseChange({ parsedData: { damage: this.attackPower } });
+  attack(socket, ingame) {
+    gameHouseChange(socket, ingame, this.attackPower);
     this.isDead = true;
 
-    socket.emit("MonsterAtack", {
+    socket.emit("event", {
+      handlerId: 204,
       status: "success",
       message: `${this.id}번 몬스터가 공격`,
       data: {
@@ -120,10 +122,9 @@ const makeMonster = (path, id, monsterData, uniqueId) => {
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (ingame, path, monsterData, stageData) => {
+export const spawnMonsters = (ingame, path, monsterData,nowStageData) => {
   ingame.nowMonsterData = [];
-  ingame.nowStageData = stageData; //[{ stageId: 1, id: 1, count: 10 }]
-  console.log(monsterData);
+  ingame.nowStageData = nowStageData; //[{ stageId: 1, id: 1, count: 10 }]
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
@@ -146,7 +147,8 @@ export const spawnMonsters = (ingame, path, monsterData, stageData) => {
 };
 
 export const spawnNextMonster = (socket, ingame) => {
-  ingame.monsterCoolTime--;
+  if(ingame.monsterCoolTime>0)ingame.monsterCoolTime--;
+
   if (ingame.isSpawn !== true) {
     return;
   }
@@ -157,7 +159,8 @@ export const spawnNextMonster = (socket, ingame) => {
     //스폰하면서 ingame monster배열에 넣어주기
     ingame.monster.push(monster);
     // 클라이언트에 몬스터 ID와 uniqueId 전송
-    socket.emit("spawnedMonster", {
+    socket.emit("event", {
+      handlerId: 204,
       status: "success",
       message: `${monster.id}번 몬스터 스폰 성공`,
       data: {
@@ -172,53 +175,53 @@ export const spawnNextMonster = (socket, ingame) => {
   }
 };
 
-//몬스터 공격 base랑 좌표가 같으면(충돌) gameHouseChange 호출해서 hp변경 / 몬스터 isdead true/자본변경
-const monsterDead = (ingame, socket, uniqueId) => {
-  const monster = ingame.nowMonsterData.find((m) => m.uniqueId === uniqueId);
+// //몬스터 공격 base랑 좌표가 같으면(충돌) gameHouseChange 호출해서 hp변경 / 몬스터 isdead true/자본변경
+// const monsterDead = (ingame, socket, uniqueId) => {
+//   const monster = ingame.nowMonsterData.find((m) => m.uniqueId === uniqueId);
 
-  socket.on("MonsterDead", (payload) => {
-    const { uniqueId } = payload;
-    // Handle the monster death logic here
-  });
+//   socket.on("MonsterDead", (payload) => {
+//     const { uniqueId } = payload;
+//     // Handle the monster death logic here
+//   });
 
-  if (monster && monster.hp <= 0) {
-    // 몬스터 사망시
-    monster.isDead = true;
-    //리워드 지급
-    let ingame = getInGame(ingame.uuid);
-    gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: monster.reward } });
-    //사망한 몬스터 id와 uniqueId 클라에 통보
-    socket.emit("DeadMonster", {
-      status: "success",
-      message: `${monster.id}번 몬스터 사망`,
-      data: {
-        id: monster.id,
-        uniqueId: monster.uniqueId,
-      },
-    });
-  } else if (
-    monster &&
-    monster.x === base.x &&
-    monster.y === base.y &&
-    !monster.isDead
-  ) {
-    // Call gameHouseChange or other logic here
-    gameHouseChange({
-      uuid: ingame.uuid,
-      parsedData: { damage: monster.attackPower },
-    });
-    monster.isDead = true;
-    socket.emit("MonsterAttack", {
-      status: "success",
-      message: `${monster.id}번 몬스터의 공격`,
-      data: {
-        id: monster.id,
-        uniqueId: monster.uniqueId,
-        hp: monster.hp,
-      },
-    });
-  }
-};
+//   if (monster && monster.hp <= 0) {
+//     // 몬스터 사망시
+//     monster.isDead = true;
+//     //리워드 지급
+//     let ingame = getInGame(ingame.uuid);
+//     gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: monster.reward } });
+//     //사망한 몬스터 id와 uniqueId 클라에 통보
+//     socket.emit("DeadMonster", {
+//       status: "success",
+//       message: `${monster.id}번 몬스터 사망`,
+//       data: {
+//         id: monster.id,
+//         uniqueId: monster.uniqueId,
+//       },
+//     });
+//   } else if (
+//     monster &&
+//     monster.x === base.x &&
+//     monster.y === base.y &&
+//     !monster.isDead
+//   ) {
+//     // Call gameHouseChange or other logic here
+//     gameHouseChange({
+//       uuid: ingame.uuid,
+//       parsedData: { damage: monster.attackPower },
+//     });
+//     monster.isDead = true;
+//     socket.emit("MonsterAttack", {
+//       status: "success",
+//       message: `${monster.id}번 몬스터의 공격`,
+//       data: {
+//         id: monster.id,
+//         uniqueId: monster.uniqueId,
+//         hp: monster.hp,
+//       },
+//     });
+//   }
+// };
 
 export const getMonsters = () => {
   return ingame.nowMonsterData;
