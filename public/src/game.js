@@ -326,6 +326,14 @@ function initGame() {
   GameManager.isInitGame = true;
 }
 
+//쿠키를 읽는 함수
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+  return null;
+};
+
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
@@ -337,8 +345,9 @@ Promise.all([
   ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  let somewhere;
-
+  let token = getCookie('authorization');
+  console.log("token : ", token);
+  serverSocket = await initSocket(token);
   serverSocket = await initSocket(somewhere);
 
   if (!serverSocket) console.log("socket 접속 실패!");
