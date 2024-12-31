@@ -25,4 +25,9 @@ export class Button {
       ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     else ctx.fillRect(this.x, this.y, this.width, this.height);
   }
+
+  move(x,y) {
+    this.x = x;
+    this.y = y;
+  }
 }

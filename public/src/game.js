@@ -179,7 +179,15 @@ async function addTower(targetLocation) {
     ioBuffer.reset();
     const data = await sendEvent(101, { towerId: type, targetLocation });
     const { towerId, towerType, location } = data;
-    const tower = new Tower(location.x, location.y, towerId, towerType);
+    const tower = new Tower(
+      location.x,
+      location.y,
+      towerId,
+      towerType,
+      TOWER_WIDTH,
+      TOWER_HEIGHT,
+      towerImages[towerType]
+    );
     towers.set(id, tower);
     tower.draw(ctx, towerImage);
   } catch (error) {
