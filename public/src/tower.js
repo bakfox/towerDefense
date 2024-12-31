@@ -2,7 +2,7 @@ import { getTowerData } from "./default/gameData.js";
 import { Button } from "./button.js";
 
 export class Tower {
-  constructor(x, y, id, type, width = null, height = null, image) {
+  constructor(x, y, id, type, width = null, height = null, image, onClick) {
     // 생성자 안에서 타워들의 속성을 정의한다고 생각하시면 됩니다!
     this.id = id;
     this.level = 1;
@@ -14,7 +14,7 @@ export class Tower {
     this.cooldown = 0; // 타워 공격 쿨타임
     this.beamDuration = 0; // 타워 광선 지속 시간
     this.target = null; // 타워 광선의 목표
-    this.btn = new Button("tower", id, x, y, width, height, image);
+    this.btn = new Button("tower", id, x, y, width, height, image, onClick);
     this.init(type);
   }
 

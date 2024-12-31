@@ -186,7 +186,11 @@ async function addTower(targetLocation) {
       towerType,
       TOWER_WIDTH,
       TOWER_HEIGHT,
-      towerImages[towerType]
+      towerImages[towerType],
+      function () {
+        ioBuffer.action = "tower";
+        ioBuffer.id = this.id;
+      }
     );
     towers.set(id, tower);
     tower.draw(ctx, towerImage);
