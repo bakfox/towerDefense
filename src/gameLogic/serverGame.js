@@ -13,8 +13,8 @@ async function logicLoop(ingame, uuid, path, socket) {
     return;
   }
   const elapsed = Date.now() - start;
-  console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
-  console.log(ingame);
+  // console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
+  // console.log(ingame);
 
   //타워 공격 호출
   if (ingame.tower.length !== 0) {

@@ -53,19 +53,21 @@ houseImage.src = "images/house.png";
 const pathImage = new Image();
 pathImage.src = "images/path.png";
 
-const monsterImages = [];
+const monsterImages = new Map();
 for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
   const img = new Image();
   img.src = `images/monster_${i}.png`;
-  monsterImages.push(img);
+  monsterImages.set(i, img);
 }
 
-const towerImages = [];
+const towerImages = new Map();
 for (let i = 1; i <= NUM_OF_TOWERS; i++) {
   const img = new Image();
   img.src = `images/tower_${i}.png`;
-  towerImages.push(img);
+  towerImages.set(i, img);
 }
+
+console.log(towerImages, monsterImages);
 
 let monsterPath = [];
 
@@ -160,8 +162,12 @@ export function moveStage(payload) {
 
 // #region 몬스터 기능
 // 몬스터 추가
-export function addMonster(id, type) {
-  monsters.set(id, new Monster(monsterPath, monsterImages, id, type, stage));
+export function addMonster(payload) {
+  const { id, uniqueId } = payload;
+  monsters.set(
+    uniqueId,
+    new Monster(monsterPath, monsterImages, id, uniqueId, GameManager.stage)
+  );
 }
 
 // 몬스터 삭제
@@ -304,7 +310,7 @@ function gameLoop() {
 
   monsters.forEach((monster) => {
     monster.move(house);
-    //monster.draw(ctx);
+    monster.draw(ctx);
   });
 
   // for (let i = monsters.length - 1; i >= 0; i--) {
@@ -349,11 +355,19 @@ const getCookie = (name) => {
 // 이미지 로딩 완료 후 서버와 연결하고 게임 초기화
 Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
-  new Promise((resolve) => (towerImage.onload = resolve)),
   new Promise((resolve) => (houseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
-  ...monsterImages.map(
-    (img) => new Promise((resolve) => (img.onload = resolve))
+  monsterImages.forEach(
+    (img) =>
+      new Promise((resolve) => {
+        img.onload = resolve;
+      })
+  ),
+  towerImages.forEach(
+    (img) =>
+      new Promise((resolve) => {
+        img.onload = resolve;
+      })
   ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
@@ -370,6 +384,8 @@ Promise.all([
       width: canvas.width,
       height: canvas.height,
     });
+
+    console.log("gameAssets : ", gameAssets);
 
     // 게임 데이터 초기화 TODO
     const { monster, tower } = gameAssets;
@@ -427,7 +443,7 @@ canvas.addEventListener("mousemove", (e) => {
   const x = e.offsetX;
   const y = e.offsetY;
 
-  console.log(x, y);
+  //console.log(x, y);
 
   if (ioBuffer.action === "create") {
     hoverLoc.x = x;

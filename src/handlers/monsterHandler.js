@@ -157,8 +157,9 @@ export const spawnNextMonster = (socket, ingame) => {
     //스폰하면서 ingame monster배열에 넣어주기
     ingame.monster.push(monster);
     // 클라이언트에 몬스터 ID와 uniqueId 전송
-    socket.emit("spawnedMonster", {
+    socket.emit("event", {
       status: "success",
+      handlerId: 201,
       message: `${monster.id}번 몬스터 스폰 성공`,
       data: {
         id: monster.id,
