@@ -4,7 +4,7 @@ import { getInGame } from "../models/inGame.js";
 import stageData from "../../gameDefaultData/stage.js";
 import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
-let uniqueId = 0; //몬스터 고유번호
+let uniqueId = 1; //몬스터 고유번호
 
 export class Monster {
   constructor(path, id, uniqueId) {
@@ -84,7 +84,8 @@ export class Monster {
       gameGoldChange(socket, ingame, this.reward);
       gameScoreChange(socket, ingame, this.reward / 10);
       //사망한 몬스터 id와 uniqueId 클라에 통보
-      socket.emit("MonsterDead", {
+      socket.emit("event", {
+        handlerId: 204,
         status: "success",
         message: `${this.id}번 몬스터 사망`,
         data: {
@@ -98,7 +99,8 @@ export class Monster {
     gameHouseChange(socket, ingame, this.attackPower);
     this.isDead = true;
 
-    socket.emit("MonsterAtack", {
+    socket.emit("event", {
+      handlerId: 204,
       status: "success",
       message: `${this.id}번 몬스터가 공격`,
       data: {
@@ -120,10 +122,9 @@ const makeMonster = (path, id, monsterData, uniqueId) => {
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (ingame, path, monsterData, stageData) => {
+export const spawnMonsters = (ingame, path, monsterData,nowStageData) => {
   ingame.nowMonsterData = [];
-  ingame.nowStageData = stageData; //[{ stageId: 1, id: 1, count: 10 }]
-  console.log(monsterData);
+  ingame.nowStageData = nowStageData; //[{ stageId: 1, id: 1, count: 10 }]
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
@@ -146,7 +147,8 @@ export const spawnMonsters = (ingame, path, monsterData, stageData) => {
 };
 
 export const spawnNextMonster = (socket, ingame) => {
-  ingame.monsterCoolTime--;
+  if(ingame.monsterCoolTime>0)ingame.monsterCoolTime--;
+
   if (ingame.isSpawn !== true) {
     return;
   }
@@ -157,7 +159,8 @@ export const spawnNextMonster = (socket, ingame) => {
     //스폰하면서 ingame monster배열에 넣어주기
     ingame.monster.push(monster);
     // 클라이언트에 몬스터 ID와 uniqueId 전송
-    socket.emit("spawnedMonster", {
+    socket.emit("event", {
+      handlerId: 204,
       status: "success",
       message: `${monster.id}번 몬스터 스폰 성공`,
       data: {

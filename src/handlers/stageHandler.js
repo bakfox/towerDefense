@@ -135,7 +135,7 @@ export const gameStageChange = (socket, ingame) => {
   for (let index = 0; index < nextStageData.length; index++) {
     nextMonsterData.push(monsterData.data[nextStageData[index].id]);
   }
-  spawnMonsters(ingame, path,nextStageData);
+  spawnMonsters(ingame, path, nextStageData);
 
   socket.emit("event", {
     handlerId: 3,
