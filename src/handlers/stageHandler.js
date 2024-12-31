@@ -36,7 +36,7 @@ function monsterPathMake(canvas) {
 }
 
 export const gameStart = async (payload) => {
-  const inGame = createInGame(payload.uuid);
+  const ingame = createInGame(payload.uuid);
   const newPath = monsterPathMake({
     width: payload.data.width,
     height: payload.data.height,
@@ -59,9 +59,9 @@ export const gameStart = async (payload) => {
       towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
     });
   }
-  inGame.ownTower = towerDec;
-  startLoop(inGame, payload.uuid, newPath, payload.socket);
-  const nowStageData = stageData.data[inGame.stage];
+  ingame.ownTower = towerDec;
+  startLoop(ingame, payload.uuid, newPath, payload.socket);
+  const nowStageData = stageData.data[ingame.stage];
   const nowMonsterData = [];
   for (let index = 0; index < nowStageData.length; index++) {
     nowMonsterData.push(monsterData.data[nowStageData[index].id]);
@@ -72,9 +72,9 @@ export const gameStart = async (payload) => {
     message: "게임을 시작합니다!",
     data: {
       towerDec,
-      stage: inGame.stage,
-      playerHp: inGame.house.hp,
-      playerGold: inGame.gold,
+      stage: ingame.stage,
+      playerHp: ingame.house.hp,
+      playerGold: ingame.gold,
       monster: nowMonsterData,
       tower: towerData,
     },
@@ -86,20 +86,21 @@ export const gameStart = async (payload) => {
   };
 };
 export const gameEnd = (payload) => {
-  const inGame = createInGame(payload.uuid);
-  endLoop(inGame, payload.uuid);
+  const ingame = createInGame(payload.uuid);
+  endLoop(ingame, payload.uuid);
 };
 
 // 여기 아래는 서버에서 핸들러가 따로 없음 객체 형태로 보내기
 
-export const gameStageChange = (socket, inGame) => {
-  inGame.stage++;
-  const nextStageData = stageData.data[inGame.stage];
+export const gameStageChange = (socket, ingame) => {
+  ingame.stage++;
+  const nextStageData = stageData.data[ingame.stage];
   const nextMonsterData = [];
   for (let index = 0; index < nextStageData.length; index++) {
     nextMonsterData.push(monsterData.data[nextStageData[index].id]);
   }
-  console.log(inGame);
+  spawnMonsters(ingame, path, nextMonsterData, nextStageData);
+
   socket.emit("event", {
     handlerId: 3,
     status: "succes",
@@ -111,39 +112,39 @@ export const gameStageChange = (socket, inGame) => {
   });
 };
 
-export const gameHouseChange = (socket, inGame, damage) => {
-  inGame.hp -= damage;
-  console.log(inGame);
+export const gameHouseChange = (socket, ingame, damage) => {
+  ingame.hp -= damage;
+  console.log(ingame);
   socket.emit("event", {
     handlerId: 4,
     status: "succes",
     message: "하우스 체력 변경에 성공했습니다",
     data: {
-      playerHp: inGame.house.hp,
+      playerHp: ingame.house.hp,
     },
   });
 };
-export const gameGoldChange = (socket, inGame, gold) => {
-  inGame.gold += gold;
-  console.log(inGame);
+export const gameGoldChange = (socket, ingame, gold) => {
+  ingame.gold += gold;
+  console.log(ingame);
   socket.emit("event", {
     handlerId: 5,
     status: "succes",
     message: "골드 변경에 성공했습니다",
     data: {
-      playerGold: inGame.gold,
+      playerGold: ingame.gold,
     },
   });
 };
-export const gameScoreChange = (socket, inGame, score) => {
-  inGame.score += score;
-  console.log(inGame);
+export const gameScoreChange = (socket, ingame, score) => {
+  ingame.score += score;
+  console.log(ingame);
   socket.emit("event", {
     handlerId: 6,
     status: "succes",
     message: "점수 변경에 성공했습니다",
     data: {
-      score: inGame.score,
+      score: ingame.score,
     },
   });
 };
