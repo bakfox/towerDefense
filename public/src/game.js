@@ -122,8 +122,8 @@ export function setHouseHp(value) {
 const decX = canvas.width - 125;
 const decY = canvas.height / 2 - 50 - 130;
 
-const towerWidth = 100;
-const towerLength = 100;
+const TOWER_WIDTH = 100;
+const TOWER_HEIGHT = 100;
 
 function initTowerDecButton() {
   // 타워 버튼 추가
@@ -136,8 +136,8 @@ function initTowerDecButton() {
         id,
         decX,
         decY + i * 130,
-        towerWidth,
-        towerLength,
+        TOWER_WIDTH,
+        TOWER_HEIGHT,
         towerImages[id],
         function () {
           ioBuffer.action = "create";
@@ -272,10 +272,10 @@ function gameLoop() {
   if (ioBuffer.action === "create") {
     ctx.drawImage(
       towerImages[ioBuffer.id],
-      hoverLoc.x - towerWidth / 2,
-      hoverLoc.y - towerWidth / 2,
-      towerWidth,
-      towerLength
+      hoverLoc.x - TOWER_WIDTH / 2,
+      hoverLoc.y - TOWER_WIDTH / 2,
+      TOWER_WIDTH,
+      TOWER_HEIGHT
     );
   }
 
@@ -389,7 +389,7 @@ canvas.addEventListener("click", (e) => {
 
   // TODO 허공 클릭하면 처리할 이벤트
   if (ioBuffer.action === "create")
-    addTower({ x: x + towerWidth / 2, y: y + towerLength / 2 });
+    addTower({ x: x + TOWER_WIDTH / 2, y: y + TOWER_HEIGHT / 2 });
 });
 
 canvas.addEventListener("mousemove", (e) => {
