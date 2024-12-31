@@ -1,8 +1,8 @@
-import { Monster } from "../src/monster.js";
+// import { Monster } from "../src/monster.js";
 import monsterData from "../../gameDefaultData/monster.js";
 import { getInGame } from "../models/inGame.js";
 import stageData from "../../gameDefaultData/stage.js";
-import { gameGoldChange, gameHouseChange } from "./stage.handler.js";
+import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
 let uniqueId = 0; //몬스터 고유번호
 
@@ -108,7 +108,7 @@ export class Monster {
   }
 }
 
-let monsterData = monsterData;
+// let monsterData = monsterData;
 
 //인게임정보 받아오기
 //path받아오기
