@@ -22,10 +22,11 @@ async function logicLoop(ingame, uuid, path, socket) {
       tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
     });
   }
-
-  ingame.monster.forEach((monster) => {
-    monster.move(socket);
-  });
+  if (ingame.monster.length !== 0) {
+    ingame.monster.forEach((monster) => {
+      monster.move(socket);
+    });
+  }
 
   spawnNextMonster(socket, ingame);
 
@@ -41,7 +42,7 @@ async function logicLoop(ingame, uuid, path, socket) {
 
   setTimeout(
     () => {
-      logicLoop(ingame, uuid, socket).catch((err) => {
+      logicLoop(ingame, uuid, path, socket).catch((err) => {
         console.error("Error in logicLoop:", err);
       });
     },
