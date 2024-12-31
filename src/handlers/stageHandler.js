@@ -52,22 +52,23 @@ export const gameStart = async (payload) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_KEY);
-    const id = decodedToken.userid;
+    const id = +decodedToken.userId;
 
     const newPath = monsterPathMake({
       width: payload.data.width,
       height: payload.data.height,
     });
 
-    //유저 데이터 찾기
+    //유저 데이터 찾기 나중에 저거 확인해보니 안에 이미 userID가 있음
     const user = await prisma.uSERS.findFirst({
-      where: { ID: id },
+      where: { USER_ID: id },
     });
 
     if (!user) {
       throw new Error("토큰 사용자가 존재하지 않습니다.");
     }
-    // 인게임에 user_id 저장
+
+    //인게임에 user_id 저장
     ingame.userId = user.USER_ID;
 
     const ownTowersData = await prisma.eQUIP_TOWERS.findMany({
@@ -78,7 +79,7 @@ export const gameStart = async (payload) => {
         OWN_TOWERS: true,
       },
     });
-
+    console.log(ownTowersData, id, "왜 안됨?");
     const towerDec = [];
 
     if (ownTowersData) {
@@ -86,7 +87,7 @@ export const gameStart = async (payload) => {
         towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
       });
     }
-    console.log("아 여기까지 함");
+
     ingame.ownTower = towerDec;
 
     const nowStageData = stageData.data[ingame.stage];
