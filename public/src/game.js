@@ -152,7 +152,7 @@ initTowerDecButton();
 
 // 스테이지 변경
 export function moveStage(payload) {
-  const {stage, monsterDefaultData} = payload;
+  const { stage, monsterDefaultData } = payload;
   GameManager.setStage(stage);
 
   initMonsterData(monsterDefaultData);
@@ -357,7 +357,7 @@ Promise.all([
   ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
-  let token = getCookie('authorization');
+  let token = getCookie("authorization");
   console.log("token : ", token);
 
   serverSocket = await initSocket(token);
@@ -366,6 +366,7 @@ Promise.all([
 
   try {
     const gameAssets = await sendEvent(1, {
+      cookies: token,
       width: canvas.width,
       height: canvas.height,
     });
