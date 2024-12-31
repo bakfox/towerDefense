@@ -13,7 +13,7 @@ const registerHander = (io) => {
     //접속
     socket.emit("handleConnect", {});
 
-    socket.on("event", (data) => handleEvent(io, socket, userUUID, data)); //이벤트 핸들러 연결
+    socket.on("event", (data, callBack) => handleEvent(io, socket, userUUID, data, callBack)); //이벤트 핸들러 연결
 
     //접속 해제
     socket.on("disconnect", (socket) => {});
