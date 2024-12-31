@@ -1,9 +1,16 @@
 import monsterData from "../../gameDefaultData/monster.js";
 import stageData from "../../gameDefaultData/stage.js";
 import towerData from "../../gameDefaultData/tower.js";
+
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
-import { createInGame, getInGame } from "../models/inGame.js";
+import { createInGame } from "../models/inGame.js";
 import { prisma } from "../utils/index.js";
+import { spawnMonsters } from "./monsterHandler.js";
+
+dotenv.config();
 
 // 경로 만드는 함수 처음에 canvas width , height 값 받아와서 객체 형테로 사용
 function monsterPathMake(canvas) {
@@ -37,63 +44,94 @@ function monsterPathMake(canvas) {
 
 export const gameStart = async (payload) => {
   const ingame = createInGame(payload.uuid);
-  const newPath = monsterPathMake({
-    width: payload.data.width,
-    height: payload.data.height,
-  });
-  const ownTowersData = await prisma.uSERS.findUnique({
-    where: {
-      USER_ID: +payload.USER_ID,
-    },
-    include: {
-      EQUIP_TOWERS: {
-        include: {
-          OWN_TOWERS: true,
+  try {
+    const { authorization } = payload.data.cookies;
+    const [tokenType, token] = authorization.split(" ");
+
+    if (tokenType !== "Bearer") {
+      throw new Error("토큰 타입이 일치하지 않습니다.");
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_KEY);
+    const id = decodedToken.userid;
+
+    const newPath = monsterPathMake({
+      width: payload.data.width,
+      height: payload.data.height,
+    });
+
+    //유저 데이터 찾기
+    const user = await prisma.uSERS.findUnique({
+      where: { ID: id },
+    });
+
+    if (!user) {
+      throw new Error("토큰 사용자가 존재하지 않습니다.");
+    }
+    // 인게임에 user_id 저장
+    ingame.userId = user.USER_ID;
+
+    const ownTowersData = await prisma.uSERS.findUnique({
+      where: {
+        USER_ID: +user.USER_ID,
+      },
+      include: {
+        EQUIP_TOWERS: {
+          include: {
+            OWN_TOWERS: true,
+          },
         },
       },
-    },
-  });
-  const towerDec = [];
-  if (ownTowersData) {
-    ownTowersData.EQUIP_TOWERS.forEach((Towers) => {
-      towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
     });
+
+    const towerDec = [];
+
+    if (ownTowersData) {
+      ownTowersData.EQUIP_TOWERS.forEach((Towers) => {
+        towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
+      });
+    }
+    ingame.ownTower = towerDec;
+    startLoop(ingame, payload.uuid, newPath, payload.socket);
+    const nowStageData = stageData.data[ingame.stage];
+    const nowMonsterData = [];
+    for (let index = 0; index < nowStageData.length; index++) {
+      nowMonsterData.push(monsterData.data[nowStageData[index].id]);
+    }
+
+    spawnMonsters(ingame, path, nowMonsterData, nowStageData);
+
+    return {
+      status: "succes",
+      message: "게임을 시작합니다!",
+      data: {
+        path: newPath,
+        towerDec,
+        stage: ingame.stage,
+        playerHp: ingame.house.hp,
+        playerGold: ingame.gold,
+        monster: nowMonsterData,
+        tower: towerData,
+      },
+    };
+  } catch (error) {
+    return {
+      status: "fail",
+      message: "게임 시작에 실패했습니다 : " + error.message,
+      data: {},
+    };
   }
-  ingame.ownTower = towerDec;
-  startLoop(ingame, payload.uuid, newPath, payload.socket);
-  const nowStageData = stageData.data[ingame.stage];
-  const nowMonsterData = [];
-  for (let index = 0; index < nowStageData.length; index++) {
-    nowMonsterData.push(monsterData.data[nowStageData[index].id]);
-  }
-  console.log(nowMonsterData, nowStageData);
-  return {
-    status: "succes",
-    message: "게임을 시작합니다!",
-    data: {
-      towerDec,
-      stage: ingame.stage,
-      playerHp: ingame.house.hp,
-      playerGold: ingame.gold,
-      monster: nowMonsterData,
-      tower: towerData,
-    },
-    // towerDec,
-    // monsterPath,
-    // playerHp: houseHp,
-    // playerGold: GameManager.userGold,
-    // stage: GameManager.stage,
-  };
 };
-export const gameEnd = (payload) => {
-  const ingame = createInGame(payload.uuid);
-  endLoop(ingame, payload.uuid);
+export const gameEnd = (socket, ingame, uuid) => {
+  endLoop(socket, ingame, uuid);
 };
 
 // 여기 아래는 서버에서 핸들러가 따로 없음 객체 형태로 보내기
 
 export const gameStageChange = (socket, ingame) => {
   ingame.stage++;
+  ingame.stage =
+    ingame.stage >= stageData.data.length ? stageData.data.lengt : ingame.stage;
   const nextStageData = stageData.data[ingame.stage];
   const nextMonsterData = [];
   for (let index = 0; index < nextStageData.length; index++) {
@@ -112,8 +150,11 @@ export const gameStageChange = (socket, ingame) => {
   });
 };
 
-export const gameHouseChange = (socket, ingame, damage) => {
-  ingame.hp -= damage;
+export const gameHouseChange = (socket, ingame, damage, uuid) => {
+  ingame.house.hp -= damage;
+  if (ingame.house.hp <= 0) {
+    gameEnd(socket, ingame, uuid);
+  }
   console.log(ingame);
   socket.emit("event", {
     handlerId: 4,
