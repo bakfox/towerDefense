@@ -45,8 +45,7 @@ function monsterPathMake(canvas) {
 export const gameStart = async (payload) => {
   const ingame = createInGame(payload.uuid);
   try {
-    const { authorization } = payload.data.cookies;
-    const [tokenType, token] = authorization.split(" ");
+    const [tokenType, token] = payload.data.cookies.split("%20");
 
     if (tokenType !== "Bearer") {
       throw new Error("토큰 타입이 일치하지 않습니다.");
@@ -61,7 +60,7 @@ export const gameStart = async (payload) => {
     });
 
     //유저 데이터 찾기
-    const user = await prisma.uSERS.findUnique({
+    const user = await prisma.uSERS.findFirst({
       where: { ID: id },
     });
 
@@ -71,35 +70,34 @@ export const gameStart = async (payload) => {
     // 인게임에 user_id 저장
     ingame.userId = user.USER_ID;
 
-    const ownTowersData = await prisma.uSERS.findUnique({
+    const ownTowersData = await prisma.eQUIP_TOWERS.findMany({
       where: {
         USER_ID: +user.USER_ID,
       },
       include: {
-        EQUIP_TOWERS: {
-          include: {
-            OWN_TOWERS: true,
-          },
-        },
+        OWN_TOWERS: true,
       },
     });
 
     const towerDec = [];
 
     if (ownTowersData) {
-      ownTowersData.EQUIP_TOWERS.forEach((Towers) => {
+      ownTowersData.forEach((Towers) => {
         towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
       });
     }
+    console.log("아 여기까지 함");
     ingame.ownTower = towerDec;
-    startLoop(ingame, payload.uuid, newPath, payload.socket);
+
     const nowStageData = stageData.data[ingame.stage];
     const nowMonsterData = [];
     for (let index = 0; index < nowStageData.length; index++) {
-      nowMonsterData.push(monsterData.data[nowStageData[index].id]);
+      nowMonsterData.push(monsterData.data[nowStageData[index].id - 1]);
     }
 
-    spawnMonsters(ingame, path, nowMonsterData, nowStageData);
+    spawnMonsters(ingame, newPath, nowMonsterData, nowStageData);
+
+    startLoop(ingame, payload.uuid, newPath, payload.socket);
 
     return {
       status: "succes",
