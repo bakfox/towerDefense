@@ -7,14 +7,14 @@ import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 let uniqueId = 0; //몬스터 고유번호
 
 export class Monster {
-  constructor(path, id,uniqueId) {
+  constructor(path, id, uniqueId) {
     // 생성자 안에서 몬스터의 속성을 정의한다고 생각하시면 됩니다!
     if (!path || path.length <= 0) {
       throw new Error("몬스터가 이동할 경로가 필요합니다.");
     }
 
     // id를 기반으로 monsterData에서 해당 몬스터 데이터를 찾음
-    const selectedMonsterData = monsterData.data.find(
+    const selectedMonsterData = monsterData.find(
       (monster) => monster.id === id
     );
     if (!selectedMonsterData) {
@@ -36,7 +36,7 @@ export class Monster {
     this.isDead = false;
   }
 
-  move(socket,ingame) {
+  move(socket, ingame) {
     if (this.currentIndex < this.path.length - 1) {
       const nextPoint = this.path[this.currentIndex + 1];
       const deltaX = nextPoint.x - this.x;
@@ -54,7 +54,7 @@ export class Monster {
       }
       return false;
     } else {
-      this.attack(socket,ingame); // 기지에 도달하면 기지에 데미지를 입힙니다!
+      this.attack(socket, ingame); // 기지에 도달하면 기지에 데미지를 입힙니다!
       this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
       this.isDead = true;
     }
@@ -82,7 +82,7 @@ export class Monster {
       this.isDead = true;
       //리워드 지급
       gameGoldChange(socket, ingame, this.reward);
-      gameScoreChange(socket, ingame, this.reward/10);
+      gameScoreChange(socket, ingame, this.reward / 10);
       //사망한 몬스터 id와 uniqueId 클라에 통보
       socket.emit("MonsterDead", {
         status: "success",
@@ -94,8 +94,8 @@ export class Monster {
     }
   }
   //몬스터가 베이스에 닿았을때 gameHouseChange
-  attack(socket,ingame) {
-    gameHouseChange(socket, ingame,this.attackPower);
+  attack(socket, ingame) {
+    gameHouseChange(socket, ingame, this.attackPower);
     this.isDead = true;
 
     socket.emit("MonsterAtack", {
@@ -114,27 +114,20 @@ export class Monster {
 //path받아오기
 
 //몬스터 생성 nowStageData여기에 적힌 스폰량만큼 nowMonsterData에 객체 갯수만큼 넣기 넣을때 각 객체에 고유번호 부여
-const makeMonster = (path,id, uniqueId) => {
-  return new Monster(path,id, uniqueId);
+const makeMonster = (path, id, monsterData, uniqueId) => {
+  return new Monster(path, id, monsterData, uniqueId);
   //nowMonsterData.push(monster);
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (
-  ingame,
-  path,
-  nextStageData
-) => {
+export const spawnMonsters = (ingame, path, monsterData, stageData) => {
   ingame.nowMonsterData = [];
-  ingame.nowStageData = nextStageData; //[{ stageId: 1, id: 1, count: 10 }]
+  ingame.nowStageData = stageData; //[{ stageId: 1, id: 1, count: 10 }]
+  console.log(monsterData);
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
-      const monster = makeMonster(
-        path,
-        monsterType,
-        uniqueId
-      );
+      const monster = makeMonster(path, monsterType, monsterData, uniqueId);
       ingame.nowMonsterData.push(monster);
       uniqueId++;
     }

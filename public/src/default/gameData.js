@@ -1,8 +1,11 @@
 let monsterData;
 let towerData;
 
-export function initData(monster, tower) {
+export function initMonsterData(monster) {
   monsterData = monster;
+}
+
+export function initTowerData(tower) {
   towerData = tower;
 }
 
