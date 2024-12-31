@@ -173,15 +173,12 @@ router.get('/rank', UserToken, async (req, res, next) => {
         console.log(req.body);
 
         const users = await prisma.sCORES.findMany({
-            where: [
-                {
-                    SCORES: 'desc'
-                }
-            ],
+            orderBy : {
+                MAX_SCORE : 'desc'
+            },
             include : {
                 USERS : true
             },
-            
             take: 10 //랭킹 10위까지만 가져오도록 하자.
         });
 
