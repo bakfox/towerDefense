@@ -1,5 +1,5 @@
 import { initSocket, sendEvent } from "./handlers/socket.js";
-import { initData } from "./default/gameData.js";
+import { initMonsterData, initTowerData } from "./default/gameData.js";
 import { House } from "./house.js";
 import { Button } from "./button.js";
 import { Monster } from "./monster.js";
@@ -149,6 +149,14 @@ function initTowerDecButton() {
 }
 
 initTowerDecButton();
+
+// 스테이지 변경
+export function moveStage(payload) {
+  const {stage, monsterDefaultData} = payload;
+  GameManager.setStage(stage);
+
+  initMonsterData(monsterDefaultData);
+}
 
 // #region 몬스터 기능
 // 몬스터 추가
@@ -374,7 +382,8 @@ Promise.all([
     } = gameAssets);
 
     // 기본 데이터 초기화
-    initData(monster, tower);
+    initMonsterData(monster);
+    initTowerData(tower);
 
     initTowerDecButton();
 

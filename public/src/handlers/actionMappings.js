@@ -1,7 +1,7 @@
-import { addMonster, moveMonsters, setHouseHp, deleteMonster, towerAttack } from "../game.js";
+import { addMonster, moveMonsters, setHouseHp, deleteMonster, towerAttack, moveStage } from "../game.js";
 import { GameManager } from "../gameManager.js";
 const actionMappings = {
-  3: GameManager.setStage,
+  3: moveStage,
   4: setHouseHp,
   5: GameManager.setUserGold,
   6: GameManager.setScore,
