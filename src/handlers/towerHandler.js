@@ -22,9 +22,9 @@ const haveGold = (inGame, cost) => {
 
 // 타워를 게임에 설치하는 함수
 export const installTowerHandler = (payload) => {
-  const { uuid, socket } = payload;
+  const { uuId, socket } = payload;
   const { towerType, location } = payload.data;
-  const inGame = getInGame(uuid);
+  const inGame = getInGame(uuId);
 
   try {
     // 타워 객체 생성
@@ -49,6 +49,7 @@ export const installTowerHandler = (payload) => {
       },
     };
   } catch (error) {
+    console.log(error);
     return {
       status: "fail",
       message: error.message,
