@@ -93,7 +93,16 @@ export class Monster {
   //몬스터가 베이스에 닿았을때 gameHouseChange
   attack(socket, ingame, uuid) {
     gameHouseChange(socket, ingame, this.attackPower, uuid);
-    this.dead(socket, ingame);
+    this.isDead = true;
+    delete ingame.MonsterCoordinate[this.uniqueId];
+    socket.emit("event", {
+      handlerId: 204,
+      status: "success",
+      message: `${this.id}번 몬스터가 사망`,
+      data: {
+        uniqueId: this.uniqueId,
+      },
+    });
   }
   dead(socket, ingame) {
     gameGoldChange(socket, ingame, this.reward * (ingame.stage + 1));
