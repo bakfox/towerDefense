@@ -52,22 +52,23 @@ export const gameStart = async (payload) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_KEY);
-    const id = decodedToken.userid;
+    const id = +decodedToken.userId;
 
     const newPath = monsterPathMake({
       width: payload.data.width,
       height: payload.data.height,
     });
 
-    //유저 데이터 찾기
+    //유저 데이터 찾기 나중에 저거 확인해보니 안에 이미 userID가 있음
     const user = await prisma.uSERS.findFirst({
-      where: { ID: id },
+      where: { USER_ID: id },
     });
 
     if (!user) {
       throw new Error("토큰 사용자가 존재하지 않습니다.");
     }
-    // 인게임에 user_id 저장
+
+    //인게임에 user_id 저장
     ingame.userId = user.USER_ID;
 
     const ownTowersData = await prisma.eQUIP_TOWERS.findMany({
@@ -83,10 +84,13 @@ export const gameStart = async (payload) => {
 
     if (ownTowersData) {
       ownTowersData.forEach((Towers) => {
-        towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
+        towerDec.push({
+          ID: Towers.OWN_TOWERS.ID,
+          UPGRADE: Towers.OWN_TOWERS.UPGRADE,
+        });
       });
     }
-    console.log("아 여기까지 함");
+    console.log(towerDec, "왜 안됨?");
     ingame.ownTower = towerDec;
 
     const nowStageData = stageData.data[ingame.stage];
@@ -135,7 +139,7 @@ export const gameStageChange = (socket, ingame) => {
   for (let index = 0; index < nextStageData.length; index++) {
     nextMonsterData.push(monsterData.data[nextStageData[index].id]);
   }
-  spawnMonsters(ingame, path, monsterData, nextStageData);
+  spawnMonsters(ingame, path, nextStageData);
 
   socket.emit("event", {
     handlerId: 3,
@@ -150,10 +154,7 @@ export const gameStageChange = (socket, ingame) => {
 
 export const gameHouseChange = (socket, ingame, damage, uuid) => {
   ingame.house.hp -= damage;
-  if (ingame.house.hp <= 0) {
-    gameEnd(socket, ingame, uuid);
-  }
-  console.log(ingame);
+
   socket.emit("event", {
     handlerId: 4,
     status: "succes",
@@ -162,10 +163,13 @@ export const gameHouseChange = (socket, ingame, damage, uuid) => {
       playerHp: ingame.house.hp,
     },
   });
+
+  if (ingame.house.hp <= 0) {
+    gameEnd(socket, ingame, uuid);
+  }
 };
 export const gameGoldChange = (socket, ingame, gold) => {
   ingame.gold += gold;
-  console.log(ingame);
   socket.emit("event", {
     handlerId: 5,
     status: "succes",
@@ -177,7 +181,6 @@ export const gameGoldChange = (socket, ingame, gold) => {
 };
 export const gameScoreChange = (socket, ingame, score) => {
   ingame.score += score;
-  console.log(ingame);
   socket.emit("event", {
     handlerId: 6,
     status: "succes",
