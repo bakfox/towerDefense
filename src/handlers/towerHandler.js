@@ -8,6 +8,7 @@ const existTowerHandler = (towerId, inGame) => {
   const tower = inGame.tower.find((t) => t.towerId === towerId);
   if (!tower) {
     throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
+    
   }
   return tower;
 };
@@ -22,7 +23,8 @@ const haveGold = (inGame, cost) => {
 
 // 타워를 게임에 설치하는 함수
 export const installTowerHandler = (payload) => {
-  const { uuid, socket, towerType, location } = payload;
+  const { uuid, socket} = payload;
+  const {towerType, location} = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -36,10 +38,10 @@ export const installTowerHandler = (payload) => {
     haveGold(inGame, installCost);
 
     // 골드 차감
-    gameGoldChange(socket, inGame, installCost);
+    gameGoldChange(socket, inGame, -installCost);
 
     // 타워를 게임에 설치
-    inGame.towers.push(newTower); // 타워 객체 자체를 저장
+    inGame.tower.push(newTower); // 타워 객체 자체를 저장
     return {
       status: "success",
       message: "타워가 설치되었습니다.",
@@ -72,7 +74,7 @@ export const refundTowerHandler = (payload) => {
     inGame.gold += refundValue;
 
     // 타워 삭제
-    inGame.towers = inGame.towers.filter((t) => t.towerId !== towerId);
+    inGame.towers = inGame.tower.filter((t) => t.towerId !== towerId);
 
     return {
       status: "success",
