@@ -1,8 +1,6 @@
 
 // import { Monster } from "../src/monster.js";
-import monsterData from "../../gameDefaultData/monster.js";
 import { getInGame } from "../models/inGame.js";
-import stageData from "../../gameDefaultData/stage.js";
 import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
 let uniqueId = 1; //몬스터 고유번호
@@ -59,17 +57,29 @@ export class Monster {
       this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
       this.isDead = true;
     }
+    socket.emit("event", {
+      handlerId: 202,
+      status: "success",
+      message: `${this.id}번 몬스터 이동`,
+      data: {
+        uniqueId: this.uniqueId,
+        x: this.x,
+        y: this.y,
+      },
+    });
   }
   //클래스내 메소드
   //hit(피격) 함수 데미지랑 소켓을 보내줌 받아서 데미지 처리  받은 몬스터와 hp반환
   //attack
   //move
   hitByTower(socket, ingame, damage) {
-    // const monster = nowMonsterData.find((m) => m.uniqueId === uniqueId);
-
     this.hp -= damage;
-
-    socket.emit("hitByTower", {
+    if (this.hp <= 0) {
+      this.Dead(socket, ingame, damage);
+      return;
+    }
+    socket.emit("event", {
+      handlerId: 201,
       status: "success",
       message: `${this.id}번 몬스터 피격`,
       data: {
@@ -103,7 +113,7 @@ export class Monster {
     socket.emit("event", {
       handlerId: 204,
       status: "success",
-      message: `${this.id}번 몬스터가 공격`,
+      message: `${this.id}번 몬스터가 사망`,
       data: {
         uniqueId: this.uniqueId,
       },

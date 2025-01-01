@@ -1,7 +1,6 @@
 import { deleteInGame } from "../models/inGame.js";
 import { spawnNextMonster } from "../handlers/monsterHandler.js";
 import { prisma } from "../utils/index.js";
-
 const FPS = 1;
 const interval = 1000 / FPS;
 
@@ -13,8 +12,8 @@ async function logicLoop(ingame, uuid, path, socket) {
     return;
   }
   const elapsed = Date.now() - start;
-  console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
-  console.log(ingame);
+  // console.log(`클라이언트 ${uuid}의 로직 실행 시간:`, elapsed);
+  // console.log(ingame);
 
   //타워 공격 호출
   if (ingame.tower.length !== 0) {
@@ -59,8 +58,8 @@ export const endLoop = async (socket, ingame, uuid) => {
   ingame.isRunning = false;
   const gem = parseInt(ingame.score / 10);
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.uSERS.update({
+    const user = await prisma.$transaction(async (tx) => {
+      const user = await tx.uSERS.update({
         where: {
           USER_ID: ingame.userId,
         },
@@ -75,8 +74,11 @@ export const endLoop = async (socket, ingame, uuid) => {
           END_TIME: new Date(),
         },
       });
+      return user;
     });
-
+    if (!user) {
+      throw new Error("정보를 제대로 저장하지 못했습니다.");
+    }
     socket.emit("event", {
       handlerId: 2,
       status: "succes",
@@ -90,7 +92,7 @@ export const endLoop = async (socket, ingame, uuid) => {
     setTimeout(() => {
       deleteInGame[uuid]; // uuid에 해당하는 게임 데이터를 삭제
       console.log(`게임 데이터가 ${uuid}에 대해 삭제되었습니다.`);
-    }, 1000);
+    }, 5000);
   } catch (error) {
     return {
       status: "fail",

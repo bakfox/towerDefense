@@ -16,7 +16,7 @@ const defaultIngame = {
   nowStageData: [], // 스폰할 스테이지 데이터
   isSpawn: true,
   isRunning: true,
-  monsterCoolTime: 1,
+  monsterCoolTime: 5,
 };
 
 export const createInGame = (uuid) => {
