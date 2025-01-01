@@ -1,15 +1,18 @@
 import { getInGame } from "../models/inGame.js";
-import { createTowerFromData } from "../models/tower.js"; // 타워 생성 함수
+import { createTowerFromData } from "../models/tower.model.js"; // 타워 생성 함수
 import towerData from "../../gameDefaultData/tower.js"; // 타워 기본 데이터
 import { gameGoldChange } from "./stageHandler.js";
 
 // 타워가 인게임 데이터에 존재하는지 확인하는 함수
 const existTowerHandler = (towerId, inGame) => {
-  const tower = inGame.tower.find((t) => t.towerId === towerId);
-  if (!tower) {
-    throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
-  }
-  return tower;
+    if (!inGame.towers) {
+        throw new Error("타워 배열이 존재하지 않습니다.");
+    }
+    const tower = inGame.towers.find((t) => t.towerId === towerId);
+    if (!tower) {
+        throw new Error(`타워 ${towerId}는 존재하지 않습니다.`);  // 수정된 부분
+    }
+    return tower;
 };
 
 // 골드가 충분한지 확인하는 함수
@@ -66,7 +69,7 @@ export const refundTowerHandler = (uuid, payload) => {
     const tower = existTowerHandler(towerId, inGame);
 
     // 환불 금액 계산 (기본 가격 + 업그레이드 값에 비례하는 금액)
-    const refundValue = tower.price + (tower.upgradeValue * tower.price) / 2;
+    const refundValue = tower.price + (tower.upgrade * tower.price) / 2;
 
     // 골드 환불
     inGame.gold += refundValue;
@@ -119,36 +122,36 @@ export const moveTowerHandler = (uuid, payload) => {
 
 // 타워 업그레이드를 처리하는 함수
 export const upgradeTowerHandler = (uuid, payload) => {
-  const { socket, towerId } = payload.data;
-  const inGame = getInGame(uuid);
+    const { socket, towerId } = payload.data;
+    const inGame = getInGame(uuid);
 
-  try {
-    // 타워가 인게임 데이터에 존재하는지 확인
-    const tower = existTowerHandler(towerId, inGame);
+    try {
+        // 타워가 인게임 데이터에 존재하는지 확인
+        const tower = existTowerHandler(towerId, inGame);
 
-    // 업그레이드 비용 계산 (타워의 price * upgradeValue 사용)
-    const upgradeCost = tower.upgradeValue * tower.price;
+        // 업그레이드 비용 계산
+        const upgradeCost = (tower.upgrade + 1) * tower.price;
 
-    // 골드가 충분한지 확인
-    haveGold(inGame, upgradeCost);
+        // 골드가 충분한지 확인
+        haveGold(inGame, upgradeCost);
 
-    // 골드 차감
-    gameGoldChange(socket, inGame, upgradeCost);
+        // 골드 차감
+        gameGoldChange(socket, inGame, -upgradeCost);
 
-    // 타워 업그레이드
-    tower.upgradeTower();
-    return {
-      status: "success",
-      message: "타워가 업그레이드되었습니다.",
-      data: {
-        tower: tower, // 업그레이드된 타워 정보 반환
-      },
-    };
-  } catch (error) {
-    return {
-      status: "fail",
-      message: error.message,
-      data: {},
-    };
-  }
+        // 타워 업그레이드
+        tower.upgradeTower();
+        return {
+            status: "success",
+            message: "타워가 업그레이드되었습니다.",
+            data: {
+                tower: tower,
+            },
+        };
+    } catch (error) {
+        return {
+            status: "fail",
+            message: error.message,
+            data: {},
+        };
+    }
 };
