@@ -12,7 +12,7 @@ export class House {
   draw(ctx, houseImage) {
     ctx.drawImage(
       houseImage,
-      this.x - this.width/2,
+      this.x - this.width / 2,
       this.y - this.height / 2,
       this.width,
       this.height
@@ -28,6 +28,6 @@ export class House {
   }
 
   setHp(value) {
-    this.hp = value;
+    this.hp = value.playerHp;
   }
 }

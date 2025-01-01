@@ -23,11 +23,11 @@ export class Monster {
     this.atck = item.atck + amount; // 공격력
     this.maxHp = item.hp + amount; // 체력
     this.hp = this.maxHp;
-    this.speed = item.speed / 45; // 이동 속도
+    this.speed = item.speed / 41; // 이동 속도
     this.reword = item.reword + amount; // 잡으면 얻는 보상
   }
 
-  move(base) {
+  move() {
     if (this.currentIndex < this.path.length - 1) {
       const nextPoint = this.path[this.currentIndex + 1];
       const deltaX = nextPoint.x - this.x;
@@ -43,20 +43,22 @@ export class Monster {
         this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
         this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
       }
-      return false;
+      if (this.id === 1) {
+        console.log("1 = +는", this.x, this.y);
+      }
     }
   }
-
-  setLocation(x, y, currentIndex) {
+  setLocation(x, y, currentIndex, monster) {
     this.x = x;
     this.y = y;
     this.currentIndex = currentIndex;
+    monster.move();
   }
 
   draw(ctx) {
     ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
     ctx.font = "12px Arial";
     ctx.fillStyle = "white";
-    ctx.fillText(`${this.hp}/${this.maxHp}`, this.x, this.y - 5);
+    ctx.fillText(`${this.hp}/${this.maxHp}`, this.x, this.y);
   }
 }

@@ -179,13 +179,14 @@ export function deleteMonster(id) {
 }
 
 // 몬스터 이동
-export function moveMonsters(data) {
+export async function moveMonsters(data) {
   for (let key of Object.keys(data.monsters)) {
     const monster = monsters.get(data.monsters[key].id);
     monster.setLocation(
       data.monsters[key].x,
       data.monsters[key].y,
-      data.monsters[key].currentIndex
+      data.monsters[key].currentIndex,
+      monster
     );
   }
 }
@@ -331,7 +332,7 @@ function gameLoop() {
     lastFrameTime = performance.now();
   }
   setTimeout(() => {
-    gameLoop(performance.now());
+    gameLoop();
   }, FRAME_INTERVAL);
 }
 
