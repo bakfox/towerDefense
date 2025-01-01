@@ -177,50 +177,6 @@ export const spawnNextMonster = (socket, ingame) => {
   }
 };
 
-// //몬스터 공격 base랑 좌표가 같으면(충돌) gameHouseChange 호출해서 hp변경 / 몬스터 isdead true/자본변경
-// const monsterDead = (ingame, socket, uniqueId) => {
-//   const monster = ingame.nowMonsterData.find((m) => m.uniqueId === uniqueId);
-
-//   socket.on("MonsterDead", (payload) => {
-//     const { uniqueId } = payload;
-//     // Handle the monster death logic here
-//   });
-
-//   if (monster && monster.hp <= 0) {
-//     // 몬스터 사망시
-//     monster.isDead = true;
-//     //리워드 지급
-//     let ingame = getInGame(ingame.uuid);
-//     gameGoldChange({ uuid: ingame.uuid, parsedData: { gold: monster.reward } });
-//     //사망한 몬스터 id와 uniqueId 클라에 통보
-//     socket.emit("DeadMonster", {
-//       status: "success",
-//       message: `${monster.id}번 몬스터 사망`,
-//       data: {
-//         id: monster.id,
-//         uniqueId: monster.uniqueId,
-//       },
-//     });
-//   } else if (
-//     monster &&
-//     monster.x === base.x &&
-//     monster.y === base.y &&
-//     !monster.isDead
-//   ) {
-//     // Call gameHouseChange or other logic here
-//     monster.isDead = true;
-//     socket.emit("MonsterAttack", {
-//       status: "success",
-//       message: `${monster.id}번 몬스터의 공격`,
-//       data: {
-//         id: monster.id,
-//         uniqueId: monster.uniqueId,
-//         hp: monster.hp,
-//       },
-//     });
-//   }
-// };
-
 export const getMonsters = () => {
   return ingame.nowMonsterData;
 };

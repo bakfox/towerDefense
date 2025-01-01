@@ -17,15 +17,15 @@ export class GameManager {
     GameManager.highScore = 0;
   }
 
-  static setStage({stage}) {
+  static setStage({ stage }) {
     GameManager.stage = stage;
   }
 
-  static setUserGold({playerGold}) {
+  static setUserGold({ playerGold }) {
     GameManager.userGold = playerGold;
   }
 
-  static setScore(score) {
+  static setScore({ score }) {
     GameManager.score = score;
   }
 }

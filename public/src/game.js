@@ -168,8 +168,9 @@ initTowerDecButton();
 
 // 스테이지 변경
 export function moveStage(payload) {
-  const { stage, monsterDefaultData } = payload;
-  GameManager.setStage(stage);
+  const { playerStage, monsterDefaultData } = payload;
+  console.log(payload, playerStage);
+  GameManager.setStage(playerStage);
 
   initMonsterData(monsterDefaultData);
 }
@@ -186,7 +187,7 @@ export function addMonster(payload) {
 
 // 몬스터 삭제
 export function deleteMonster(payload) {
-  const {uniqueId} = payload;
+  const { uniqueId } = payload;
   monsters.delete(uniqueId);
 }
 
@@ -228,7 +229,8 @@ async function addTower(targetLocation) {
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
-        towerUI.openUI(this.id, this.x, this.y);``
+        towerUI.openUI(this.id, this.x, this.y);
+        ``;
       }
     );
     towers.set(towerId, tower);
@@ -287,7 +289,7 @@ async function upgradeTower(id) {
 
 // 타워 공격
 export function towerAttack(payload) {
-  const {monsterId, towerId} = payload;
+  const { monsterId, towerId } = payload;
   const monster = monsters.get(monsterId);
   const tower = towers.get(towerId);
 

@@ -25,7 +25,7 @@ async function logicLoop(ingame, uuid, path, socket) {
   if (ingame.monster.length !== 0) {
     ingame.monster.forEach((monster) => {
       monster.move(socket, ingame, uuid);
-      //console.log(monster.x, monster.y, "변화한");
+      console.log(monster.x, monster.y, "변화한");
     });
     moveClient(socket, ingame); //클라에 데이터 보내기
   }
@@ -38,7 +38,7 @@ async function logicLoop(ingame, uuid, path, socket) {
     );
     //console.log(checkMonster, "아직 살음");
     if (checkMonster) {
-      gameStageChange(ingame, socket);
+      gameStageChange(socket, ingame, path);
       ingame.isSpawn = true;
     }
   }

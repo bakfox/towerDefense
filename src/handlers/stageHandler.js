@@ -136,8 +136,10 @@ export const gameEnd = (socket, ingame, uuid) => {
 
 // 여기 아래는 서버에서 핸들러가 따로 없음 객체 형태로 보내기
 
-export const gameStageChange = (socket, ingame) => {
+export const gameStageChange = (socket, ingame, path) => {
   ingame.stage++;
+  ingame.monsterCoolTime = 5;
+  ingame.monster = [];
   ingame.stage =
     ingame.stage >= stageData.data.length ? stageData.data.lengt : ingame.stage;
   const nextStageData = stageData.data[ingame.stage];
@@ -152,7 +154,7 @@ export const gameStageChange = (socket, ingame) => {
     status: "succes",
     message: "스테이지 변경에 성공했습니다",
     data: {
-      playerStage: inGame.stage,
+      playerStage: ingame.stage,
       monster: nextMonsterData,
     },
   });
