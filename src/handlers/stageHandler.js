@@ -79,15 +79,18 @@ export const gameStart = async (payload) => {
         OWN_TOWERS: true,
       },
     });
-    console.log(ownTowersData, id, "왜 안됨?");
+
     const towerDec = [];
 
     if (ownTowersData) {
       ownTowersData.forEach((Towers) => {
-        towerDec.push({ ID: Towers.ID, UPGRADE: Towers.UPGRADE });
+        towerDec.push({
+          ID: Towers.OWN_TOWERS.ID,
+          UPGRADE: Towers.OWN_TOWERS.UPGRADE,
+        });
       });
     }
-
+    console.log(towerDec, "왜 안됨?");
     ingame.ownTower = towerDec;
 
     const nowStageData = stageData.data[ingame.stage];
@@ -151,10 +154,7 @@ export const gameStageChange = (socket, ingame) => {
 
 export const gameHouseChange = (socket, ingame, damage, uuid) => {
   ingame.house.hp -= damage;
-  if (ingame.house.hp <= 0) {
-    gameEnd(socket, ingame, uuid);
-  }
-  console.log(ingame);
+
   socket.emit("event", {
     handlerId: 4,
     status: "succes",
@@ -163,10 +163,13 @@ export const gameHouseChange = (socket, ingame, damage, uuid) => {
       playerHp: ingame.house.hp,
     },
   });
+
+  if (ingame.house.hp <= 0) {
+    gameEnd(socket, ingame, uuid);
+  }
 };
 export const gameGoldChange = (socket, ingame, gold) => {
   ingame.gold += gold;
-  console.log(ingame);
   socket.emit("event", {
     handlerId: 5,
     status: "succes",
@@ -178,7 +181,6 @@ export const gameGoldChange = (socket, ingame, gold) => {
 };
 export const gameScoreChange = (socket, ingame, score) => {
   ingame.score += score;
-  console.log(ingame);
   socket.emit("event", {
     handlerId: 6,
     status: "succes",
