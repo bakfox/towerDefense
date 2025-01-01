@@ -168,11 +168,11 @@ initTowerDecButton();
 
 // 스테이지 변경
 export function moveStage(payload) {
-  const { playerStage, monsterDefaultData } = payload;
-  console.log(payload, playerStage);
-  GameManager.setStage(playerStage);
+  const { playerStage, monster } = payload;
+  console.log(payload, monster);
+  GameManager.setStage({ playerStage });
 
-  initMonsterData(monsterDefaultData);
+  initMonsterData(monster);
 }
 
 // #region 몬스터 기능

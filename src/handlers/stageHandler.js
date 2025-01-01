@@ -145,7 +145,7 @@ export const gameStageChange = (socket, ingame, path) => {
   const nextStageData = stageData.data[ingame.stage];
   const nextMonsterData = [];
   for (let index = 0; index < nextStageData.length; index++) {
-    nextMonsterData.push(monsterData.data[nextStageData[index].id]);
+    nextMonsterData.push(monsterData.data[nextStageData[index].id - 1]);
   }
   spawnMonsters(ingame, path, nextStageData);
 

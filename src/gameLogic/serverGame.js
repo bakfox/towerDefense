@@ -38,6 +38,7 @@ async function logicLoop(ingame, uuid, path, socket) {
     );
     //console.log(checkMonster, "아직 살음");
     if (checkMonster) {
+      console.log("다음 스테이지");
       gameStageChange(socket, ingame, path);
       ingame.isSpawn = true;
     }
