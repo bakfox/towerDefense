@@ -178,6 +178,7 @@
     </main>
 
     <script type="module">
+      //window가 바로 시작되었을 때 바로 불러낼 수 있도록 한다.
       window.addEventListener("DOMContentLoaded", async () => {
         setTimeout(async () => {
           await getSquad();
@@ -220,22 +221,21 @@
             document.getElementById(squadId).innerHTML = ``;
             if (result.data.length > i - 1) {
               const towerId = result.data[i - 1].OWN_TOWERS.ID;
-              const realTowerId = result.data[i - 1].OWN_TOWERS.TOWER_ID;
               const upgrade = result.data[i - 1].OWN_TOWERS.UPGRADE;
               console.log(result.data);
               document.getElementById(squadId).innerHTML +=
-                `<img src="./images/tower${towerId}.png" />
+                `<img src="./images/tower_${towerId}.png" />
           <div class="card-body">
-            <h5 class="card-title">Card title</h5>
+            <h5 class="card-title">현재 타워</h5>
             <p class="card-text">
               타워 강화 수치 : ${upgrade}
             </p>
           </div>`;
             } else {
               document.getElementById(squadId).innerHTML +=
-                `<img src="./images/tower.png" />
+                `<img src="./images/tower_1.png" />
           <div class="card-body">
-            <h5 class="card-title">Card title</h5>
+            <h5 class="card-title">현재 타워</h5>
             <p class="card-text">
               빈 슬롯
             </p>
@@ -269,7 +269,7 @@
             for (let i = 1; i <= 5; i++) {
               const button = document.createElement("button");
               button.innerHTML = `
-              <img src="./images/tower${i}.png">
+              <img src="./images/tower_${i}.png">
               <h5>타워 종류 : ${i}, 강화 정도 : 1</h5>
               `;
 
@@ -282,7 +282,7 @@
               const upgrade = element.UPGRADE;
               const towerid = element.TOWER_ID;
               button.innerHTML = `
-              <img src="./images/tower${id}.png">
+              <img src="./images/tower_${id}.png">
               <h5>타워 종류 : ${id}, 강화 정도 : ${upgrade}</h5>
               `;
 
@@ -347,10 +347,6 @@
         modal.style.display = "flex";
       };
 
-      // setTimeout(() => {
-      //   getSquad();
-      // }, 1000);
-
       document.getElementById("squad1").addEventListener("click", async () => {
         const equipTowerId = 1;
 
@@ -377,8 +373,6 @@
           } else {
             ownTower(0, 1);
           }
-
-          //getSquad();
         }
       });
 
@@ -460,14 +454,6 @@
 
       //타워 강화
       document.getElementById("inhance").addEventListener("click", async () => {
-        // const inhance = await fetch("http://localhost:3017/api/tower/upgrade", {
-        //   method: "PUT",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        //   body: { towerID, ingredient },
-        // });
-
         ownTower(2, 2);
       });
 
