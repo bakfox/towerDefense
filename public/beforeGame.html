@@ -130,6 +130,7 @@
         if (rankReward.ok) {
           const result = await rankReward.json();
           let innertext = ``;
+          console.log(result.data);
 
           if (result.data.length === 0) {
             for (let i = 0; i < 10; i++) {
@@ -142,14 +143,14 @@
             modalContent.innerHTML = innertext;
             modal.style.display = "flex";
           } else {
-            result.datas.forEach((element) => {
+            result.data.forEach((element, index) => {
+              console.log(element);
               const id = element.USER_ID;
-              const score = element.MAX_SCORE;
+              const score = element._max.MAX_SCORE;
               innertext += `<div>
-            ${id} : ${score}
+            랭킹 ${index + 1} 위   ${id} : ${score}
             </div>`;
             });
-            alert(result.message);
             modalContent.innerHTML = innertext;
             modal.style.display = "flex";
           }
@@ -179,7 +180,9 @@
       document
         .getElementById("gamestart")
         .addEventListener("click", async () => {
-          window.location.href = "game.html";
+          document.querySelector(".button-container").style.display = "none";
+          document.getElementById("gameCanvas").style.display = "block";
+          import("./src/game.js");
         });
     </script>
   </body>

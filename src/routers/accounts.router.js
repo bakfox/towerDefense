@@ -23,7 +23,6 @@ router.post('/login', async (req, res, next) => {
 
         const user = await prisma.uSERS.findFirst({ where: { ID: username } });
 
-        console.log(user);
 
         if (!user) {
             return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
@@ -47,10 +46,6 @@ router.post('/login', async (req, res, next) => {
 
         res.cookie('authorization', `Bearer ${token}`);
         res.userId = user.UserId
-        console.log("로그인 되는지 확인");
-
-
-
 
         return res.status(200).json({ message: `${username} 님의 로그인에 성공했습니다.` });
     }
@@ -98,7 +93,7 @@ router.post('/signup', async (req, res, next) => {
             },
         });
 
-        console.log("회원가입 호출");
+    
 
         if (isExistUser) {
             return res.status(409).json({ message: '이미 존재하는 아이디입니다.' });
@@ -107,8 +102,6 @@ router.post('/signup', async (req, res, next) => {
         if (password.length < 6) {
             return res.status(409).json({ message: '비밀번호가 6자리 미만입니다.' });
         }
-
-        console.log(nickname);
 
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -144,7 +137,6 @@ router.post('/signup', async (req, res, next) => {
 router.get('/users/:id', UserToken, async (req, res, next) => {
     try {
         const { USER_ID } = req.params;
-        console.log(req.body);
 
         const user = await prisma.uSERS.findFirst({
             where: {
@@ -170,18 +162,20 @@ router.get('/users/:id', UserToken, async (req, res, next) => {
 router.get('/rank', UserToken, async (req, res, next) => {
     try {
         const { id } = req.params;
-        console.log(req.body);
 
-        const users = await prisma.sCORES.findMany({
+        const users = await prisma.sCORES.groupBy({
+            by: ['USER_ID'],
+            _max: {
+                MAX_SCORE: true
+            },
             orderBy: {
-                MAX_SCORE: 'desc'
+                _max: {
+                    MAX_SCORE: 'desc'
+                }
             },
-            include: {
-                USERS: true
-            },
-            take: 10 //랭킹 10위까지만 가져오도록 하자.
-        });
+            take: 10
 
+        })
         return res.status(200).json({ data: users });
     }
     catch (err) {
@@ -195,8 +189,6 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
     try {
         //타워 테이블 가운데에서 출력을 받도록 한다.
         const user = req.user;
-        //console.log("1번 넘김")
-        console.log(user);
 
         //1. 유저의 돈을 감소시킨다.
         //2. 타워 리스트에서 한 가지를 뽑는다.
@@ -217,9 +209,6 @@ router.post('/tower/draw', UserToken, async (req, res, next) => {
             //2 타워 리스트에서 하나 뽑도록 하자.
             const towerindex = Math.floor(Math.random() * towerData.data.length);
             const towerGachad = towerData.data[towerindex];
-            console.log(towerGachad);
-
-            console.log("여긴 넘겼다.")
 
             //3 타워를 생성한다.
             await tx.oWN_TOWERS.create({
@@ -332,22 +321,17 @@ router.put('/tower/upgrade', UserToken, async (req, res, next) => {
             }
         })
 
-        if(successCount < 70)
-        {
-            console.log("강화 성공")
-            return res.status(202).json({message : "강화에 성공했습니다."})
+        if (successCount < 70) {
+            return res.status(202).json({ message: "강화에 성공했습니다." })
         }
-        else if(successCount >= 70)
-        {
-            console.log("강화 실패")
+        else if (successCount >= 70) {
             let text = "강화에 실패했습니다."
-            if(successCount > 95)
-            {
+            if (successCount > 95) {
                 text += "추가로 타워가 파괴되었습니다."
             }
-            return res.status(202).json({message : text});
+            return res.status(202).json({ message: text });
         }
-        
+
     }
     catch (err) {
         next(err);
@@ -363,12 +347,48 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
             where: {
                 USER_ID: user.USER_ID
             },
-            include : {
-                OWN_TOWERS : true
+            include: {
+                OWN_TOWERS: true
             }
         })
-        console.log(mySquad);
         return res.status(201).json({ data: mySquad })
+    }
+    catch (err) {
+        next(err);
+    }
+})
+
+//지정된 스쿼드 하나 출력
+router.get('/tower/squad/:towerid', UserToken, async (req, res, next) => {
+    try {
+        const user = req.user;
+        const { towerid } = req.params;
+        //squad에 등록된 현재 자신의 테이블을 가져온다.
+        const mySquad = await prisma.eQUIP_TOWERS.findMany({
+            where: {
+                USER_ID: user.USER_ID
+            }
+        })
+
+        console.log("mysquad length : ", mySquad.length);
+
+        if(mySquad.length > towerid)
+        {
+            
+            const data = mySquad[towerid].EQUIP_TOWER_ID;
+            console.log("data : ",data);
+            return res.status(201).json({ data: data })
+        }
+        else
+        {   
+            console.log("데이터 없음");
+            return res.status(201).json({ data: 0 })
+        }
+
+
+
+
+        
     }
     catch (err) {
         next(err);
@@ -382,27 +402,16 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
         //변경할 스쿼드를 
         const { equipTowerId, equipingID } = req.body;
         const user = req.user;
-        //towerData에서 데이터를 받아오도록 하자.
-
         //일단 현재 squad가 차 있는지 확인하고 없다면 없다면 추가, 일정 숫자 이상이면 변경하는 식
 
-        const currentUserSquad = await prisma.eQUIP_TOWERS.findMany({
-            where: {
-                USER_ID: user.USER_ID
-            }
-        })
 
-        
 
-        const selectedTower = towerData.data.find((element) => element.id === equipingID);
-
-        
-
-        if (currentUserSquad < 3) {
+        //currentUserSquad라는 스쿼드에 걸리지 않는다면 새로 만들고 아니면 변경하기
+        if (equipTowerId === 0) {
             await prisma.eQUIP_TOWERS.create({
                 data: {
                     USER_ID: user.USER_ID,
-                    TOWER_ID: selectedTower.id
+                    TOWER_ID: equipingID
                 }
             })
         }
@@ -412,12 +421,12 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
                     EQUIP_TOWER_ID: +equipTowerId
                 },
                 data: {
-                    TOWER_ID: selectedTower.id
+                    TOWER_ID: equipingID
                 }
             })
         }
 
-        
+
 
         //추가된 다음의 결과를 리턴하도록 한다.
         const mySquad = await prisma.eQUIP_TOWERS.findMany({
@@ -426,7 +435,7 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
             }
         })
 
-        
+
         return res.status(201).json({ data: mySquad })
 
 

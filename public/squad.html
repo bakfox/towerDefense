@@ -178,6 +178,12 @@
     </main>
 
     <script type="module">
+      window.addEventListener("DOMContentLoaded", async ()=>{
+        setTimeout(async () => {
+          await getSquad();
+        }, 1000);
+      })
+
       const modal = document.getElementById("modal");
       const modalContent = document.getElementById("modalContent");
       const closeModal = document.getElementById("closeModal");
@@ -241,7 +247,7 @@
       };
 
       //현재 가지고 있는 타워의 리스트를 가져오도록 하자.
-      const ownTower = async (squad = 0,type) => {
+      const ownTower = async (squad,type) => {
         while (buttongrid.hasChildNodes()) {
           buttongrid.removeChild(buttongrid.firstChild);
         }
@@ -280,6 +286,8 @@
 
               switch (type) {
                 case 1: //스쿼드를 변경한다.
+                //element에 tower_ID를 등록해 놓았으니 그걸 바로 부르면 되겠다.
+                //equiptowerid는 현재 선택된 놈이 equip_squad_id를 가지고 있어야 한다는 의미.
                   button.addEventListener("click", async () => {
                     const upgrade = await fetch(
                       "http://localhost:3017/api/tower/squad",
@@ -294,6 +302,7 @@
 
                     if (upgrade.ok) {
                       const result = await upgrade.json();
+                      await getSquad();
                     }
                   });
                   break;
@@ -339,59 +348,79 @@
 
       document.getElementById("squad1").addEventListener("click", async () => {
         const equipTowerId = 1;
-        let equipingID = 1;
 
-        const register = await fetch("http://localhost:3017/api/tower/squad", {
-          method: "PUT",
+        const params = {
+          towerid : equipTowerId,
+        }
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ equipTowerId, equipingID }),
         });
 
         if (register.ok) {
-          ownTower(1,1);
+          const result = await register.json();
+          const data = result.data;
+          console.log("data : ", data);
+          ownTower(data,1);
           //getSquad();
-        } else {
-          alert(register.message);
         }
       });
 
       document.getElementById("squad2").addEventListener("click", async () => {
         const equipTowerId = 2;
-        let equipingID = 2;
 
-        const register = await fetch("http://localhost:3017/api/tower/squad", {
-          method: "PUT",
+        const params = {
+          towerid : equipTowerId,
+        }
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ equipTowerId, equipingID }),
         });
 
         if (register.ok) {
-          ownTower(2,1);
-        } else {
-          alert(register.message);
+          const result = await register.json();
+          const data = result.data;
+          ownTower(data,1);
+          //getSquad();
         }
       });
 
       document.getElementById("squad3").addEventListener("click", async () => {
         const equipTowerId = 3;
-        let equipingID = 3;
-        const register = await fetch("http://localhost:3017/api/tower/squad", {
-          method: "PUT",
+        const params = {
+          towerid : equipTowerId,
+        }
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ equipTowerId, equipingID }),
         });
 
         if (register.ok) {
-          ownTower(3,1);
-          //window.location.href = "index.html";
-        } else {
-          alert(register.message);
+          const result = await register.json();
+          const data = result.data;
+          ownTower(data,1);
+          //getSquad();
         }
       });
 
