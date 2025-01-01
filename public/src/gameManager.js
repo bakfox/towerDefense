@@ -17,7 +17,8 @@ export class GameManager {
     GameManager.highScore = 0;
   }
 
-  static setStage({ stage }) {
+  static setStage(stage) {
+    console.log(stage, "로그 체크중");
     GameManager.stage = stage;
   }
 

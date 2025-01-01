@@ -90,7 +90,7 @@ export const endLoop = async (socket, ingame, uuid) => {
       status: "succes",
       message: "게임을 종료합니다.",
       data: {
-        playerStage: inGame.stage,
+        playerStage: ingame.stage,
         score: ingame.score,
         gem: gem,
       },
