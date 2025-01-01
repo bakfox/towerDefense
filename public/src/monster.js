@@ -23,7 +23,7 @@ export class Monster {
     this.atck = item.atck + amount; // 공격력
     this.maxHp = item.hp + amount; // 체력
     this.hp = this.maxHp;
-    this.speed = item.speed / 41; // 이동 속도
+    this.speed = item.speed / 60; // 이동 속도
     this.reword = item.reword + amount; // 잡으면 얻는 보상
   }
 
@@ -37,6 +37,7 @@ export class Monster {
 
       if (distance < this.speed) {
         // 거리가 속도보다 작으면 다음 지점으로 이동시켜주면 됩니다!
+        console.log(this.path);
         this.currentIndex++;
       } else {
         // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
@@ -44,11 +45,14 @@ export class Monster {
         this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
       }
       if (this.id === 1) {
-        console.log("1 = +는", this.x, this.y);
+        console.log(this.x, this.y);
       }
     }
   }
   setLocation(x, y, currentIndex, monster) {
+    if (this.id === 1) {
+      console.log(this.x, this.y, x);
+    }
     this.x = x;
     this.y = y;
     this.currentIndex = currentIndex;
