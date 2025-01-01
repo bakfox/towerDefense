@@ -8,6 +8,7 @@ const existTowerHandler = (towerId, inGame) => {
   const tower = inGame.tower.find((t) => t.towerId === towerId);
   if (!tower) {
     throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
+    
   }
   return tower;
 };
@@ -21,8 +22,9 @@ const haveGold = (inGame, cost) => {
 };
 
 // 타워를 게임에 설치하는 함수
-export const installTowerHandler = (uuid, payload) => {
-  const { socket, towerType, location } = payload.data;
+export const installTowerHandler = (payload) => {
+  const { uuid, socket} = payload;
+  const {towerType, location} = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -36,10 +38,10 @@ export const installTowerHandler = (uuid, payload) => {
     haveGold(inGame, installCost);
 
     // 골드 차감
-    gameGoldChange(socket, inGame, installCost);
+    gameGoldChange(socket, inGame, -installCost);
 
     // 타워를 게임에 설치
-    inGame.towers.push(newTower); // 타워 객체 자체를 저장
+    inGame.tower.push(newTower); // 타워 객체 자체를 저장
     return {
       status: "success",
       message: "타워가 설치되었습니다.",
@@ -57,8 +59,8 @@ export const installTowerHandler = (uuid, payload) => {
 };
 
 // 타워 판매 핸들러
-export const refundTowerHandler = (uuid, payload) => {
-  const { towerId } = payload.data;
+export const refundTowerHandler = (payload) => {
+  const { uuid, towerId } = payload;
   const inGame = getInGame(uuid);
 
   try {
@@ -72,7 +74,7 @@ export const refundTowerHandler = (uuid, payload) => {
     inGame.gold += refundValue;
 
     // 타워 삭제
-    inGame.towers = inGame.towers.filter((t) => t.towerId !== towerId);
+    inGame.towers = inGame.tower.filter((t) => t.towerId !== towerId);
 
     return {
       status: "success",
@@ -91,8 +93,8 @@ export const refundTowerHandler = (uuid, payload) => {
 };
 
 // 타워 이동 핸들러
-export const moveTowerHandler = (uuid, payload) => {
-  const { towerId, currentLocation, moveLocation } = payload.data;
+export const moveTowerHandler = (payload) => {
+  const { uuid, towerId, currentLocation, moveLocation } = payload;
   const inGame = getInGame(uuid);
 
   try {
@@ -118,8 +120,8 @@ export const moveTowerHandler = (uuid, payload) => {
 };
 
 // 타워 업그레이드를 처리하는 함수
-export const upgradeTowerHandler = (uuid, payload) => {
-  const { socket, towerId } = payload.data;
+export const upgradeTowerHandler = (payload) => {
+  const { uuid, socket, towerId } = payload;
   const inGame = getInGame(uuid);
 
   try {

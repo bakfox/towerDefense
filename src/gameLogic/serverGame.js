@@ -18,7 +18,7 @@ async function logicLoop(ingame, uuid, path, socket) {
   //타워 공격 호출
   if (ingame.tower.length !== 0) {
     ingame.tower.forEach((tower) => {
-      tower.decreaseCooldown(ingame.monsters, socket); // 쿨타임 감소
+      tower.decreaseCooldown(socket, ingame); // 쿨타임 감소
     });
   }
   if (ingame.monster.length !== 0) {

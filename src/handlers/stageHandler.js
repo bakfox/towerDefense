@@ -15,25 +15,31 @@ dotenv.config();
 // 경로 만드는 함수 처음에 canvas width , height 값 받아와서 객체 형테로 사용
 function monsterPathMake(canvas) {
   const path = [];
-  let currentX = 0;
+
+  let minWidth =0;
+  let minHeight =100;
+  let maxWidth = canvas.width - 100;
+  let maxHeight = canvas.height - 100;
+
+  let currentX = minWidth;
   let currentY = Math.floor(Math.random() * 21) + 500; // 500 ~ 520 범위의 y 시작 (캔버스 y축 중간쯤에서 시작할 수 있도록 유도)
 
   path.push({ x: currentX, y: currentY });
-  while (currentX < canvas.width) {
+  while (currentX < maxWidth) {
     console.log(canvas.width, currentX);
     currentX += Math.floor(Math.random() * 100) + 50; // 50 ~ 150 범위의 x 증가
     // x 좌표에 대한 clamp 처리
-    if (currentX > canvas.width) {
-      currentX = canvas.width;
+    if (currentX > maxWidth) {
+      currentX = maxWidth;
     }
 
     currentY += Math.floor(Math.random() * 200) - 100; // -100 ~ 100 범위의 y 변경
     // y 좌표에 대한 clamp 처리
-    if (currentY < 0) {
-      currentY = 0;
+    if (currentY < minHeight) {
+      currentY = minHeight;
     }
-    if (currentY > canvas.height) {
-      currentY = canvas.height;
+    if (currentY > maxHeight) {
+      currentY = maxHeight;
     }
 
     path.push({ x: currentX, y: currentY });
@@ -99,10 +105,10 @@ export const gameStart = async (payload) => {
       nowMonsterData.push(monsterData.data[nowStageData[index].id - 1]);
     }
 
-    spawnMonsters(ingame, newPath, nowMonsterData, nowStageData);
+    spawnMonsters(ingame, newPath, nowStageData);
 
     startLoop(ingame, payload.uuid, newPath, payload.socket);
-
+    
     return {
       status: "succes",
       message: "게임을 시작합니다!",

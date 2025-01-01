@@ -16,6 +16,6 @@ export function getMonsterData(id) {
 }
 
 export function getTowerData(id) {
-  const tower = monsterData.find((item) => item.id === id);
+  const tower = towerData.data.find((item) => item.id === id);
   return tower;
 }

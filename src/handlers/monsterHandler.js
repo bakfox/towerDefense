@@ -1,5 +1,6 @@
 // import { Monster } from "../src/monster.js";
 import { getInGame } from "../models/inGame.js";
+import monsterData from "../../gameDefaultData/monster.js";
 import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
 let uniqueId = 1; //몬스터 고유번호
@@ -12,7 +13,7 @@ export class Monster {
     }
 
     // id를 기반으로 monsterData에서 해당 몬스터 데이터를 찾음
-    const selectedMonsterData = monsterData.find(
+    const selectedMonsterData = monsterData.data.find(
       (monster) => monster.id === id
     );
     if (!selectedMonsterData) {
@@ -26,7 +27,7 @@ export class Monster {
     this.currentIndex = 0; // 몬스터가 이동 중인 경로의 인덱스
     this.x = path[0].x; // 몬스터의 x 좌표 (최초 위치는 경로의 첫 번째 지점)
     this.y = path[0].y; // 몬스터의 y 좌표 (최초 위치는 경로의 첫 번째 지점)
-    this.speed = selectedMonsterData.spead; // id 기반의 몬스터 이동 속도
+    this.speed = selectedMonsterData.speed; // id 기반의 몬스터 이동 속도
     this.attackPower = selectedMonsterData.atck; // id 기반의 몬스터 공격력
     this.maxHp = selectedMonsterData.hp; // id 기반의 몬스터 최대 HP
     this.hp = this.maxHp; // 몬스터의 현재 HP
@@ -113,19 +114,19 @@ export class Monster {
 //path받아오기
 
 //몬스터 생성 nowStageData여기에 적힌 스폰량만큼 nowMonsterData에 객체 갯수만큼 넣기 넣을때 각 객체에 고유번호 부여
-const makeMonster = (path, id, monsterData, uniqueId) => {
-  return new Monster(path, id, monsterData, uniqueId);
+const makeMonster = (path, id, uniqueId) => {
+  return new Monster(path, id, uniqueId);
   //nowMonsterData.push(monster);
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (ingame, path, monsterData, nowStageData) => {
+export const spawnMonsters = (ingame, path, nowStageData) => {
   ingame.nowMonsterData = [];
   ingame.nowStageData = nowStageData; //[{ stageId: 1, id: 1, count: 10 }]
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
-      const monster = makeMonster(path, monsterType, monsterData, uniqueId);
+      const monster = makeMonster(path, monsterType, uniqueId);
       ingame.nowMonsterData.push(monster);
       uniqueId++;
     }

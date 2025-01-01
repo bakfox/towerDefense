@@ -1,6 +1,7 @@
 import { v4 as uuIdV4 } from "uuid";
 import { gameStart } from "./stageHandler.js";
 import { handleEvent } from "./helper.js";
+import { deleteInGame } from "../models/inGame.js";
 
 //실질적인 실행 코드 입니다.
 const registerHander = (io) => {
@@ -16,7 +17,7 @@ const registerHander = (io) => {
     socket.on("event", (data, callBack) => handleEvent(io, socket, userUUID, data, callBack)); //이벤트 핸들러 연결
 
     //접속 해제
-    socket.on("disconnect", (socket) => {});
+    socket.on("disconnect", (socket) => {deleteInGame(userUUID)});
 
     //gameStart({ uuid: userUUID, socket });
   });
