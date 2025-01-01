@@ -21,8 +21,8 @@ const haveGold = (inGame, cost) => {
 };
 
 // 타워를 게임에 설치하는 함수
-export const installTowerHandler = (uuid, payload) => {
-  const { socket, towerType, location } = payload.data;
+export const installTowerHandler = (payload) => {
+  const { uuid, socket, towerType, location } = payload;
   const inGame = getInGame(uuid);
 
   try {
@@ -57,8 +57,8 @@ export const installTowerHandler = (uuid, payload) => {
 };
 
 // 타워 판매 핸들러
-export const refundTowerHandler = (uuid, payload) => {
-  const { towerId } = payload.data;
+export const refundTowerHandler = (payload) => {
+  const { uuid, towerId } = payload;
   const inGame = getInGame(uuid);
 
   try {
@@ -91,8 +91,8 @@ export const refundTowerHandler = (uuid, payload) => {
 };
 
 // 타워 이동 핸들러
-export const moveTowerHandler = (uuid, payload) => {
-  const { towerId, currentLocation, moveLocation } = payload.data;
+export const moveTowerHandler = (payload) => {
+  const { uuid, towerId, currentLocation, moveLocation } = payload;
   const inGame = getInGame(uuid);
 
   try {
@@ -118,8 +118,8 @@ export const moveTowerHandler = (uuid, payload) => {
 };
 
 // 타워 업그레이드를 처리하는 함수
-export const upgradeTowerHandler = (uuid, payload) => {
-  const { socket, towerId } = payload.data;
+export const upgradeTowerHandler = (payload) => {
+  const { uuid, socket, towerId } = payload;
   const inGame = getInGame(uuid);
 
   try {
