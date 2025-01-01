@@ -8,13 +8,22 @@ export class Tower {
     this.level = 1;
     this.x = x; // 타워 이미지 x 좌표
     this.y = y; // 타워 이미지 y 좌표
-    this.width = 78; // 타워 이미지 가로 길이 (이미지 파일 길이에 따라 변경 필요하며 세로 길이와 비율을 맞춰주셔야 합니다!)
-    this.height = 150; // 타워 이미지 세로 길이
+    this.width = width; // 타워 이미지 가로 길이 (이미지 파일 길이에 따라 변경 필요하며 세로 길이와 비율을 맞춰주셔야 합니다!)
+    this.height = height; // 타워 이미지 세로 길이
     this.range = 300; // 타워 사거리
     this.cooldown = 0; // 타워 공격 쿨타임
     this.beamDuration = 0; // 타워 광선 지속 시간
     this.target = null; // 타워 광선의 목표
-    this.btn = new Button("tower", id, x, y, width, height, image, onClick);
+    this.btn = new Button(
+      "tower",
+      id,
+      x - this.width / 2,
+      y - this.height / 2,
+      width,
+      height,
+      image,
+      onClick
+    );
     this.init(type);
   }
 
@@ -40,13 +49,14 @@ export class Tower {
 
   draw(ctx) {
     this.btn.draw(ctx);
+    ctx.strokeStyle = "black";
+    ctx.arc(this.x, this.y, 200, 0, (360 * Math.PI) / 180, false);
+
+    ctx.stroke();
     if (this.beamDuration > 0 && this.target) {
       ctx.beginPath();
-      ctx.moveTo(this.x + this.width / 2, this.y + this.height / 2);
-      ctx.lineTo(
-        this.target.x + this.target.width / 2,
-        this.target.y + this.target.height / 2
-      );
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.target.x, this.target.y);
       ctx.strokeStyle = "skyblue";
       ctx.lineWidth = 10;
       ctx.stroke();

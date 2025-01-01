@@ -18,6 +18,7 @@ export class Tower {
     this.towerType = tower.id; // 타워 종류 (ID)
     this.atckSpeed = tower.atckSpead;
     this.atck = tower.atck;
+    this.range = tower.range;
     this.upgrade = tower.upgrade;
     this.upgradeValue = tower.upgradeValue;
     this.price = tower.price;
@@ -26,7 +27,7 @@ export class Tower {
   }
   attack(monster, socket, ingame) {
     monster.hitByTower(socket, ingame, this.atck);
-    socket.emit("monsterAttacked", {
+    socket.emit(101, {
       status: "success",
       message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
       data: {
@@ -40,13 +41,18 @@ export class Tower {
   // 쿨타임 감소 함수
   decreaseCooldown(socket, ingame) {
     this.cooldown--;
+    console.log("cooldown", this.cooldown);
     if (this.cooldown <= 0) {
       ingame.monster.forEach((monster) => {
         const distance = Math.sqrt(
           Math.pow(this.location.x - monster.x, 2) +
             Math.pow(this.location.y - monster.y, 2)
         );
+
+        console.log("distance", distance, this.location, monster.x, monster.y);
+
         if (distance < this.range) {
+          console.log("in range");
           this.attack(monster, socket, ingame); // 타워 공격
           this.cooldown = this.atckSpeed; // 쿨타임 초기화
         }

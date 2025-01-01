@@ -182,6 +182,8 @@ export function addMonster(payload) {
     uniqueId,
     new Monster(monsterPath, monsterImages, id, uniqueId, GameManager.stage)
   );
+
+  console.log(monsters.size);
 }
 
 // 몬스터 삭제
@@ -215,6 +217,8 @@ async function addTower(targetLocation) {
     });
     const towerData = data.tower;
     const { towerId, towerType, location } = towerData;
+
+    console.log("towerLoc",location, targetLocation);
     const tower = new Tower(
       location.x,
       location.y,
@@ -226,7 +230,7 @@ async function addTower(targetLocation) {
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
-        towerUI.openUI(this.id, this.x, this.y);
+        towerUI.openUI(this.id, this.x, this.y);``
       }
     );
     towers.set(towerId, tower);
@@ -504,14 +508,11 @@ canvas.addEventListener("click", (e) => {
   // TODO 허공 클릭하면 처리할 이벤트
   switch (ioBuffer.action) {
     case "create":
-      addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
+      addTower({ x, y });
       towerUI.closeUI();
       break;
     case "move":
-      moveTower(ioBuffer.id, {
-        x: x - TOWER_WIDTH / 2,
-        y: y - TOWER_HEIGHT / 2,
-      });
+      moveTower(ioBuffer.id, { x, y });
       towerUI.closeUI();
       break;
     default:

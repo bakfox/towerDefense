@@ -145,7 +145,7 @@ export const spawnMonsters = (ingame, path, nowStageData) => {
   return ingame.nowMonsterData;
 };
 export const moveClient = (socket, ingame) => {
-  console.log(ingame.MonsterCoordinate);
+  //console.log(ingame.MonsterCoordinate);
   socket.emit("event", {
     handlerId: 202,
     status: "success",
