@@ -208,6 +208,7 @@ async function addTower(targetLocation) {
       }
     );
     towers.set(towerId, tower);
+    buttons.push(tower.btn);
     tower.draw(ctx, towerImage);
   } catch (error) {
     console.log(error);
@@ -416,6 +417,7 @@ canvas.addEventListener("click", (e) => {
     if (button.isClicked(x, y)) {
       button.onClick();
       isButtonClicked = true;
+      console.log(ioBuffer);
       break; // 첫 번째로 클릭된 버튼에서 순회 중단
     }
   }
@@ -425,6 +427,10 @@ canvas.addEventListener("click", (e) => {
   // TODO 허공 클릭하면 처리할 이벤트
   if (ioBuffer.action === "create")
     addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
+  else
+    ioBuffer.reset();
+
+  console.log(ioBuffer);
 });
 
 canvas.addEventListener("mousemove", (e) => {
