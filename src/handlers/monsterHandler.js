@@ -86,8 +86,8 @@ export class Monster {
     this.dead(socket, ingame);
   }
   dead(socket, ingame) {
-    gameGoldChange(socket, ingame, this.reward * ingame.stage);
-    gameScoreChange(socket, ingame, (this.reward * ingame.stage) / 2);
+    gameGoldChange(socket, ingame, this.reward * (ingame.stage+1));
+    gameScoreChange(socket, ingame, (this.reward * (ingame.stage+1)) / 2);
     this.isDead = true;
     delete ingame.MonsterCoordinate[this.uniqueId];
     socket.emit("event", {

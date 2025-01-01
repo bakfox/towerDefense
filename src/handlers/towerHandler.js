@@ -74,7 +74,7 @@ export const refundTowerHandler = (payload) => {
     gameGoldChange(socket, inGame, refundValue);
 
     // 타워 삭제
-    inGame.towers = inGame.tower.filter((t) => t.towerId !== towerId);
+    inGame.tower = inGame.tower.filter((t) => t.towerId !== towerId);
 
     return {
       status: "success",

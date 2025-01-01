@@ -130,7 +130,7 @@ function placeHouse() {
 }
 
 export function setHouseHp(value) {
-  house.setHouseHp(value);
+  house.setHp(value);
 }
 
 const decX = canvas.width - 125;
