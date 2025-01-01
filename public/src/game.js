@@ -2,6 +2,7 @@ import { initSocket, sendEvent } from "./handlers/socket.js";
 import { initMonsterData, initTowerData } from "./default/gameData.js";
 import { House } from "./house.js";
 import { Button } from "./button.js";
+import { TowerUI } from "./towerUI.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
 import { GameManager } from "./gameManager.js";
@@ -11,7 +12,6 @@ import { GameManager } from "./gameManager.js";
 */
 
 let serverSocket; // 서버 웹소켓 객체
-const buyTowerButton = document.getElementById("buyButton");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -42,6 +42,8 @@ let ioBuffer = {
 let hoverLoc = { x: 0, y: 0 };
 let buttons = [];
 
+let towerUI;
+
 let towerDec = [];
 
 // 이미지 로딩 파트
@@ -69,6 +71,13 @@ for (let i = 1; i <= NUM_OF_TOWERS; i++) {
   const img = new Image();
   img.src = `images/tower_${i}.png`;
   towerImages.set(i, img);
+}
+
+let btnImages = [];
+for (let i = 1; i <= 3; i++) {
+  const img = new Image();
+  img.src = `images/btn_${i}.png`;
+  btnImages.push(img);
 }
 
 let monsterPath = [];
@@ -144,9 +153,11 @@ function initTowerDecButton() {
         TOWER_WIDTH,
         TOWER_HEIGHT,
         towerImages.get(id),
-        function () {
+        function (x, y) {
           ioBuffer.action = "create";
           ioBuffer.id = id;
+          hoverLoc.x = x;
+          hoverLoc.y = y;
         }
       )
     );
@@ -197,7 +208,6 @@ export async function moveMonsters(data) {
 async function addTower(targetLocation) {
   try {
     const type = ioBuffer.id;
-    console.log("type", type);
     ioBuffer.reset();
     const data = await sendEvent(101, {
       towerType: type,
@@ -216,49 +226,60 @@ async function addTower(targetLocation) {
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
+        towerUI.openUI(this.id, this.x, this.y);
       }
     );
     towers.set(towerId, tower);
+    buttons.push(tower.btn);
     tower.draw(ctx, towerImage);
   } catch (error) {
     console.log(error);
-    console.log("타워 설치에 실패했습니다!");
   }
 }
 
 // 타워 이동
-async function moveTower(id, curLocation, targetLocation) {
+async function moveTower(id, targetLocation) {
   try {
-    const data = await sendEvent(102, { id, curLocation, targetLocation });
+    ioBuffer.reset();
+    const data = await sendEvent(102, {
+      towerId: id,
+      moveLocation: targetLocation,
+    });
     const { towerId, moveLocation } = data;
 
     towers.get(towerId).move(moveLocation);
   } catch (error) {
-    console.log("타워 이동에 실패했습니다!");
+    console.log(error);
   }
 }
 
 // 타워 판매
 async function sellTower(id) {
   try {
-    const data = await sendEvent(103, { id });
+    ioBuffer.reset();
+    const data = await sendEvent(103, { towerId: id });
     const { towerId } = data;
+
+    const idx = buttons.findIndex(
+      (button) => button.id === towerId && button.label === "tower"
+    );
+    buttons.splice(idx, 1);
 
     towers.delete(towerId);
   } catch (error) {
-    console.log("타워 판매에 실패했습니다!");
+    console.log(error);
   }
 }
 
 // 타워 강화
 async function upgradeTower(id) {
   try {
-    const data = await sendEvent(104, { id });
-    const { towerId } = data;
+    const data = await sendEvent(104, { towerId: id });
+    const { towerId } = data.tower;
 
     towers.get(towerId).upgrade();
   } catch (error) {
-    console.log("타워 강화에 실패했습니다!");
+    console.log(error);
   }
 }
 
@@ -320,6 +341,21 @@ function gameLoop() {
 
     // 호버 이미지 그리기(타워)
     if (ioBuffer.action === "create") {
+      ctx.drawImage(
+        towerImages.get(ioBuffer.id),
+        hoverLoc.x - TOWER_WIDTH / 2,
+        hoverLoc.y - TOWER_WIDTH / 2,
+        TOWER_WIDTH,
+        TOWER_HEIGHT
+      );
+    }
+
+    // 타워 UI 그리기
+    towerUI.draw(ctx);
+
+    requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+    // 호버 이미지 그리기(타워)
+    if (ioBuffer.action === "create") {
       console.log("ioBuffer", ioBuffer);
       ctx.drawImage(
         towerImages.get(ioBuffer.id),
@@ -341,6 +377,21 @@ function initGame() {
     return;
   }
 
+  towerUI = new TowerUI(0, 0, btnImages, [
+    function () {
+      upgradeTower(this.id);
+      towerUI.closeUI();
+    },
+    function () {
+      ioBuffer.action = "move";
+      ioBuffer.id = this.id;
+      towerUI.closeUI();
+    },
+    function () {
+      sellTower(this.id);
+      towerUI.closeUI();
+    },
+  ]);
   placeHouse(); // 기지 배치
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   house.draw(ctx, houseImage);
@@ -368,6 +419,12 @@ Promise.all([
       })
   ),
   ...Array.from(towerImages.values()).map(
+    (img) =>
+      new Promise((resolve) => {
+        img.onload = resolve;
+      })
+  ),
+  ...btnImages.map(
     (img) =>
       new Promise((resolve) => {
         img.onload = resolve;
@@ -422,12 +479,22 @@ canvas.addEventListener("click", (e) => {
 
   console.log("click", x, y);
 
+  if (towerUI.handleClick(x, y)) {
+    return;
+  }
+
+  if (towerUI.isVisible) {
+    towerUI.closeUI();
+  }
+
   let isButtonClicked = false;
   for (let i = buttons.length - 1; i >= 0; i--) {
     const button = buttons[i];
     if (button.isClicked(x, y)) {
-      button.onClick();
+      if (button.label === "defaultTower") button.onClick(x, y);
+      else button.onClick();
       isButtonClicked = true;
+      console.log(ioBuffer);
       break; // 첫 번째로 클릭된 버튼에서 순회 중단
     }
   }
@@ -435,8 +502,24 @@ canvas.addEventListener("click", (e) => {
   if (isButtonClicked) return;
 
   // TODO 허공 클릭하면 처리할 이벤트
-  if (ioBuffer.action === "create")
-    addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
+  switch (ioBuffer.action) {
+    case "create":
+      addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
+      towerUI.closeUI();
+      break;
+    case "move":
+      moveTower(ioBuffer.id, {
+        x: x - TOWER_WIDTH / 2,
+        y: y - TOWER_HEIGHT / 2,
+      });
+      towerUI.closeUI();
+      break;
+    default:
+      ioBuffer.reset();
+      towerUI.closeUI();
+  }
+
+  console.log(ioBuffer);
 });
 
 canvas.addEventListener("mousemove", (e) => {
