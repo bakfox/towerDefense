@@ -226,7 +226,6 @@ async function addTower(targetLocation) {
     tower.draw(ctx, towerImage);
   } catch (error) {
     console.log(error);
-    console.log("타워 설치에 실패했습니다!");
   }
 }
 
@@ -257,12 +256,12 @@ async function sellTower(id) {
 // 타워 강화
 async function upgradeTower(id) {
   try {
-    const data = await sendEvent(104, { id });
-    const { towerId } = data;
+    const data = await sendEvent(104, { towerId :id });
+    const { towerId } = data.tower;
 
     towers.get(towerId).upgrade();
   } catch (error) {
-    console.log("타워 강화에 실패했습니다!");
+    console.log(error);
   }
 }
 

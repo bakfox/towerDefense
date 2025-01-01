@@ -1,7 +1,7 @@
 const ingame = {};
 const defaultIngame = {
   userId: 0,
-  gold: 1000,
+  gold: 5000,
   score: 0,
   house: {
     hp: 5,

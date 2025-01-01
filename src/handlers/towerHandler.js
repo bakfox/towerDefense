@@ -7,7 +7,7 @@ import { gameGoldChange } from "./stageHandler.js";
 const existTowerHandler = (towerId, inGame) => {
   const tower = inGame.tower.find((t) => t.towerId === towerId);
   if (!tower) {
-    throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
+    throw new Error(`타워 ${towerId}는 존재하지 않습니다.`);
     
   }
   return tower;
@@ -121,7 +121,8 @@ export const moveTowerHandler = (payload) => {
 
 // 타워 업그레이드를 처리하는 함수
 export const upgradeTowerHandler = (payload) => {
-  const { uuid, socket, towerId } = payload;
+  const { uuid, socket } = payload;
+  const {towerId} = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -135,7 +136,7 @@ export const upgradeTowerHandler = (payload) => {
     haveGold(inGame, upgradeCost);
 
     // 골드 차감
-    gameGoldChange(socket, inGame, upgradeCost);
+    gameGoldChange(socket, inGame, -upgradeCost);
 
     // 타워 업그레이드
     tower.upgradeTower();

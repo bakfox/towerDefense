@@ -59,7 +59,7 @@ export class Tower {
     this.atck += this.upgradeValue;
     this.upgrade++;
     this.cooldown = this.atckSpeed; // 업그레이드 후 쿨타임 초기화
-    console.log(`타워 ${this.uniqueId}가 업그레이드되었습니다.`);
+    console.log(`타워 ${this.towerId}가 업그레이드되었습니다.`);
   }
 
   // 타워 이동 메서드

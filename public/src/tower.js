@@ -35,7 +35,6 @@ export class Tower {
 
   upgrade() {
     this.atck += this.upgradeValue;
-    this.atckSpeed += this.upgradeValue;
     this.level += 1;
   }
 
