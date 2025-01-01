@@ -8,24 +8,24 @@ export class GameManager {
   static highScore = 0; // 기존 최고 점수
 
   static reset() {
-    this.isGameOver = false;
-    this.isInitGame = false;
-    this.stage = 0;
+    GameManager.isGameOver = false;
+    GameManager.isInitGame = false;
+    GameManager.stage = 0;
 
-    this.userGold = 0;
-    this.score = 0;
-    this.highScore = 0;
+    GameManager.userGold = 0;
+    GameManager.score = 0;
+    GameManager.highScore = 0;
   }
 
-  static setStage(stage) {
-    this.stage = stage;
+  static setStage({stage}) {
+    GameManager.stage = stage;
   }
 
-  static setUserGold(gold) {
-    this.userGold = gold;
+  static setUserGold({playerGold}) {
+    GameManager.userGold = playerGold;
   }
 
   static setScore(score) {
-    this.score = score;
+    GameManager.score = score;
   }
 }

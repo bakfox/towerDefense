@@ -38,7 +38,7 @@ let ioBuffer = {
 let hoverLoc = { x: 0, y: 0 };
 let buttons = [];
 
-let towerDec = [1, 2, 3];
+let towerDec = [];
 
 // 이미지 로딩 파트
 const backgroundImage = new Image();
@@ -129,7 +129,7 @@ const TOWER_HEIGHT = 100;
 function initTowerDecButton() {
   // 타워 버튼 추가
   for (let i = 0; i < towerDec.length; i++) {
-    const id = towerDec[i];
+    const id = towerDec[i].ID;
 
     buttons.push(
       new Button(
@@ -189,9 +189,11 @@ export function moveMonsters(locationList) {
 async function addTower(targetLocation) {
   try {
     const type = ioBuffer.id;
+    console.log("type" , type);
     ioBuffer.reset();
     const data = await sendEvent(101, { towerType: type, location : targetLocation });
-    const { towerId, towerType, location } = data;
+    const towerData = data.tower;
+    const { towerId, towerType, location } = towerData;
     const tower = new Tower(
       location.x,
       location.y,
@@ -199,15 +201,16 @@ async function addTower(targetLocation) {
       towerType,
       TOWER_WIDTH,
       TOWER_HEIGHT,
-      towerImages[towerType],
+      towerImages.get(towerType),
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
       }
     );
-    towers.set(id, tower);
+    towers.set(towerId, tower);
     tower.draw(ctx, towerImage);
   } catch (error) {
+    console.log(error);
     console.log("타워 설치에 실패했습니다!");
   }
 }
@@ -303,6 +306,7 @@ function gameLoop() {
 
   // 호버 이미지 그리기(타워)
   if (ioBuffer.action === "create") {
+    console.log("ioBuffer",ioBuffer);
     ctx.drawImage(
       towerImages.get(ioBuffer.id),
       hoverLoc.x - TOWER_WIDTH / 2,
@@ -368,14 +372,16 @@ Promise.all([
     });
 
     // 게임 데이터 초기화 TODO
-    const { monster, tower } = gameAssets;
+    const { monster, tower, playerGold, stage } = gameAssets;
+
+    GameManager.setUserGold({playerGold});
+    GameManager.setStage({stage});
+
 
     ({
       towerDec,
       path: monsterPath,
       playerHp: houseHp,
-      playerGold: GameManager.userGold,
-      stage: GameManager.stage,
     } = gameAssets);
 
     // 기본 데이터 초기화
@@ -418,7 +424,7 @@ canvas.addEventListener("click", (e) => {
 
   // TODO 허공 클릭하면 처리할 이벤트
   if (ioBuffer.action === "create")
-    addTower({ x: x + TOWER_WIDTH / 2, y: y + TOWER_HEIGHT / 2 });
+    addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
 });
 
 canvas.addEventListener("mousemove", (e) => {
