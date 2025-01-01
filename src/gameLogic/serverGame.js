@@ -94,10 +94,11 @@ export const endLoop = async (socket, ingame, uuid) => {
         gem: gem,
       },
     });
+    socket.disconnect();
     setTimeout(() => {
       deleteInGame[uuid]; // uuid에 해당하는 게임 데이터를 삭제
       console.log(`게임 데이터가 ${uuid}에 대해 삭제되었습니다.`);
-    }, 5000);
+    }, 3000);
   } catch (error) {
     return {
       status: "fail",

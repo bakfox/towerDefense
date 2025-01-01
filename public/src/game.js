@@ -132,7 +132,7 @@ export function gameEnd(value) {
   alert(
     `게임 클리어! ${value.gem} : 잼 획득! ${value.score} : 최종 스코어 ${value.playerStage} : 최종 스테이지 `
   );
-  location.href = "../index.html";
+  location.href = "../beforeGame.html";
 }
 export function setHouseHp(value) {
   house.setHp(value);

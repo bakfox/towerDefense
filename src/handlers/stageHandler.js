@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
-import { createInGame } from "../models/inGame.js";
+import { createInGame, deleteInGame } from "../models/inGame.js";
 import { prisma } from "../utils/index.js";
 import { spawnMonsters } from "./monsterHandler.js";
 
@@ -49,7 +49,12 @@ function monsterPathMake(canvas) {
 }
 
 export const gameStart = async (payload) => {
+  deleteInGame[payload.uuid];
   const ingame = createInGame(payload.uuid);
+  ingame.stage++;
+  deleteInGame[payload.uuid];
+  console.log(ingame);
+
   try {
     const [tokenType, token] = payload.data.cookies.split("%20");
 
