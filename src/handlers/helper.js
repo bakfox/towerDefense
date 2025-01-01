@@ -28,7 +28,7 @@ export const handleEvent = async (io, socket, uuId, data, callBack) => {
   }
 
   const response = await handler(payload);
-  
+
   console.log(response.broadcast);
   if (response.broadcast) {
     console.log("유저 호출");

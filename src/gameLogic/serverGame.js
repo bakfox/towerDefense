@@ -1,5 +1,5 @@
 import { deleteInGame } from "../models/inGame.js";
-import { spawnNextMonster } from "../handlers/monsterHandler.js";
+import { moveClient, spawnNextMonster } from "../handlers/monsterHandler.js";
 import { prisma } from "../utils/index.js";
 const FPS = 1;
 const interval = 1000 / FPS;
@@ -23,8 +23,10 @@ async function logicLoop(ingame, uuid, path, socket) {
   }
   if (ingame.monster.length !== 0) {
     ingame.monster.forEach((monster) => {
-      monster.move(socket);
+      monster.move(socket, ingame, uuid);
+      console.log(monster.x, monster.y, "변화한");
     });
+    moveClient(socket, ingame); //클라에 데이터 보내기
   }
 
   spawnNextMonster(socket, ingame);
@@ -33,6 +35,7 @@ async function logicLoop(ingame, uuid, path, socket) {
     const checkMonster = ingame.monster.every(
       (monster) => monster.isDead === true
     );
+    console.log(checkMonster, "아직 살음");
     if (checkMonster) {
       gameStageChange(ingame, socket);
       ingame.isSpawn = true;

@@ -15,6 +15,10 @@ let serverSocket; // 서버 웹소켓 객체
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+const FRAME_RATE = 60; // 고정 시킬 프레임
+const FRAME_INTERVAL = 1000 / FRAME_RATE; // 프레임 계산
+let lastFrameTime = performance.now(); //처음 실행 시간
+
 const NUM_OF_MONSTERS = 6; // 몬스터 개수
 const NUM_OF_TOWERS = 5; // 타워 개수수
 
@@ -186,11 +190,15 @@ export function deleteMonster(id) {
 }
 
 // 몬스터 이동
-export function moveMonsters(locationList) {
-  for (const item of locationList) {
-    const monster = monsters.get(item.id);
-
-    monster.setLocation(item.x, item.y);
+export async function moveMonsters(data) {
+  for (let key of Object.keys(data.monsters)) {
+    const monster = monsters.get(data.monsters[key].id);
+    monster.setLocation(
+      data.monsters[key].x,
+      data.monsters[key].y,
+      data.monsters[key].currentIndex,
+      monster
+    );
   }
 }
 // #endregion
@@ -286,63 +294,82 @@ export function towerAttack(towerId, monsterId) {
 // #endregion
 
 function gameLoop() {
-  // 렌더링 시에는 항상 배경 이미지부터 그려야 합니다! 그래야 다른 이미지들이 배경 이미지 위에 그려져요!
-  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 다시 그리기
-  drawPath(monsterPath); // 경로 다시 그리기
+  const deltaTime = performance.now() - lastFrameTime;
 
-  ctx.font = "25px Times New Roman";
-  ctx.fillStyle = "skyblue";
-  ctx.fillText(`최고 기록: ${GameManager.highScore}`, 50, 50); // 최고 기록 표시
-  ctx.fillStyle = "white";
-  ctx.fillText(`점수: ${GameManager.score}`, 50, 100); // 현재 스코어 표시
-  ctx.fillStyle = "yellow";
-  ctx.fillText(`골드: ${GameManager.userGold}`, 50, 150); // 골드 표시
-  ctx.fillStyle = "black";
-  ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 50, 200); // 최고 기록 표시
+  if (deltaTime >= FRAME_INTERVAL) {
+    // 렌더링 시에는 항상 배경 이미지부터 그려야 합니다! 그래야 다른 이미지들이 배경 이미지 위에 그려져요!
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height); // 배경 이미지 다시 그리기
+    drawPath(monsterPath); // 경로 다시 그리기
 
-  // 타워 그리기
-  towers.forEach((tower) => {
-    tower.draw(ctx, towerImage);
-  });
+    ctx.font = "25px Times New Roman";
+    ctx.fillStyle = "skyblue";
+    ctx.fillText(`최고 기록: ${GameManager.highScore}`, 50, 50); // 최고 기록 표시
+    ctx.fillStyle = "white";
+    ctx.fillText(`점수: ${GameManager.score}`, 50, 100); // 현재 스코어 표시
+    ctx.fillStyle = "yellow";
+    ctx.fillText(`골드: ${GameManager.userGold}`, 50, 150); // 골드 표시
+    ctx.fillStyle = "black";
+    ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 50, 200); // 최고 기록 표시
 
-  // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  house.draw(ctx, houseImage);
+    // 타워 그리기
+    towers.forEach((tower) => {
+      tower.draw(ctx, towerImage);
+    });
+    // 고정 프레임 전용
 
-  monsters.forEach((monster) => {
-    monster.move(house);
-    monster.draw(ctx);
-  });
+    monsters.forEach((monster) => {
+      monster.move(house);
+      monster.draw(ctx);
+    });
 
-  // 버튼 그리기
-  for (let i = buttons.length - 1; i >= 0; i--) {
-    const button = buttons[i];
+    // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
+    house.draw(ctx, houseImage);
+    // 버튼 그리기
+    for (let i = buttons.length - 1; i >= 0; i--) {
+      const button = buttons[i];
 
-    if (button.label === "defaultTower") {
-      ctx.globalAlpha = "0.5";
-      ctx.fillStyle = "white";
-      ctx.fillRect(button.x - 10, button.y - 10, 120, 120);
+      if (button.label === "defaultTower") {
+        ctx.globalAlpha = "0.5";
+        ctx.fillStyle = "white";
+        ctx.fillRect(button.x - 10, button.y - 10, 120, 120);
 
-      ctx.globalAlpha = "1";
+        ctx.globalAlpha = "1";
+      }
+
+      button.draw(ctx);
     }
 
-    button.draw(ctx);
+    // 호버 이미지 그리기(타워)
+    if (ioBuffer.action === "create") {
+      ctx.drawImage(
+        towerImages.get(ioBuffer.id),
+        hoverLoc.x - TOWER_WIDTH / 2,
+        hoverLoc.y - TOWER_WIDTH / 2,
+        TOWER_WIDTH,
+        TOWER_HEIGHT
+      );
+    }
+
+    // 타워 UI 그리기
+    towerUI.draw(ctx);
+
+    requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+    // 호버 이미지 그리기(타워)
+    if (ioBuffer.action === "create") {
+      console.log("ioBuffer", ioBuffer);
+      ctx.drawImage(
+        towerImages.get(ioBuffer.id),
+        hoverLoc.x - TOWER_WIDTH / 2,
+        hoverLoc.y - TOWER_WIDTH / 2,
+        TOWER_WIDTH,
+        TOWER_HEIGHT
+      );
+    }
+    lastFrameTime = performance.now();
   }
-
-  // 호버 이미지 그리기(타워)
-  if (ioBuffer.action === "create") {
-    ctx.drawImage(
-      towerImages.get(ioBuffer.id),
-      hoverLoc.x - TOWER_WIDTH / 2,
-      hoverLoc.y - TOWER_WIDTH / 2,
-      TOWER_WIDTH,
-      TOWER_HEIGHT
-    );
-  }
-
-  // 타워 UI 그리기
-  towerUI.draw(ctx);
-
-  requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
+  setTimeout(() => {
+    gameLoop();
+  }, FRAME_INTERVAL);
 }
 
 function initGame() {
