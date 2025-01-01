@@ -10,8 +10,9 @@ export function initTowerData(tower) {
 }
 
 export function getMonsterData(id) {
+  console.log(id);
   const monster = monsterData.find((item) => item.id === id);
-
+  console.log(monster);
   return monster;
 }
 

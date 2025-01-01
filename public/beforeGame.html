@@ -88,7 +88,7 @@
         </div>
       </div>
 
-      <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+      <canvas id="gameCanvas" width="1280" height="720"></canvas>
     </main>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
@@ -108,13 +108,10 @@
         if (parts.length === 2) return parts.pop().split(";").shift();
         return null;
       };
-      
 
       document.getElementById("squad").addEventListener("click", async () => {
         window.location.href = "squad.html";
       });
-
-      
 
       //rank 조회
       document.getElementById("rank").addEventListener("click", async () => {

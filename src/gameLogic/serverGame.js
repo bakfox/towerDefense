@@ -8,6 +8,7 @@ const interval = 1000 / FPS;
 //이거 호출해서 루프 시작
 async function logicLoop(ingame, uuid, path, socket) {
   const start = Date.now();
+
   if (!ingame || !ingame.isRunning) {
     console.log(`클라이언트 ${uuid}의 로직 루프가 종료되었습니다.`);
     return;
@@ -38,7 +39,8 @@ async function logicLoop(ingame, uuid, path, socket) {
     );
     //console.log(checkMonster, "아직 살음");
     if (checkMonster) {
-      gameStageChange(ingame, socket);
+      //console.log("다음 스테이지");
+      gameStageChange(socket, ingame, path);
       ingame.isSpawn = true;
     }
   }
@@ -88,15 +90,16 @@ export const endLoop = async (socket, ingame, uuid) => {
       status: "succes",
       message: "게임을 종료합니다.",
       data: {
-        playerStage: inGame.stage,
+        playerStage: ingame.stage,
         score: ingame.score,
         gem: gem,
       },
     });
+    socket.disconnect();
     setTimeout(() => {
       deleteInGame[uuid]; // uuid에 해당하는 게임 데이터를 삭제
       console.log(`게임 데이터가 ${uuid}에 대해 삭제되었습니다.`);
-    }, 5000);
+    }, 3000);
   } catch (error) {
     return {
       status: "fail",

@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 import { endLoop, startLoop } from "../gameLogic/serverGame.js";
-import { createInGame } from "../models/inGame.js";
+import { createInGame, deleteInGame } from "../models/inGame.js";
 import { prisma } from "../utils/index.js";
 import { spawnMonsters } from "./monsterHandler.js";
 
@@ -49,7 +49,8 @@ function monsterPathMake(canvas) {
 }
 
 export const gameStart = async (payload) => {
-  const ingame = createInGame(payload.uuid);
+  deleteInGame(payload.uuId);
+  const ingame = createInGame(payload.uuId);
   try {
     const [tokenType, token] = payload.data.cookies.split("%20");
 
@@ -107,7 +108,7 @@ export const gameStart = async (payload) => {
 
     spawnMonsters(ingame, newPath, nowStageData);
 
-    startLoop(ingame, payload.uuid, newPath, payload.socket);
+    startLoop(ingame, payload.uuId, newPath, payload.socket);
 
     return {
       status: "succes",
@@ -136,14 +137,16 @@ export const gameEnd = (socket, ingame, uuid) => {
 
 // 여기 아래는 서버에서 핸들러가 따로 없음 객체 형태로 보내기
 
-export const gameStageChange = (socket, ingame) => {
+export const gameStageChange = (socket, ingame, path) => {
   ingame.stage++;
+  ingame.monsterCoolTime = 5;
+  ingame.monster = [];
   ingame.stage =
     ingame.stage >= stageData.data.length ? stageData.data.lengt : ingame.stage;
   const nextStageData = stageData.data[ingame.stage];
   const nextMonsterData = [];
   for (let index = 0; index < nextStageData.length; index++) {
-    nextMonsterData.push(monsterData.data[nextStageData[index].id]);
+    nextMonsterData.push(monsterData.data[nextStageData[index].id - 1]);
   }
   spawnMonsters(ingame, path, nextStageData);
 
@@ -152,7 +155,7 @@ export const gameStageChange = (socket, ingame) => {
     status: "succes",
     message: "스테이지 변경에 성공했습니다",
     data: {
-      playerStage: inGame.stage,
+      playerStage: ingame.stage,
       monster: nextMonsterData,
     },
   });

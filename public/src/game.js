@@ -94,10 +94,10 @@ function drawPath() {
   const gap = 3; // 몬스터 경로 이미지 겹침 방지를 위한 간격
 
   for (let i = 0; i < monsterPath.length - 1; i++) {
-    const startX = monsterPath[i].x;
-    const startY = monsterPath[i].y;
-    const endX = monsterPath[i + 1].x;
-    const endY = monsterPath[i + 1].y;
+    const startX = monsterPath[i].x - imageWidth /2;
+    const startY = monsterPath[i].y - imageHeight /2;
+    const endX = monsterPath[i + 1].x - imageWidth /2;
+    const endY = monsterPath[i + 1].y - imageHeight /2;
 
     const deltaX = endX - startX;
     const deltaY = endY - startY;
@@ -128,9 +128,14 @@ function placeHouse() {
   house = new House(lastPoint.x, lastPoint.y, houseHp);
   house.draw(ctx, houseImage);
 }
-
+export function gameEnd(value) {
+  alert(
+    `게임 클리어! ${value.gem} : 잼 획득! ${value.score} : 최종 스코어 ${value.playerStage} : 최종 스테이지 `
+  );
+  location.href = "../beforeGame.html";
+}
 export function setHouseHp(value) {
-  house.setHouseHp(value);
+  house.setHp(value);
 }
 
 const decX = canvas.width - 125;
@@ -168,10 +173,11 @@ initTowerDecButton();
 
 // 스테이지 변경
 export function moveStage(payload) {
-  const { stage, monsterDefaultData } = payload;
-  GameManager.setStage(stage);
+  const { playerStage, monster } = payload;
+  console.log(payload, monster);
+  GameManager.setStage(playerStage);
 
-  initMonsterData(monsterDefaultData);
+  initMonsterData(monster);
 }
 
 // #region 몬스터 기능
@@ -186,7 +192,7 @@ export function addMonster(payload) {
 
 // 몬스터 삭제
 export function deleteMonster(payload) {
-  const {uniqueId} = payload;
+  const { uniqueId } = payload;
   monsters.delete(uniqueId);
 }
 
@@ -194,11 +200,11 @@ export function deleteMonster(payload) {
 export async function moveMonsters(data) {
   for (let key of Object.keys(data.monsters)) {
     const monster = monsters.get(data.monsters[key].id);
+    //console.log("setLocation", data.monsters[key]);
     monster.setLocation(
       data.monsters[key].x,
       data.monsters[key].y,
-      data.monsters[key].currentIndex,
-      monster
+      data.monsters[key].currentIndex
     );
   }
 }
@@ -228,7 +234,8 @@ async function addTower(targetLocation) {
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
-        towerUI.openUI(this.id, this.x, this.y);``
+        towerUI.openUI(this.id, this.x, this.y);
+        ``;
       }
     );
     towers.set(towerId, tower);
@@ -287,7 +294,7 @@ async function upgradeTower(id) {
 
 // 타워 공격
 export function towerAttack(payload) {
-  const {monsterId, towerId} = payload;
+  const { monsterId, towerId } = payload;
   const monster = monsters.get(monsterId);
   const tower = towers.get(towerId);
 
@@ -453,7 +460,7 @@ Promise.all([
     const { monster, tower, playerGold, stage } = gameAssets;
 
     GameManager.setUserGold({ playerGold });
-    GameManager.setStage({ stage });
+    GameManager.setStage(stage);
 
     ({ towerDec, path: monsterPath, playerHp: houseHp } = gameAssets);
 
