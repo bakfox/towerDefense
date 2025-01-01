@@ -49,16 +49,8 @@ function monsterPathMake(canvas) {
 }
 
 export const gameStart = async (payload) => {
-<<<<<<< HEAD
-  deleteInGame[payload.uuid];
-  const ingame = createInGame(payload.uuid);
-  ingame.stage++;
-  deleteInGame[payload.uuid];
-  console.log(ingame);
-
-=======
+  deleteInGame(payload.uuId);
   const ingame = createInGame(payload.uuId);
->>>>>>> fix/dev-V2
   try {
     const [tokenType, token] = payload.data.cookies.split("%20");
 
