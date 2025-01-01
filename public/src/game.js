@@ -182,13 +182,12 @@ export function addMonster(payload) {
     uniqueId,
     new Monster(monsterPath, monsterImages, id, uniqueId, GameManager.stage)
   );
-
-  console.log(monsters.size);
 }
 
 // 몬스터 삭제
-export function deleteMonster(id) {
-  monsters.delete(id);
+export function deleteMonster(payload) {
+  const {uniqueId} = payload;
+  monsters.delete(uniqueId);
 }
 
 // 몬스터 이동
@@ -218,7 +217,6 @@ async function addTower(targetLocation) {
     const towerData = data.tower;
     const { towerId, towerType, location } = towerData;
 
-    console.log("towerLoc",location, targetLocation);
     const tower = new Tower(
       location.x,
       location.y,
@@ -288,11 +286,13 @@ async function upgradeTower(id) {
 }
 
 // 타워 공격
-export function towerAttack(towerId, monsterId) {
+export function towerAttack(payload) {
+  const {monsterId, towerId} = payload;
   const monster = monsters.get(monsterId);
   const tower = towers.get(towerId);
 
   tower.attack(monster);
+  monster.takeDamage(tower.atck);
 }
 
 // #endregion

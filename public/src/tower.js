@@ -12,8 +12,7 @@ export class Tower {
     this.height = height; // 타워 이미지 세로 길이
     this.range = 300; // 타워 사거리
     this.cooldown = 0; // 타워 공격 쿨타임
-    this.beamDuration = 0; // 타워 광선 지속 시간
-    this.target = null; // 타워 광선의 목표
+    this.beamDurations = []; // 타워 광선 지속 시간
     this.btn = new Button(
       "tower",
       id,
@@ -49,24 +48,28 @@ export class Tower {
 
   draw(ctx) {
     this.btn.draw(ctx);
-    ctx.strokeStyle = "black";
-    ctx.arc(this.x, this.y, 200, 0, (360 * Math.PI) / 180, false);
 
-    ctx.stroke();
-    if (this.beamDuration > 0 && this.target) {
+    this.beamDurations.forEach((item, idx) => {
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
-      ctx.lineTo(this.target.x, this.target.y);
+      ctx.lineTo(item.monster.x, item.monster.y);
       ctx.strokeStyle = "skyblue";
-      ctx.lineWidth = 10;
+      ctx.lineWidth = 5;
       ctx.stroke();
       ctx.closePath();
-      this.beamDuration--;
-    }
+      item.duration--;
+
+      if(item.duration <=0) {
+        this.beamDurations.splice(idx, 1);
+      }
+    });
   }
 
   attack(monster) {
-    this.beamDuration = 30; // 광선 지속 시간 (0.5초)
-    this.target = monster; // 광선의 목표 설정
+    this.beamDurations.push({monster, duration : 20}); // 광선 지속 시간 (0.5초)
+  }
+
+  popTarget(monsterId) {
+    this.target.delete(monsterId);
   }
 }

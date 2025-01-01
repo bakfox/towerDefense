@@ -12,13 +12,11 @@ export class Monster {
     this.width = 80; // 몬스터 이미지 가로 길이
     this.height = 80; // 몬스터 이미지 세로 길이
     this.image = monsterImages.get(this.type); // 몬스터 이미지
-    console.log()
     this.init(type, stage);
   }
 
   init(type, stage) {
     const item = getMonsterData(type);
-    console.log(item);
     const amount = Math.floor((stage - 1) * item.upgradeValue);
 
     this.atck = item.atck + amount; // 공격력
@@ -61,9 +59,14 @@ export class Monster {
   }
 
   draw(ctx) {
-    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+    ctx.drawImage(this.image, this.x - this.width /2, this.y - this.height /2, this.width, this.height);
     ctx.font = "12px Arial";
     ctx.fillStyle = "white";
     ctx.fillText(`${this.hp}/${this.maxHp}`, this.x, this.y);
+  }
+
+  takeDamage(value) {
+    this.hp -= value;
+    if(this.hp <0) this.hp = 0;
   }
 }

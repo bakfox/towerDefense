@@ -3,7 +3,7 @@ const towerData = {
   data: [
     {
       id: 1,
-      atckSpead: 12,
+      atckSpead: 6,
       atck: 1,
       upgrade: 0,
       upgradeValue: 4,
@@ -12,7 +12,7 @@ const towerData = {
     },
     {
       id: 2,
-      atckSpead: 10,
+      atckSpead: 5,
       atck: 2,
       upgrade: 0,
       upgradeValue: 2,
@@ -21,7 +21,7 @@ const towerData = {
     },
     {
       id: 3,
-      atckSpead: 12,
+      atckSpead: 6,
       atck: 3,
       upgrade: 0,
       upgradeValue: 3,
@@ -30,7 +30,7 @@ const towerData = {
     },
     {
       id: 4,
-      atckSpead: 10,
+      atckSpead: 5,
       atck: 4,
       upgrade: 0,
       upgradeValue: 2,
