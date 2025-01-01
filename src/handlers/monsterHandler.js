@@ -49,18 +49,28 @@ export class Monster {
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
         if (distance < this.speed) {
+          if (this.uniqueId === 1) {
+            console.log("========================================");
+            console.log(this.x, this.y);
+            console.log(nextPoint);
+            console.log("========================================");
+          }
+
           // 거리가 속도보다 작으면 다음 지점으로 이동시켜주면 됩니다!
           this.currentIndex++;
-        } else {
-          // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
-          this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
-          this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
+
+          
         }
+
+        // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
+        this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
+        this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
       } else {
         this.attack(socket, ingame, uuid); // 기지에 도달하면 기지에 데미지를 입힙니다!
         this.hp = 0; // 몬스터는 이제 기지를 공격했으므로 자연스럽게 소멸해야 합니다.
         this.isDead = true;
       }
+
       ingame.MonsterCoordinate[this.uniqueId] = {
         id: this.uniqueId,
         x: this.x,
@@ -86,8 +96,8 @@ export class Monster {
     this.dead(socket, ingame);
   }
   dead(socket, ingame) {
-    gameGoldChange(socket, ingame, this.reward * (ingame.stage+1));
-    gameScoreChange(socket, ingame, (this.reward * (ingame.stage+1)) / 2);
+    gameGoldChange(socket, ingame, this.reward * (ingame.stage + 1));
+    gameScoreChange(socket, ingame, (this.reward * (ingame.stage + 1)) / 2);
     this.isDead = true;
     delete ingame.MonsterCoordinate[this.uniqueId];
     socket.emit("event", {
@@ -137,7 +147,7 @@ export const spawnMonsters = (ingame, path, nowStageData) => {
   return ingame.nowMonsterData;
 };
 export const moveClient = (socket, ingame) => {
-  console.log(ingame.MonsterCoordinate);
+  console.log(ingame.MonsterCoordinate[1]);
   socket.emit("event", {
     handlerId: 202,
     status: "success",
