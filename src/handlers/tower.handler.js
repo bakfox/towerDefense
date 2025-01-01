@@ -1,5 +1,5 @@
 import { getInGame } from "../models/inGame.js";
-import { createTowerFromData } from "../models/tower.js"; // 타워 생성 함수
+import { createTowerFromData } from "../models/tower.model.js"; // 타워 생성 함수
 import towerData from "../../gameDefaultData/tower.js"; // 타워 기본 데이터
 import { gameGoldChange } from "./stageHandler.js";
 

@@ -53,21 +53,19 @@ houseImage.src = "images/house.png";
 const pathImage = new Image();
 pathImage.src = "images/path.png";
 
-const monsterImages = new Map();
+let monsterImages = new Map();
 for (let i = 1; i <= NUM_OF_MONSTERS; i++) {
   const img = new Image();
   img.src = `images/monster_${i}.png`;
   monsterImages.set(i, img);
 }
 
-const towerImages = new Map();
+let towerImages = new Map();
 for (let i = 1; i <= NUM_OF_TOWERS; i++) {
   const img = new Image();
   img.src = `images/tower_${i}.png`;
   towerImages.set(i, img);
 }
-
-console.log(towerImages, monsterImages);
 
 let monsterPath = [];
 
@@ -77,10 +75,10 @@ function initMap() {
 }
 
 function drawPath() {
-  const segmentLength = 20; // 몬스터 경로 세그먼트 길이
+  const segmentLength = 55; // 몬스터 경로 세그먼트 길이
   const imageWidth = 60; // 몬스터 경로 이미지 너비
   const imageHeight = 60; // 몬스터 경로 이미지 높이
-  const gap = 5; // 몬스터 경로 이미지 겹침 방지를 위한 간격
+  const gap = 3; // 몬스터 경로 이미지 겹침 방지를 위한 간격
 
   for (let i = 0; i < monsterPath.length - 1; i++) {
     const startX = monsterPath[i].x;
@@ -98,6 +96,7 @@ function drawPath() {
       // 자세한 것은 https://thirdspacelearning.com/gcse-maths/geometry-and-measure/sin-cos-tan-graphs/ 참고 부탁해요!
       const x = startX + Math.cos(angle) * j; // 다음 이미지 x좌표 계산(각도의 코사인 값은 x축 방향의 단위 벡터 * j를 곱하여 경로를 따라 이동한 x축 좌표를 구함)
       const y = startY + Math.sin(angle) * j; // 다음 이미지 y좌표 계산(각도의 사인 값은 y축 방향의 단위 벡터 * j를 곱하여 경로를 따라 이동한 y축 좌표를 구함)
+
       drawRotatedImage(pathImage, x, y, imageWidth, imageHeight, angle);
     }
   }
@@ -113,8 +112,8 @@ function drawRotatedImage(image, x, y, width, height, angle) {
 
 function placeHouse() {
   const lastPoint = monsterPath[monsterPath.length - 1];
-  //house = new House(lastPoint.x, lastPoint.y, houseHp);
-  //house.draw(ctx, houseImage);
+  house = new House(lastPoint.x, lastPoint.y, houseHp);
+  house.draw(ctx, houseImage);
 }
 
 export function setHouseHp(value) {
@@ -140,7 +139,7 @@ function initTowerDecButton() {
         decY + i * 130,
         TOWER_WIDTH,
         TOWER_HEIGHT,
-        towerImages[id],
+        towerImages.get(id),
         function () {
           ioBuffer.action = "create";
           ioBuffer.id = id;
@@ -191,7 +190,7 @@ async function addTower(targetLocation) {
   try {
     const type = ioBuffer.id;
     ioBuffer.reset();
-    const data = await sendEvent(101, { towerId: type, targetLocation });
+    const data = await sendEvent(101, { towerType: type, location : targetLocation });
     const { towerId, towerType, location } = data;
     const tower = new Tower(
       location.x,
@@ -233,7 +232,7 @@ async function sellTower(id) {
 
     towers.delete(towerId);
   } catch (error) {
-    console.log("타워 판매매에 실패했습니다!");
+    console.log("타워 판매에 실패했습니다!");
   }
 }
 
@@ -274,6 +273,19 @@ function gameLoop() {
   ctx.fillStyle = "black";
   ctx.fillText(`현재 스테이지: ${GameManager.stage}`, 50, 200); // 최고 기록 표시
 
+  // 타워 그리기
+  towers.forEach((tower) => {
+    tower.draw(ctx, towerImage);
+  });
+
+  // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
+  house.draw(ctx, houseImage);
+
+  monsters.forEach((monster) => {
+    monster.move(house);
+    monster.draw(ctx);
+  });
+
   // 버튼 그리기
   for (let i = buttons.length - 1; i >= 0; i--) {
     const button = buttons[i];
@@ -289,45 +301,16 @@ function gameLoop() {
     button.draw(ctx);
   }
 
-  // 타워 그리기
-  towers.forEach((tower) => {
-    tower.draw(ctx, towerImage);
-  });
-
   // 호버 이미지 그리기(타워)
   if (ioBuffer.action === "create") {
     ctx.drawImage(
-      towerImages[ioBuffer.id],
+      towerImages.get(ioBuffer.id),
       hoverLoc.x - TOWER_WIDTH / 2,
       hoverLoc.y - TOWER_WIDTH / 2,
       TOWER_WIDTH,
       TOWER_HEIGHT
     );
   }
-
-  // 몬스터가 공격을 했을 수 있으므로 기지 다시 그리기
-  //house.draw(ctx, houseImage);
-
-  monsters.forEach((monster) => {
-    monster.move(house);
-    monster.draw(ctx);
-  });
-
-  // for (let i = monsters.length - 1; i >= 0; i--) {
-  //   const monster = monsters[i];
-  //   if (monster.hp > 0) {
-  //     const isDestroyed = monster.move(house);
-  //     if (isDestroyed) {
-  //       /* 게임 오버 */
-  //       alert("게임 오버. 스파르타 본부를 지키지 못했다...ㅠㅠ");
-  //       location.reload();
-  //     }
-  //     monster.draw(ctx);
-  //   } else {
-  //     /* 몬스터가 죽었을 때 */
-  //     monsters.splice(i, 1);
-  //   }
-  // }
 
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
@@ -337,9 +320,9 @@ function initGame() {
     return;
   }
 
-  initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   placeHouse(); // 기지 배치
-
+  initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
+  house.draw(ctx, houseImage);
   gameLoop(); // 게임 루프 최초 실행
   GameManager.isInitGame = true;
 }
@@ -357,13 +340,13 @@ Promise.all([
   new Promise((resolve) => (backgroundImage.onload = resolve)),
   new Promise((resolve) => (houseImage.onload = resolve)),
   new Promise((resolve) => (pathImage.onload = resolve)),
-  monsterImages.forEach(
+  ...Array.from(monsterImages.values()).map(
     (img) =>
       new Promise((resolve) => {
         img.onload = resolve;
       })
   ),
-  towerImages.forEach(
+  ...Array.from(towerImages.values()).map(
     (img) =>
       new Promise((resolve) => {
         img.onload = resolve;
@@ -372,7 +355,6 @@ Promise.all([
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let token = getCookie("authorization");
-  console.log("token : ", token);
 
   serverSocket = await initSocket(token);
 
@@ -384,8 +366,6 @@ Promise.all([
       width: canvas.width,
       height: canvas.height,
     });
-
-    console.log("gameAssets : ", gameAssets);
 
     // 게임 데이터 초기화 TODO
     const { monster, tower } = gameAssets;
@@ -422,6 +402,8 @@ canvas.addEventListener("click", (e) => {
   const x = e.offsetX;
   const y = e.offsetY;
 
+  console.log("click", x, y);
+
   let isButtonClicked = false;
   for (let i = buttons.length - 1; i >= 0; i--) {
     const button = buttons[i];
@@ -452,5 +434,3 @@ canvas.addEventListener("mousemove", (e) => {
     hoverLoc = { x: 0, y: 0 };
   }
 });
-
-initGame();
