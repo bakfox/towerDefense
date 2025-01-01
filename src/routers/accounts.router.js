@@ -237,7 +237,16 @@ router.get('/tower/ownTower', UserToken, async (req, res, next) => {
         const user = req.user;
         const ownTowerList = await prisma.oWN_TOWERS.findMany({
             where: {
-                USER_ID: user.USER_ID
+                USER_ID: user.USER_ID,
+                TOWER_ID : {
+                    notIn : (
+                        await prisma.eQUIP_TOWERS.findMany({
+                            where : {
+                                USER_ID : user.USER_ID
+                            }
+                        })
+                    ).map((tower)=>tower.TOWER_ID),
+                }
             }
         })
 
@@ -358,42 +367,6 @@ router.get('/tower/squad', UserToken, async (req, res, next) => {
     }
 })
 
-//지정된 스쿼드 하나 출력
-router.get('/tower/squad/:towerid', UserToken, async (req, res, next) => {
-    try {
-        const user = req.user;
-        const { towerid } = req.params;
-        //squad에 등록된 현재 자신의 테이블을 가져온다.
-        const mySquad = await prisma.eQUIP_TOWERS.findMany({
-            where: {
-                USER_ID: user.USER_ID
-            }
-        })
-
-        console.log("mysquad length : ", mySquad.length);
-
-        if(mySquad.length > towerid)
-        {
-            
-            const data = mySquad[towerid].EQUIP_TOWER_ID;
-            console.log("data : ",data);
-            return res.status(201).json({ data: data })
-        }
-        else
-        {   
-            console.log("데이터 없음");
-            return res.status(201).json({ data: 0 })
-        }
-
-
-
-
-        
-    }
-    catch (err) {
-        next(err);
-    }
-})
 
 //스쿼드 하나 변경
 //3개의 스쿼드를 출력하는 건 그 id 값을 가지고 있다는 의미
@@ -404,6 +377,8 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
         const user = req.user;
         //일단 현재 squad가 차 있는지 확인하고 없다면 없다면 추가, 일정 숫자 이상이면 변경하는 식
 
+        console.log("입력된 데이터", equipTowerId, equipingID)
+
 
 
         //currentUserSquad라는 스쿼드에 걸리지 않는다면 새로 만들고 아니면 변경하기
@@ -411,14 +386,24 @@ router.put('/tower/squad', UserToken, async (req, res, next) => {
             await prisma.eQUIP_TOWERS.create({
                 data: {
                     USER_ID: user.USER_ID,
-                    TOWER_ID: equipingID
+                    TOWER_ID: +equipingID
                 }
             })
         }
         else {
+            //해당 타워를 찾아서 반환한다.
+            // const target = await prisma.eQUIP_TOWERS.findFirst({
+            //     where : {
+            //         EQUIP_TOWER_ID : equipTowerId
+            //     }
+            // })
+
+            // console.log(target);
+
+
             await prisma.eQUIP_TOWERS.update({
                 where: {
-                    EQUIP_TOWER_ID: +equipTowerId
+                    EQUIP_TOWER_ID: equipTowerId
                 },
                 data: {
                     TOWER_ID: equipingID

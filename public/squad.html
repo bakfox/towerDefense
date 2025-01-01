@@ -178,11 +178,11 @@
     </main>
 
     <script type="module">
-      window.addEventListener("DOMContentLoaded", async ()=>{
+      window.addEventListener("DOMContentLoaded", async () => {
         setTimeout(async () => {
           await getSquad();
         }, 1000);
-      })
+      });
 
       const modal = document.getElementById("modal");
       const modalContent = document.getElementById("modalContent");
@@ -213,7 +213,6 @@
         if (register.ok) {
           //각각의 id의 squad 칸들에 데이터를 채워넣도록 하자.
           const result = await register.json();
-          
 
           for (let i = 1; i <= 3; i++) {
             const squadId = `squad${i}`;
@@ -234,7 +233,7 @@
           </div>`;
             } else {
               document.getElementById(squadId).innerHTML +=
-              `<img src="./images/tower.png" />
+                `<img src="./images/tower.png" />
           <div class="card-body">
             <h5 class="card-title">Card title</h5>
             <p class="card-text">
@@ -247,17 +246,20 @@
       };
 
       //현재 가지고 있는 타워의 리스트를 가져오도록 하자.
-      const ownTower = async (squad,type) => {
+      const ownTower = async (squad, type) => {
         while (buttongrid.hasChildNodes()) {
           buttongrid.removeChild(buttongrid.firstChild);
         }
 
-        const ownTower = await fetch("http://localhost:3017/api/tower/ownTower", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const ownTower = await fetch(
+          "http://localhost:3017/api/tower/ownTower",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (ownTower.ok) {
           const result = await ownTower.json();
@@ -286,8 +288,8 @@
 
               switch (type) {
                 case 1: //스쿼드를 변경한다.
-                //element에 tower_ID를 등록해 놓았으니 그걸 바로 부르면 되겠다.
-                //equiptowerid는 현재 선택된 놈이 equip_squad_id를 가지고 있어야 한다는 의미.
+                  //element에 tower_ID를 등록해 놓았으니 그걸 바로 부르면 되겠다.
+                  //equiptowerid는 현재 선택된 놈이 equip_squad_id를 가지고 있어야 한다는 의미.
                   button.addEventListener("click", async () => {
                     const upgrade = await fetch(
                       "http://localhost:3017/api/tower/squad",
@@ -296,13 +298,17 @@
                         headers: {
                           "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({equipTowerId : squad, equipingID: element.TOWER_ID}),
+                        body: JSON.stringify({
+                          equipTowerId: squad,
+                          equipingID: element.TOWER_ID,
+                        }),
                       }
                     );
 
                     if (upgrade.ok) {
                       const result = await upgrade.json();
                       await getSquad();
+                      modal.style.display = "none";
                     }
                   });
                   break;
@@ -316,17 +322,18 @@
                         headers: {
                           "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({ towerID: towerid, ingredient: 0 }),
+                        body: JSON.stringify({
+                          towerID: towerid,
+                          ingredient: 0,
+                        }),
                       }
                     );
-
-                    
 
                     if (upgrade.ok) {
                       const result = await upgrade.json();
                       console.log(result.message);
                     }
-                    modal.style.display = 'none';
+                    modal.style.display = "none";
                   });
 
                   break;
@@ -340,8 +347,6 @@
         modal.style.display = "flex";
       };
 
-      
-
       // setTimeout(() => {
       //   getSquad();
       // }, 1000);
@@ -350,11 +355,11 @@
         const equipTowerId = 1;
 
         const params = {
-          towerid : equipTowerId,
-        }
+          towerid: equipTowerId,
+        };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -367,8 +372,12 @@
         if (register.ok) {
           const result = await register.json();
           const data = result.data;
-          console.log("data : ", data);
-          ownTower(data,1);
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
+
           //getSquad();
         }
       });
@@ -377,11 +386,11 @@
         const equipTowerId = 2;
 
         const params = {
-          towerid : equipTowerId,
-        }
+          towerid: equipTowerId,
+        };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -394,19 +403,22 @@
         if (register.ok) {
           const result = await register.json();
           const data = result.data;
-          ownTower(data,1);
-          //getSquad();
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
         }
       });
 
       document.getElementById("squad3").addEventListener("click", async () => {
         const equipTowerId = 3;
         const params = {
-          towerid : equipTowerId,
-        }
+          towerid: equipTowerId,
+        };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`
+        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -419,8 +431,11 @@
         if (register.ok) {
           const result = await register.json();
           const data = result.data;
-          ownTower(data,1);
-          //getSquad();
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
         }
       });
 
@@ -445,7 +460,6 @@
 
       //타워 강화
       document.getElementById("inhance").addEventListener("click", async () => {
-
         // const inhance = await fetch("http://localhost:3017/api/tower/upgrade", {
         //   method: "PUT",
         //   headers: {
@@ -454,7 +468,7 @@
         //   body: { towerID, ingredient },
         // });
 
-        ownTower(2,2);
+        ownTower(2, 2);
       });
 
       document.getElementById("back").addEventListener("click", () => {
