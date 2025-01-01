@@ -29,6 +29,7 @@ export function initSocket(token) {
       console.log("Handler not found");
     }
 
+    console.log("data" ,data.handlerId, data.data);
     if (data.status === "fail") {
       new Error();
     } else {

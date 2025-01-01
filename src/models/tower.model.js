@@ -18,6 +18,7 @@ export class Tower {
     this.towerType = tower.id; // 타워 종류 (ID)
     this.atckSpeed = tower.atckSpead;
     this.atck = tower.atck;
+    this.range = tower.range;
     this.upgrade = tower.upgrade;
     this.upgradeValue = tower.upgradeValue;
     this.price = tower.price;
@@ -26,14 +27,17 @@ export class Tower {
   }
   attack(monster, socket, ingame) {
     monster.hitByTower(socket, ingame, this.atck);
-    socket.emit("monsterAttacked", {
-      status: "success",
-      message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
-      data: {
-        towerId: this.towerId,
-        monsterId: monster.uniqueId,
-      },
-    });
+    if (!monster.isDead) {
+      socket.emit("event", {
+        status: "success",
+        handlerId: 105,
+        message: `타워 ${this.uniqueId}가 몬스터 ${monster.uniqueId}를 공격했습니다.`,
+        data: {
+          towerId: this.towerId,
+          monsterId: monster.uniqueId,
+        },
+      });
+    }
   }
   //몬스터 피격 호출
 
@@ -46,11 +50,12 @@ export class Tower {
           Math.pow(this.location.x - monster.x, 2) +
             Math.pow(this.location.y - monster.y, 2)
         );
+
         if (distance < this.range) {
           this.attack(monster, socket, ingame); // 타워 공격
-          this.cooldown = this.atckSpeed; // 쿨타임 초기화
         }
       });
+      this.cooldown = this.atckSpeed; // 쿨타임 초기화
     }
   }
 

@@ -5,7 +5,7 @@ const actionMappings = {
   4: setHouseHp,
   5: GameManager.setUserGold,
   6: GameManager.setScore,
-  101: towerAttack,
+  105: towerAttack,
   201: addMonster,
   202: moveMonsters,
   //203: "monsterAttack",
