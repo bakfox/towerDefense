@@ -8,6 +8,7 @@ const interval = 1000 / FPS;
 //이거 호출해서 루프 시작
 async function logicLoop(ingame, uuid, path, socket) {
   const start = Date.now();
+
   if (!ingame || !ingame.isRunning) {
     console.log(`클라이언트 ${uuid}의 로직 루프가 종료되었습니다.`);
     return;
@@ -25,7 +26,7 @@ async function logicLoop(ingame, uuid, path, socket) {
   if (ingame.monster.length !== 0) {
     ingame.monster.forEach((monster) => {
       monster.move(socket, ingame, uuid);
-      console.log(monster.x, monster.y, "변화한");
+      //console.log(monster.x, monster.y, "변화한");
     });
     moveClient(socket, ingame); //클라에 데이터 보내기
   }
@@ -38,7 +39,7 @@ async function logicLoop(ingame, uuid, path, socket) {
     );
     //console.log(checkMonster, "아직 살음");
     if (checkMonster) {
-      console.log("다음 스테이지");
+      //console.log("다음 스테이지");
       gameStageChange(socket, ingame, path);
       ingame.isSpawn = true;
     }

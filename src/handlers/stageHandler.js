@@ -49,12 +49,16 @@ function monsterPathMake(canvas) {
 }
 
 export const gameStart = async (payload) => {
+<<<<<<< HEAD
   deleteInGame[payload.uuid];
   const ingame = createInGame(payload.uuid);
   ingame.stage++;
   deleteInGame[payload.uuid];
   console.log(ingame);
 
+=======
+  const ingame = createInGame(payload.uuId);
+>>>>>>> fix/dev-V2
   try {
     const [tokenType, token] = payload.data.cookies.split("%20");
 
@@ -112,7 +116,7 @@ export const gameStart = async (payload) => {
 
     spawnMonsters(ingame, newPath, nowStageData);
 
-    startLoop(ingame, payload.uuid, newPath, payload.socket);
+    startLoop(ingame, payload.uuId, newPath, payload.socket);
 
     return {
       status: "succes",

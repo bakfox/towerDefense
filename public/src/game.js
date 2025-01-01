@@ -94,10 +94,10 @@ function drawPath() {
   const gap = 3; // 몬스터 경로 이미지 겹침 방지를 위한 간격
 
   for (let i = 0; i < monsterPath.length - 1; i++) {
-    const startX = monsterPath[i].x;
-    const startY = monsterPath[i].y;
-    const endX = monsterPath[i + 1].x;
-    const endY = monsterPath[i + 1].y;
+    const startX = monsterPath[i].x - imageWidth /2;
+    const startY = monsterPath[i].y - imageHeight /2;
+    const endX = monsterPath[i + 1].x - imageWidth /2;
+    const endY = monsterPath[i + 1].y - imageHeight /2;
 
     const deltaX = endX - startX;
     const deltaY = endY - startY;
@@ -200,11 +200,11 @@ export function deleteMonster(payload) {
 export async function moveMonsters(data) {
   for (let key of Object.keys(data.monsters)) {
     const monster = monsters.get(data.monsters[key].id);
+    //console.log("setLocation", data.monsters[key]);
     monster.setLocation(
       data.monsters[key].x,
       data.monsters[key].y,
-      data.monsters[key].currentIndex,
-      monster
+      data.monsters[key].currentIndex
     );
   }
 }

@@ -38,11 +38,10 @@ export class Monster {
         // 거리가 속도보다 작으면 다음 지점으로 이동시켜주면 됩니다!
         // console.log(this.path);
         this.currentIndex++;
-      } else {
-        // 거리가 속도보다 크면 일정한 비율로 이동하면 됩니다. 이 때, 단위 벡터와 속도를 곱해줘야 해요!
-        this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
-        this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
       }
+
+      this.x += (deltaX / distance) * this.speed; // 단위 벡터: deltaX / distance
+      this.y += (deltaY / distance) * this.speed; // 단위 벡터: deltaY / distance
       // if (this.id === 1) {
       //   console.log(this.x, this.y);
       // }
@@ -54,12 +53,18 @@ export class Monster {
     // }
     this.x = x;
     this.y = y;
-    this.currentIndex = currentIndex;
-    monster.move();
+    //this.currentIndex = currentIndex;
+    //monster.move();
   }
 
   draw(ctx) {
-    ctx.drawImage(this.image, this.x - this.width /2, this.y - this.height /2, this.width, this.height);
+    ctx.drawImage(
+      this.image,
+      this.x - this.width / 2,
+      this.y - this.height / 2,
+      this.width,
+      this.height
+    );
     ctx.font = "12px Arial";
     ctx.fillStyle = "white";
     ctx.fillText(`${this.hp}/${this.maxHp}`, this.x, this.y);
@@ -67,6 +72,6 @@ export class Monster {
 
   takeDamage(value) {
     this.hp -= value;
-    if(this.hp <0) this.hp = 0;
+    if (this.hp < 0) this.hp = 0;
   }
 }
