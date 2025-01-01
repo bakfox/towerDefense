@@ -14,6 +14,7 @@ const defaultIngame = {
   ownTower: [],
   nowMonsterData: [], // 스폰할 몬스터를 저장할 데이터 풀
   nowStageData: [], // 스폰할 스테이지 데이터
+  MonsterCoordinate: {},
   isSpawn: true,
   isRunning: true,
   monsterCoolTime: 5,

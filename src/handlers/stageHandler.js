@@ -16,8 +16,8 @@ dotenv.config();
 function monsterPathMake(canvas) {
   const path = [];
 
-  let minWidth =0;
-  let minHeight =100;
+  let minWidth = 0;
+  let minHeight = 100;
   let maxWidth = canvas.width - 100;
   let maxHeight = canvas.height - 100;
 
@@ -108,7 +108,7 @@ export const gameStart = async (payload) => {
     spawnMonsters(ingame, newPath, nowStageData);
 
     startLoop(ingame, payload.uuid, newPath, payload.socket);
-    
+
     return {
       status: "succes",
       message: "게임을 시작합니다!",

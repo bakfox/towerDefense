@@ -3,7 +3,7 @@ const monsterData = {
   data: [
     {
       id: 1,
-      speed: 2,
+      speed: 20,
       atck: 1,
       hp: 10,
       upgradeValue: 0.1,
@@ -11,7 +11,7 @@ const monsterData = {
     },
     {
       id: 2,
-      speed: 3,
+      speed: 30,
       atck: 2,
       hp: 8,
       upgradeValue: 0.4,
@@ -19,7 +19,7 @@ const monsterData = {
     },
     {
       id: 3,
-      speed: 3,
+      speed: 30,
       atck: 2,
       hp: 10,
       upgradeValue: 0.2,
@@ -27,7 +27,7 @@ const monsterData = {
     },
     {
       id: 4,
-      speed: 1,
+      speed: 10,
       atck: 2,
       hp: 50,
       upgradeValue: 0.2,
@@ -35,7 +35,7 @@ const monsterData = {
     },
     {
       id: 5,
-      speed: 6,
+      speed: 60,
       atck: 1,
       hp: 1,
       upgradeValue: 0.3,
@@ -43,7 +43,7 @@ const monsterData = {
     },
     {
       id: 6,
-      speed: 0.5,
+      speed: 5,
       atck: 10,
       hp: 100,
       upgradeValue: 0.2,
