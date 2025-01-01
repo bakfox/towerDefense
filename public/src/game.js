@@ -342,18 +342,18 @@ function initGame() {
   }
 
   towerUI = new TowerUI(0, 0, btnImages, [
-    async function () {
+    function () {
       upgradeTower(this.id);
-      this.closeUI();
+      towerUI.closeUI();
     },
-    async function () {
+    function () {
       ioBuffer.action = "move";
       ioBuffer.id = this.id;
-      this.closeUI();
+      towerUI.closeUI();
     },
-    async function () {
+    function () {
       sellTower(this.id);
-      this.closeUI();
+      towerUI.closeUI();
     },
   ]);
   placeHouse(); // 기지 배치
