@@ -77,8 +77,6 @@
     <main>
       <div class="button-container">
         <button id="squad">타워 세팅</button>
-        <button id="gacha">타워 가챠</button>
-        <button id="inhance">타워 강화</button>
         <button id="rank">랭크 조회</button>
         <button id="gemGet">잼 획득</button>
         <button id="gamestart">게임 시작</button>
@@ -89,20 +87,20 @@
           <button class="close-btn" id="closeModal">Close</button>
         </div>
       </div>
-      
+
       <canvas id="gameCanvas" width="1920" height="1080"></canvas>
     </main>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script type="module">
-      const modal = document.getElementById('modal');
-      const modalContent = document.getElementById('modalContent');
-      const closeModal = document.getElementById('closeModal');
-      
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modalContent");
+      const closeModal = document.getElementById("closeModal");
+
       //이걸 누르면 modal이 꺼짐
-      closeModal.addEventListener('click', ()=>{
-        modal.style.display = 'none';
-      })
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
 
       const getCookie = (name) => {
         const value = `; ${document.cookie}`;
@@ -110,31 +108,13 @@
         if (parts.length === 2) return parts.pop().split(";").shift();
         return null;
       };
-      //가챠 담당 함수
-      document.getElementById("gacha").addEventListener("click", async () => {
-        //alert(getCookie("authorization"))
-        const gacha = await fetch("http://localhost:3017/api/tower/draw", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ authorization: getCookie("authorization") }),
-        });
-
-        if (gacha.ok) {
-          alert("연결됨");
-        } else {
-          alert("연결 안 됨");
-        }
-      });
+      
 
       document.getElementById("squad").addEventListener("click", async () => {
         window.location.href = "squad.html";
       });
 
-      document
-        .getElementById("inhance")
-        .addEventListener("click", async () => {});
+      
 
       //rank 조회
       document.getElementById("rank").addEventListener("click", async () => {
@@ -145,14 +125,34 @@
           },
         });
 
-        if (ranKReward.ok) {
+        modalContent.innerHTML = ``;
+
+        if (rankReward.ok) {
           const result = await rankReward.json();
-          result.datas.forEach(element => {
-            
-          });
-          alert(result.message);
-          modal.style.display = 'flex';
-          
+          let innertext = ``;
+
+          if (result.data.length === 0) {
+            for (let i = 0; i < 10; i++) {
+              const id = i + 1;
+              const score = 10000 - 1000 * i;
+              innertext += `
+          <div>${id} : ${score}
+          </div>`;
+            }
+            modalContent.innerHTML = innertext;
+            modal.style.display = "flex";
+          } else {
+            result.datas.forEach((element) => {
+              const id = element.USER_ID;
+              const score = element.MAX_SCORE;
+              innertext += `<div>
+            ${id} : ${score}
+            </div>`;
+            });
+            alert(result.message);
+            modalContent.innerHTML = innertext;
+            modal.style.display = "flex";
+          }
         } else {
           alert("연결 안 됨");
         }

@@ -79,6 +79,42 @@
         text-align: center;
         width: 300px;
       }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 각 행에 3개씩 */
+        gap: 10px; /* 버튼 간격 */
+      }
+
+      .button-grid button {
+        padding: 10px;
+        border: none;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .button-grid button img {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        display: block;
+        margin: 0 auto 5px;
+      }
+
+      .close-btn {
+        margin-top: 10px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+      }
     </style>
   </head>
   <body>
@@ -123,20 +159,35 @@
       </div>
       <div class="form-container">
         <h2>로그인</h2>
-        <input type="text" id="changeSqaud" placeholder="스쿼드 변경" />
-        <input type="password" id="inhanceSquad" placeholder="스쿼드 강화" />
+        <button id="gacha">타워 가챠</button>
+        <button id="inhance">타워 강화</button>
         <button id="back">뒤로가기</button>
       </div>
 
       <div class="modal" id="modal">
         <div class="modal-content">
-          <p id="modalContent">Modal Content Here</p>
+          <div id="modalContent">
+            <h2>Select an Option</h2>
+            <div class="button-grid" id="buttonGrid">
+              <!-- Buttons will be dynamically added here -->
+            </div>
+          </div>
           <button class="close-btn" id="closeModal">Close</button>
         </div>
       </div>
     </main>
 
-    <script>
+    <script type="module">
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modalContent");
+      const closeModal = document.getElementById("closeModal");
+      const buttongrid = document.getElementById("buttonGrid");
+
+      //이걸 누르면 modal이 꺼짐
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
       const getCookie = (name) => {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -156,20 +207,27 @@
         if (register.ok) {
           //각각의 id의 squad 칸들에 데이터를 채워넣도록 하자.
           const result = await register.json();
+          
 
           for (let i = 1; i <= 3; i++) {
             const squadId = `squad${i}`;
+            console.log(squadId);
+            document.getElementById(squadId).innerHTML = ``;
             if (result.data.length > i - 1) {
-              const towerId = result.data[i - 1].TOWER_ID;
-              document.getElementById(squadId).innerHTML =
+              const towerId = result.data[i - 1].OWN_TOWERS.ID;
+              const realTowerId = result.data[i - 1].OWN_TOWERS.TOWER_ID;
+              const upgrade = result.data[i - 1].OWN_TOWERS.UPGRADE;
+              console.log(result.data);
+              document.getElementById(squadId).innerHTML +=
                 `<img src="./images/tower${towerId}.png" />
           <div class="card-body">
             <h5 class="card-title">Card title</h5>
             <p class="card-text">
-              현재 이런 카드를 가지고 있음.
+              타워 강화 수치 : ${upgrade}
             </p>
           </div>`;
             } else {
+              document.getElementById(squadId).innerHTML +=
               `<img src="./images/tower.png" />
           <div class="card-body">
             <h5 class="card-title">Card title</h5>
@@ -181,6 +239,99 @@
           }
         }
       };
+
+      //현재 가지고 있는 타워의 리스트를 가져오도록 하자.
+      const ownTower = async (squad = 0,type) => {
+        while (buttongrid.hasChildNodes()) {
+          buttongrid.removeChild(buttongrid.firstChild);
+        }
+
+        const ownTower = await fetch("http://localhost:3017/api/tower/ownTower", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (ownTower.ok) {
+          const result = await ownTower.json();
+          //result 안에서 data라고 하는 데이터를 배열로 받았으니 나열하자.
+          console.log(result.data.length);
+          if (result.data.length === 0) {
+            for (let i = 1; i <= 5; i++) {
+              const button = document.createElement("button");
+              button.innerHTML = `
+              <img src="./images/tower${i}.png">
+              <h5>타워 종류 : ${i}, 강화 정도 : 1</h5>
+              `;
+
+              buttongrid.appendChild(button);
+            }
+          } else {
+            result.data.forEach((element) => {
+              const button = document.createElement("button");
+              const id = element.ID;
+              const upgrade = element.UPGRADE;
+              const towerid = element.TOWER_ID;
+              button.innerHTML = `
+              <img src="./images/tower${id}.png">
+              <h5>타워 종류 : ${id}, 강화 정도 : ${upgrade}</h5>
+              `;
+
+              switch (type) {
+                case 1: //스쿼드를 변경한다.
+                  button.addEventListener("click", async () => {
+                    const upgrade = await fetch(
+                      "http://localhost:3017/api/tower/squad",
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({equipTowerId : squad, equipingID: element.TOWER_ID}),
+                      }
+                    );
+
+                    if (upgrade.ok) {
+                      const result = await upgrade.json();
+                    }
+                  });
+                  break;
+                case 2: //해당 타겟을 강화한다.
+                  console.log("업그레이드 누름");
+                  button.addEventListener("click", async () => {
+                    const upgrade = await fetch(
+                      "http://localhost:3017/api/tower/upgrade",
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ towerID: towerid, ingredient: 0 }),
+                      }
+                    );
+
+                    
+
+                    if (upgrade.ok) {
+                      const result = await upgrade.json();
+                      console.log(result.message);
+                    }
+                    modal.style.display = 'none';
+                  });
+
+                  break;
+              }
+
+              buttongrid.appendChild(button);
+            });
+          }
+        }
+
+        modal.style.display = "flex";
+      };
+
+      
 
       // setTimeout(() => {
       //   getSquad();
@@ -199,7 +350,8 @@
         });
 
         if (register.ok) {
-          getSquad();
+          ownTower(1,1);
+          //getSquad();
         } else {
           alert(register.message);
         }
@@ -218,7 +370,7 @@
         });
 
         if (register.ok) {
-          getSquad();
+          ownTower(2,1);
         } else {
           alert(register.message);
         }
@@ -236,11 +388,44 @@
         });
 
         if (register.ok) {
-          getSquad();
+          ownTower(3,1);
           //window.location.href = "index.html";
         } else {
           alert(register.message);
         }
+      });
+
+      //가챠 담당 함수
+      document.getElementById("gacha").addEventListener("click", async () => {
+        //alert(getCookie("authorization"))
+        const gacha = await fetch("http://localhost:3017/api/tower/draw", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ authorization: getCookie("authorization") }),
+        });
+
+        if (gacha.ok) {
+          const result = await gacha.json();
+          alert(result.message);
+        } else {
+          alert("연결 안 됨");
+        }
+      });
+
+      //타워 강화
+      document.getElementById("inhance").addEventListener("click", async () => {
+
+        // const inhance = await fetch("http://localhost:3017/api/tower/upgrade", {
+        //   method: "PUT",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: { towerID, ingredient },
+        // });
+
+        ownTower(2,2);
       });
 
       document.getElementById("back").addEventListener("click", () => {
