@@ -76,28 +76,20 @@ export class Monster {
   hitByTower(socket, ingame, damage) {
     this.hp -= damage;
     if (this.hp <= 0) {
-      this.Dead(socket, ingame, damage);
+      this.dead(socket, ingame, damage);
       return;
     }
-    socket.emit("event", {
-      handlerId: 201,
-      status: "success",
-      message: `${this.id}번 몬스터 피격`,
-      data: {
-        uniqueId: this.uniqueId,
-        hp: this.hp,
-      },
-    });
   }
   //몬스터가 베이스에 닿았을때 gameHouseChange
   attack(socket, ingame, uuid) {
     gameHouseChange(socket, ingame, this.attackPower, uuid);
-    this.Dead(socket, ingame);
+    this.dead(socket, ingame);
   }
-  Dead(socket, ingame) {
+  dead(socket, ingame) {
     gameGoldChange(socket, ingame, this.reward * ingame.stage);
     gameScoreChange(socket, ingame, (this.reward * ingame.stage) / 2);
     this.isDead = true;
+    delete ingame.MonsterCoordinate[this.uniqueId];
     socket.emit("event", {
       handlerId: 204,
       status: "success",
@@ -145,7 +137,7 @@ export const spawnMonsters = (ingame, path, nowStageData) => {
   return ingame.nowMonsterData;
 };
 export const moveClient = (socket, ingame) => {
-  console.log(ingame.MonsterCoordinate);
+  //console.log(ingame.MonsterCoordinate);
   socket.emit("event", {
     handlerId: 202,
     status: "success",
