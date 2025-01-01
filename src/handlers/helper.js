@@ -2,7 +2,7 @@ import { CLIENT_VERSION } from "../constants.js";
 
 import handlerMappings from "./handlerMapping.js";
 
-export const handleEvent = (io, socket, uuId, data) => {
+export const handleEvent = async (io, socket, uuId, data, callBack) => {
   console.log("data : ", typeof data, data);
   const payload = { uuId, socket, data: data.payload };
   console.log(data);
@@ -27,7 +27,8 @@ export const handleEvent = (io, socket, uuId, data) => {
     return;
   }
 
-  const response = handler(payload);
+  const response = await handler(payload);
+  
   console.log(response.broadcast);
   if (response.broadcast) {
     console.log("유저 호출");
@@ -35,5 +36,7 @@ export const handleEvent = (io, socket, uuId, data) => {
     return;
   }
 
-  socket.emit("response", response);
+  callBack(response);
+
+  //socket.emit("response", response);
 };

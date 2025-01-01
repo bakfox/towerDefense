@@ -25,15 +25,14 @@ export function initSocket(token) {
   // 서버 정보 전달 이벤트 처리
   socket.on("event", (data) => {
     const action = actionMappings[data.handlerId];
-    console.log(action, data);
     if (!action) {
       console.log("Handler not found");
     }
 
-    if (data.payload.status === "fail") {
+    if (data.status === "fail") {
       new Error();
     } else {
-      action(data.userId, data.payload.data);
+      action(data.data);
     }
   });
 
@@ -58,7 +57,7 @@ export const sendEvent = (handlerId, payload) => {
       if (response.status === "fail") {
         reject(response.message);
       } else {
-        resolve(response);
+        resolve(response.data);
       }
     });
   });
