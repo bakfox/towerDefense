@@ -95,7 +95,8 @@ export const refundTowerHandler = (payload) => {
 
 // 타워 이동 핸들러
 export const moveTowerHandler = (payload) => {
-  const { uuid, towerId, moveLocation } = payload;
+  const { uuid } = payload;
+  const { towerId, moveLocation } = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -108,7 +109,8 @@ export const moveTowerHandler = (payload) => {
       status: "success",
       message: "타워가 이동되었습니다.",
       data: {
-        tower: tower, // 이동된 타워 정보 반환
+        towerId,
+        moveLocation,
       },
     };
   } catch (error) {

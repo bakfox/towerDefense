@@ -232,22 +232,29 @@ async function addTower(targetLocation) {
 // 타워 이동
 async function moveTower(id, targetLocation) {
   try {
-    const data = await sendEvent(102, { id, targetLocation });
+    ioBuffer.reset();
+    const data = await sendEvent(102, {
+      towerId: id,
+      moveLocation: targetLocation,
+    });
     const { towerId, moveLocation } = data;
 
     towers.get(towerId).move(moveLocation);
   } catch (error) {
-    console.log("타워 이동에 실패했습니다!");
+    console.log(error);
   }
 }
 
 // 타워 판매
 async function sellTower(id) {
   try {
-    const data = await sendEvent(103, { towerId : id });
+    ioBuffer.reset();
+    const data = await sendEvent(103, { towerId: id });
     const { towerId } = data;
 
-    const idx = buttons.findIndex((button) => button.id === towerId && button.label === "tower");
+    const idx = buttons.findIndex(
+      (button) => button.id === towerId && button.label === "tower"
+    );
     buttons.splice(idx, 1);
 
     towers.delete(towerId);
@@ -259,7 +266,7 @@ async function sellTower(id) {
 // 타워 강화
 async function upgradeTower(id) {
   try {
-    const data = await sendEvent(104, { towerId :id });
+    const data = await sendEvent(104, { towerId: id });
     const { towerId } = data.tower;
 
     towers.get(towerId).upgrade();
@@ -449,7 +456,7 @@ canvas.addEventListener("click", (e) => {
     return;
   }
 
-  if(towerUI.isVisible) {
+  if (towerUI.isVisible) {
     towerUI.closeUI();
   }
 
@@ -474,7 +481,10 @@ canvas.addEventListener("click", (e) => {
       towerUI.closeUI();
       break;
     case "move":
-      moveTower(ioBuffer.id, { x, y });
+      moveTower(ioBuffer.id, {
+        x: x - TOWER_WIDTH / 2,
+        y: y - TOWER_HEIGHT / 2,
+      });
       towerUI.closeUI();
       break;
     default:
