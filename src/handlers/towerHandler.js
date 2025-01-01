@@ -7,8 +7,7 @@ import { gameGoldChange } from "./stageHandler.js";
 const existTowerHandler = (towerId, inGame) => {
   const tower = inGame.tower.find((t) => t.towerId === towerId);
   if (!tower) {
-    throw new Error(`타워 ${uniqueId}는 존재하지 않습니다.`);
-    
+    throw new Error(`타워 ${towerId}는 존재하지 않습니다.`);
   }
   return tower;
 };
@@ -23,8 +22,8 @@ const haveGold = (inGame, cost) => {
 
 // 타워를 게임에 설치하는 함수
 export const installTowerHandler = (payload) => {
-  const { uuid, socket} = payload;
-  const {towerType, location} = payload.data;
+  const { uuid, socket } = payload;
+  const { towerType, location } = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -60,7 +59,8 @@ export const installTowerHandler = (payload) => {
 
 // 타워 판매 핸들러
 export const refundTowerHandler = (payload) => {
-  const { uuid, towerId } = payload;
+  const { uuid, socket } = payload;
+  const { towerId } = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -70,8 +70,8 @@ export const refundTowerHandler = (payload) => {
     // 환불 금액 계산 (기본 가격 + 업그레이드 값에 비례하는 금액)
     const refundValue = tower.price + (tower.upgradeValue * tower.price) / 2;
 
-    // 골드 환불
-    inGame.gold += refundValue;
+    // 골드 환불불
+    gameGoldChange(socket, inGame, refundValue);
 
     // 타워 삭제
     inGame.towers = inGame.tower.filter((t) => t.towerId !== towerId);
@@ -80,6 +80,7 @@ export const refundTowerHandler = (payload) => {
       status: "success",
       message: `타워가 환불되었습니다. 환불 금액: ${refundValue} 골드`,
       data: {
+        towerId,
         refundedGold: refundValue,
       },
     };
@@ -94,7 +95,8 @@ export const refundTowerHandler = (payload) => {
 
 // 타워 이동 핸들러
 export const moveTowerHandler = (payload) => {
-  const { uuid, towerId, currentLocation, moveLocation } = payload;
+  const { uuid } = payload;
+  const { towerId, moveLocation } = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -107,7 +109,8 @@ export const moveTowerHandler = (payload) => {
       status: "success",
       message: "타워가 이동되었습니다.",
       data: {
-        tower: tower, // 이동된 타워 정보 반환
+        towerId,
+        moveLocation,
       },
     };
   } catch (error) {
@@ -121,7 +124,8 @@ export const moveTowerHandler = (payload) => {
 
 // 타워 업그레이드를 처리하는 함수
 export const upgradeTowerHandler = (payload) => {
-  const { uuid, socket, towerId } = payload;
+  const { uuid, socket } = payload;
+  const { towerId } = payload.data;
   const inGame = getInGame(uuid);
 
   try {
@@ -135,7 +139,7 @@ export const upgradeTowerHandler = (payload) => {
     haveGold(inGame, upgradeCost);
 
     // 골드 차감
-    gameGoldChange(socket, inGame, upgradeCost);
+    gameGoldChange(socket, inGame, -upgradeCost);
 
     // 타워 업그레이드
     tower.upgradeTower();
