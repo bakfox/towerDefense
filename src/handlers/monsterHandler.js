@@ -1,7 +1,6 @@
-
 // import { Monster } from "../src/monster.js";
 import { getInGame } from "../models/inGame.js";
-import monsterData from "../../gameDefaultData/monster.js"
+import monsterData from "../../gameDefaultData/monster.js";
 import { gameGoldChange, gameHouseChange } from "./stageHandler.js";
 
 let uniqueId = 1; //몬스터 고유번호
@@ -124,7 +123,6 @@ export class Monster {
 
 // let monsterData = monsterData;
 
-
 //인게임정보 받아오기
 //path받아오기
 
@@ -135,13 +133,13 @@ const makeMonster = (path, id, uniqueId) => {
 };
 
 //인게임정보를 인수로 입력하면 인게임정보의 스테이지 기반으로 스폰해야할 몬스터배열 반환
-export const spawnMonsters = (ingame, path,nowStageData) => {
+export const spawnMonsters = (ingame, path, nowStageData) => {
   ingame.nowMonsterData = [];
   ingame.nowStageData = nowStageData; //[{ stageId: 1, id: 1, count: 10 }]
   for (let index = 0; index < ingame.nowStageData.length; index++) {
     let monsterType = ingame.nowStageData[index].id;
     for (let i = 0; i < ingame.nowStageData[index].count; i++) {
-      const monster = makeMonster(path, monsterType, monsterData, uniqueId);
+      const monster = makeMonster(path, monsterType, uniqueId);
       ingame.nowMonsterData.push(monster);
       uniqueId++;
     }
@@ -160,7 +158,7 @@ export const spawnMonsters = (ingame, path,nowStageData) => {
 };
 
 export const spawnNextMonster = (socket, ingame) => {
-  if(ingame.monsterCoolTime>0)ingame.monsterCoolTime--;
+  if (ingame.monsterCoolTime > 0) ingame.monsterCoolTime--;
 
   if (ingame.isSpawn !== true) {
     return;
@@ -173,7 +171,7 @@ export const spawnNextMonster = (socket, ingame) => {
     ingame.monster.push(monster);
     // 클라이언트에 몬스터 ID와 uniqueId 전송
     socket.emit("event", {
-      handlerId: 204,
+      handlerId: 201,
       status: "success",
       message: `${monster.id}번 몬스터 스폰 성공`,
       data: {

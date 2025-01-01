@@ -105,10 +105,10 @@ export const gameStart = async (payload) => {
       nowMonsterData.push(monsterData.data[nowStageData[index].id - 1]);
     }
 
-    spawnMonsters(ingame, newPath, nowMonsterData, nowStageData);
+    spawnMonsters(ingame, newPath, nowStageData);
 
     startLoop(ingame, payload.uuid, newPath, payload.socket);
-
+    
     return {
       status: "succes",
       message: "게임을 시작합니다!",
