@@ -17,7 +17,7 @@ const registerHander = (io) => {
     socket.on("event", (data, callBack) => handleEvent(io, socket, userUUID, data, callBack)); //이벤트 핸들러 연결
 
     //접속 해제
-    socket.on("disconnect", (socket) => {deleteInGame(userUUID)});
+    socket.on("disconnect", (socket) => {deleteInGame(userUUID);});
 
     //gameStart({ uuid: userUUID, socket });
   });

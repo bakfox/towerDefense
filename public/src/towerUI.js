@@ -1,12 +1,12 @@
-import { Button } from "./button";
+import { Button } from "./button.js";
 
-class TowerUI {
+export class TowerUI {
     constructor(x, y, images = [], onClicks= []) {
         this.x = x;
         this.y = y;
         this.id = -1;
-        this.width = 50;
-        this.height = 50;
+        this.width = 100;
+        this.height = 40;
         this.buttons = []; // 정보창 내부 버튼 배열
         this.isVisible = false; // 정보창 표시 여부
 
@@ -14,9 +14,9 @@ class TowerUI {
     }
 
     init(images , onClicks) {
-        this.buttons.push(new Button('upgrade', this.id, this.x + 10 , this.y + 10, 30, 30, images[0], onClicks[0] ));
-        this.buttons.push(new Button('move', this.id,this.x + 50, this.y + 10, 30, 30, images[1], onClicks[1] ));
-        this.buttons.push(new Button('sell', this.id,this.x + 90, this.y + 10, 30, 30, images[2], onClicks[2] ));
+        this.buttons.push(new Button('upgrade', this.id, this.x + 10 , this.y + 10, 20, 20, images[0], onClicks[0] ));
+        this.buttons.push(new Button('move', this.id,this.x + 40, this.y + 10, 20, 20, images[1], onClicks[1] ));
+        this.buttons.push(new Button('sell', this.id,this.x + 70, this.y + 10, 20, 20, images[2], onClicks[2] ));
     }
 
     openUI(towerId, x,y) {
@@ -33,7 +33,7 @@ class TowerUI {
             let item = this.buttons[i];
 
             item.id = this.id;
-            item.x = currentX + i*40;
+            item.x = currentX + i*30;
             item.y = this.y + 10;
         }
     }
@@ -55,9 +55,11 @@ class TowerUI {
         if (!this.isVisible) return;
 
         // 정보창 배경
-        ctx.fillStyle = "black";
+        ctx.globalAlpha = "0.5";
+        ctx.fillStyle = "white";
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
+        ctx.globalAlpha = "1";
         // 정보창 내부 버튼 그리기
         this.buttons.forEach((button) => button.draw(ctx));
     }

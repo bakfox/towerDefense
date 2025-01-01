@@ -2,6 +2,7 @@ import { initSocket, sendEvent } from "./handlers/socket.js";
 import { initMonsterData, initTowerData } from "./default/gameData.js";
 import { House } from "./house.js";
 import { Button } from "./button.js";
+import { TowerUI } from "./towerUI.js";
 import { Monster } from "./monster.js";
 import { Tower } from "./tower.js";
 import { GameManager } from "./gameManager.js";
@@ -11,7 +12,6 @@ import { GameManager } from "./gameManager.js";
 */
 
 let serverSocket; // 서버 웹소켓 객체
-const buyTowerButton = document.getElementById("buyButton");
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -37,6 +37,8 @@ let ioBuffer = {
 };
 let hoverLoc = { x: 0, y: 0 };
 let buttons = [];
+
+let towerUI;
 
 let towerDec = [];
 
@@ -65,6 +67,13 @@ for (let i = 1; i <= NUM_OF_TOWERS; i++) {
   const img = new Image();
   img.src = `images/tower_${i}.png`;
   towerImages.set(i, img);
+}
+
+let btnImages = [];
+for (let i = 1; i <= 3; i++) {
+  const img = new Image();
+  img.src = `images/btn_${i}.png`;
+  btnImages.push(img);
 }
 
 let monsterPath = [];
@@ -140,9 +149,11 @@ function initTowerDecButton() {
         TOWER_WIDTH,
         TOWER_HEIGHT,
         towerImages.get(id),
-        function () {
+        function (x, y) {
           ioBuffer.action = "create";
           ioBuffer.id = id;
+          hoverLoc.x = x;
+          hoverLoc.y = y;
         }
       )
     );
@@ -189,9 +200,11 @@ export function moveMonsters(locationList) {
 async function addTower(targetLocation) {
   try {
     const type = ioBuffer.id;
-    console.log("type" , type);
     ioBuffer.reset();
-    const data = await sendEvent(101, { towerType: type, location : targetLocation });
+    const data = await sendEvent(101, {
+      towerType: type,
+      location: targetLocation,
+    });
     const towerData = data.tower;
     const { towerId, towerType, location } = towerData;
     const tower = new Tower(
@@ -205,6 +218,7 @@ async function addTower(targetLocation) {
       function () {
         ioBuffer.action = "tower";
         ioBuffer.id = this.id;
+        towerUI.openUI(this.id, this.x, this.y);
       }
     );
     towers.set(towerId, tower);
@@ -217,9 +231,9 @@ async function addTower(targetLocation) {
 }
 
 // 타워 이동
-async function moveTower(id, curLocation, targetLocation) {
+async function moveTower(id, targetLocation) {
   try {
-    const data = await sendEvent(102, { id, curLocation, targetLocation });
+    const data = await sendEvent(102, { id, targetLocation });
     const { towerId, moveLocation } = data;
 
     towers.get(towerId).move(moveLocation);
@@ -307,7 +321,6 @@ function gameLoop() {
 
   // 호버 이미지 그리기(타워)
   if (ioBuffer.action === "create") {
-    console.log("ioBuffer",ioBuffer);
     ctx.drawImage(
       towerImages.get(ioBuffer.id),
       hoverLoc.x - TOWER_WIDTH / 2,
@@ -317,6 +330,9 @@ function gameLoop() {
     );
   }
 
+  // 타워 UI 그리기
+  towerUI.draw(ctx);
+
   requestAnimationFrame(gameLoop); // 지속적으로 다음 프레임에 gameLoop 함수 호출할 수 있도록 함
 }
 
@@ -325,6 +341,21 @@ function initGame() {
     return;
   }
 
+  towerUI = new TowerUI(0, 0, btnImages, [
+    async function () {
+      upgradeTower(this.id);
+      this.closeUI();
+    },
+    async function () {
+      ioBuffer.action = "move";
+      ioBuffer.id = this.id;
+      this.closeUI();
+    },
+    async function () {
+      sellTower(this.id);
+      this.closeUI();
+    },
+  ]);
   placeHouse(); // 기지 배치
   initMap(); // 맵 초기화 (배경, 몬스터 경로 그리기)
   house.draw(ctx, houseImage);
@@ -357,6 +388,12 @@ Promise.all([
         img.onload = resolve;
       })
   ),
+  ...btnImages.map(
+    (img) =>
+      new Promise((resolve) => {
+        img.onload = resolve;
+      })
+  ),
 ]).then(async () => {
   /* 서버 접속 코드 (여기도 완성해주세요!) */
   let token = getCookie("authorization");
@@ -375,15 +412,10 @@ Promise.all([
     // 게임 데이터 초기화 TODO
     const { monster, tower, playerGold, stage } = gameAssets;
 
-    GameManager.setUserGold({playerGold});
-    GameManager.setStage({stage});
+    GameManager.setUserGold({ playerGold });
+    GameManager.setStage({ stage });
 
-
-    ({
-      towerDec,
-      path: monsterPath,
-      playerHp: houseHp,
-    } = gameAssets);
+    ({ towerDec, path: monsterPath, playerHp: houseHp } = gameAssets);
 
     // 기본 데이터 초기화
     initMonsterData(monster);
@@ -411,11 +443,20 @@ canvas.addEventListener("click", (e) => {
 
   console.log("click", x, y);
 
+  if (towerUI.handleClick(x, y)) {
+    return;
+  }
+
+  if(towerUI.isVisible) {
+    towerUI.closeUI();
+  }
+
   let isButtonClicked = false;
   for (let i = buttons.length - 1; i >= 0; i--) {
     const button = buttons[i];
     if (button.isClicked(x, y)) {
-      button.onClick();
+      if (button.label === "defaultTower") button.onClick(x, y);
+      else button.onClick();
       isButtonClicked = true;
       console.log(ioBuffer);
       break; // 첫 번째로 클릭된 버튼에서 순회 중단
@@ -425,10 +466,19 @@ canvas.addEventListener("click", (e) => {
   if (isButtonClicked) return;
 
   // TODO 허공 클릭하면 처리할 이벤트
-  if (ioBuffer.action === "create")
-    addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
-  else
-    ioBuffer.reset();
+  switch (ioBuffer.action) {
+    case "create":
+      addTower({ x: x - TOWER_WIDTH / 2, y: y - TOWER_HEIGHT / 2 });
+      towerUI.closeUI();
+      break;
+    case "move":
+      moveTower(ioBuffer.id, { x, y });
+      towerUI.closeUI();
+      break;
+    default:
+      ioBuffer.reset();
+      towerUI.closeUI();
+  }
 
   console.log(ioBuffer);
 });

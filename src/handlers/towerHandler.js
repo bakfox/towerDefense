@@ -94,7 +94,7 @@ export const refundTowerHandler = (payload) => {
 
 // 타워 이동 핸들러
 export const moveTowerHandler = (payload) => {
-  const { uuid, towerId, currentLocation, moveLocation } = payload;
+  const { uuid, towerId, moveLocation } = payload;
   const inGame = getInGame(uuid);
 
   try {
