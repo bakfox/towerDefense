@@ -128,7 +128,12 @@ function placeHouse() {
   house = new House(lastPoint.x, lastPoint.y, houseHp);
   house.draw(ctx, houseImage);
 }
-
+export function gameEnd(value) {
+  alert(
+    `게임 클리어! ${value.gem} : 잼 획득! ${value.score} : 최종 스코어 ${value.playerStage} : 최종 스테이지 `
+  );
+  location.href = "../index.html";
+}
 export function setHouseHp(value) {
   house.setHp(value);
 }
@@ -170,7 +175,7 @@ initTowerDecButton();
 export function moveStage(payload) {
   const { playerStage, monster } = payload;
   console.log(payload, monster);
-  GameManager.setStage({ playerStage });
+  GameManager.setStage(playerStage);
 
   initMonsterData(monster);
 }
@@ -455,7 +460,7 @@ Promise.all([
     const { monster, tower, playerGold, stage } = gameAssets;
 
     GameManager.setUserGold({ playerGold });
-    GameManager.setStage({ stage });
+    GameManager.setStage(stage);
 
     ({ towerDec, path: monsterPath, playerHp: houseHp } = gameAssets);
 
