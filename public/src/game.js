@@ -244,12 +244,15 @@ async function moveTower(id, targetLocation) {
 // 타워 판매
 async function sellTower(id) {
   try {
-    const data = await sendEvent(103, { id });
+    const data = await sendEvent(103, { towerId : id });
     const { towerId } = data;
+
+    const idx = buttons.findIndex((button) => button.id === towerId && button.label === "tower");
+    buttons.splice(idx, 1);
 
     towers.delete(towerId);
   } catch (error) {
-    console.log("타워 판매에 실패했습니다!");
+    console.log(error);
   }
 }
 
