@@ -115,7 +115,7 @@
 
       //rank 조회
       document.getElementById("rank").addEventListener("click", async () => {
-        const rankReward = await fetch("http://localhost:3017/api/rank", {
+        const rankReward = await fetch("http://gureunda.shop:3017/api/rank", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -158,7 +158,7 @@
 
       //gem을 획득하기
       document.getElementById("gemGet").addEventListener("click", async () => {
-        const gacha = await fetch("http://localhost:3017/api/gem", {
+        const gacha = await fetch("http://gureunda.shop:3017/api/gem", {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
