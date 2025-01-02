@@ -415,7 +415,11 @@ const endLoop = ()=>{
 ![image](https://github.com/user-attachments/assets/1efa337c-3b08-4b6f-b0eb-afb1cbf19651)
 
 
-## 아키텍쳐
+---
+<br>
+
+## 📦 아키텍쳐
+
 ### ERD DIAGRAM
 ![image](https://github.com/user-attachments/assets/e9baea2d-5217-478c-b098-5d608b0c6226)
 
