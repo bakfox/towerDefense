@@ -24,7 +24,7 @@
 
 <br/>
 
-# 📕 시작 가이드
+## 📕 시작 가이드
 ###
 <h3>Requirements</h3>
 For building and running the application you need:
