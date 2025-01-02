@@ -449,9 +449,13 @@ const endLoop = ()=>{
 │   └── src
 │       ├── button.js
 │       ├── default
+│       │   └── gameData.js
 │       ├── game.js
 │       ├── gameManager.js
 │       ├── handlers
+│       │   ├── Constants.js
+│       │   ├── actionMappings.js
+│       │   ├── socket.js
 │       ├── house.js
 │       ├── monster.js
 │       ├── tower.js
@@ -462,8 +466,6 @@ const endLoop = ()=>{
     ├── gameLogic
     │   └── serverGame.js
     ├── handlers
-    │   ├── error.handler.js
-    │   ├── game.handler.js
     │   ├── handlerMapping.js
     │   ├── helper.js
     │   ├── monsterHandler.js
@@ -471,15 +473,13 @@ const endLoop = ()=>{
     │   ├── stageHandler.js
     │   └── towerHandler.js
     ├── init
-    │   ├── assets.js
     │   └── socket.js
     ├── middleware
     │   └── auth.middlewares.js
     ├── models
     │   ├── inGame.js
     │   ├── monster.model.js
-    │   ├── tower.model.js
-    │   └── user.model.js
+    │   └── tower.model.js
     ├── routers
     │   ├── accounts.router.js
     │   └── user.js
