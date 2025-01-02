@@ -29,13 +29,18 @@ export default async function (req, res, next) {
         }
 
         const decodedToken = jwt.verify(token, process.env.JSONWEBTOKEN_KEY);
-        const id = decodedToken.userid;
+        const id = decodedToken.userId;
+
+        
 
         console.log(decodedToken);
+        console.log(id);
         
         const user = await prisma.uSERS.findFirst({
-            where: { ID: id },
+            where: { USER_ID: id },
         });
+
+        console.log(user.USER_ID);
 
         if (!user) {
             res.clearCookie('authorization');
