@@ -215,6 +215,8 @@
           //각각의 id의 squad 칸들에 데이터를 채워넣도록 하자.
           const result = await register.json();
 
+          console.log(result.data);
+
           for (let i = 1; i <= 3; i++) {
             const squadId = `squad${i}`;
             console.log(squadId);
