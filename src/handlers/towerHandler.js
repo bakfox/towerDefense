@@ -60,9 +60,9 @@ export const installTowerHandler = (payload) => {
 
 // 타워 판매 핸들러
 export const refundTowerHandler = (payload) => {
-  const { uuid, socket } = payload;
+  const { uuId, socket } = payload;
   const { towerId } = payload.data;
-  const inGame = getInGame(uuid);
+  const inGame = getInGame(uuId);
 
   try {
     // 타워가 인게임 데이터에 존재하는지 확인
@@ -96,9 +96,9 @@ export const refundTowerHandler = (payload) => {
 
 // 타워 이동 핸들러
 export const moveTowerHandler = (payload) => {
-  const { uuid } = payload;
+  const { uuId } = payload;
   const { towerId, moveLocation } = payload.data;
-  const inGame = getInGame(uuid);
+  const inGame = getInGame(uuId);
 
   try {
     // 타워가 인게임 데이터에 존재하는지 확인
@@ -125,9 +125,9 @@ export const moveTowerHandler = (payload) => {
 
 // 타워 업그레이드를 처리하는 함수
 export const upgradeTowerHandler = (payload) => {
-  const { uuid, socket } = payload;
+  const { uuId, socket } = payload;
   const { towerId } = payload.data;
-  const inGame = getInGame(uuid);
+  const inGame = getInGame(uuId);
 
   try {
     // 타워가 인게임 데이터에 존재하는지 확인
