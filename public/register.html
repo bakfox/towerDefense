@@ -38,15 +38,45 @@
     <div class="form-container">
       <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
       <h2>회원가입</h2>
-      <input type="text" id="username" placeholder="아이디" />
+      <input type="text" id="username" placeholder="이름" />
+      <input type="text" id="id" placeholder="id" />
       <input type="password" id="password" placeholder="비밀번호" />
       <button id="register">회원가입</button>
       <button id="back">뒤로가기</button>
     </div>
     <script>
-      document.getElementById("register").addEventListener("click", () => {
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      document.getElementById("register").addEventListener("click", async () => {
         const username = document.getElementById("username").value;
+        const nickname = document.getElementById("id").value;
         const password = document.getElementById("password").value;
+
+        const register = await fetch("http://gureunda.shop:3017/api/signup", {
+          method : "POST",
+          headers : {
+            "Content-Type": "application/json"
+          },
+          body : JSON.stringify({username,nickname, password})
+        })
+
+        //alert("클릭함");
+
+        if(register.ok)
+        {
+          alert("회원가입 성공");
+          window.location.href = "index.html";
+        }
+        else
+        {
+          alert(register.message);
+        }
+    
 
         /* 
           회원가입 API 호출 후 회원가입 성공 시 index.html로 이동시켜주세요!
@@ -54,6 +84,7 @@
       });
 
       document.getElementById("back").addEventListener("click", () => {
+        //alert(getCookie("authorization"))
         window.location.href = "index.html";
       });
     </script>

@@ -2,10 +2,12 @@ import { CLIENT_VERSION } from "../constants.js";
 
 import handlerMappings from "./handlerMapping.js";
 
-export const handleEvent = (io, socket, uuId, data) => {
-  const parsedData = JSON.parse(data);
-  console.log(parsedData.data, parsedData);
-  if (!CLIENT_VERSION.includes(parsedData.CLIENT_VERSION)) {
+export const handleEvent = async (io, socket, uuId, data, callBack) => {
+  console.log("data : ", typeof data, data);
+  const payload = { uuId, socket, data: data.payload };
+  console.log(data);
+  //console.log(parsedData.data, parsedData);
+  if (!CLIENT_VERSION.includes(data.CLIENT_VERSION)) {
     //클라이언트 버전
     socket.emit("response", {
       status: "fail",
@@ -14,7 +16,7 @@ export const handleEvent = (io, socket, uuId, data) => {
     });
     return;
   }
-  const handler = handlerMappings[parsedData.handlerId];
+  const handler = handlerMappings[data.handlerId];
   // 핸들러 존재 여부 체크
   if (!handler) {
     socket.emit("response", {
@@ -25,7 +27,8 @@ export const handleEvent = (io, socket, uuId, data) => {
     return;
   }
 
-  const response = handler(uuId, parsedData.data);
+  const response = await handler(payload);
+
   console.log(response.broadcast);
   if (response.broadcast) {
     console.log("유저 호출");
@@ -33,5 +36,7 @@ export const handleEvent = (io, socket, uuId, data) => {
     return;
   }
 
-  socket.emit("response", response);
+  callBack(response);
+
+  //socket.emit("response", response);
 };

@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Changmin Kang" />
+    <title>내일배움캠프 Node.js 트랙 타워 디펜스 게임</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <style>
+      #squadCard {
+        display: flex;
+        justify-content: space-between; /* 요소 간의 간격 조절 */
+        align-items: center; /* 세로 정렬 */
+        gap: 10px; /* 요소 간 간격 */
+        width: 100%; /* 부모 요소 너비에 맞게 */
+        padding: 10px;
+        background-color: #f0f0f0; /* 배경 색 */
+      }
+
+      header {
+        position: fixed; /* 고정 위치 */
+        top: 0; /* 화면의 맨 위로 설정 */
+        left: 0;
+        width: 100%; /* 화면 전체 너비 */
+        background-color: #333; /* 헤더 배경 색 */
+        color: white; /* 텍스트 색 */
+        padding: 10px 20px; /* 패딩 설정 */
+        z-index: 1000; /* 다른 요소 위로 올라오도록 설정 */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* 그림자 효과 */
+      }
+      main {
+        margin-top: 60px; /* 헤더 높이만큼 여백 추가 */
+        padding: 20px;
+        background-color: #f4f4f4; /* 메인 콘텐츠 배경 색 */
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #2d2d2d;
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .form-container input {
+        margin: 10px;
+        padding: 10px;
+        font-size: 16px;
+      }
+      .form-container button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 300px;
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 각 행에 3개씩 */
+        gap: 10px; /* 버튼 간격 */
+      }
+
+      .button-grid button {
+        padding: 10px;
+        border: none;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .button-grid button img {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        display: block;
+        margin: 0 auto 5px;
+      }
+
+      .close-btn {
+        margin-top: 10px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        display: block;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>내일배움캠프 Node.js 트랙 타워 디펜스 게임</h1>
+    </header>
+    <main>
+      <div id="squadCard">
+        <button id="squad1">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+        <button id="squad2">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+        <button id="squad3">
+          <img src="./images/tower.png" />
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">
+              This is a longer card with supporting text below as a natural
+              lead-in to additional content. This content is a little bit
+              longer.
+            </p>
+          </div>
+        </button>
+      </div>
+      <div class="form-container">
+        <h2>로그인</h2>
+        <button id="gacha">타워 가챠</button>
+        <button id="inhance">타워 강화</button>
+        <button id="back">뒤로가기</button>
+      </div>
+
+      <div class="modal" id="modal">
+        <div class="modal-content">
+          <div id="modalContent">
+            <h2>Select an Option</h2>
+            <div class="button-grid" id="buttonGrid">
+              <!-- Buttons will be dynamically added here -->
+            </div>
+          </div>
+          <button class="close-btn" id="closeModal">Close</button>
+        </div>
+      </div>
+    </main>
+
+    <script type="module">
+      //window가 바로 시작되었을 때 바로 불러낼 수 있도록 한다.
+      window.addEventListener("DOMContentLoaded", async () => {
+        setTimeout(async () => {
+          await getSquad();
+        }, 1000);
+      });
+
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modalContent");
+      const closeModal = document.getElementById("closeModal");
+      const buttongrid = document.getElementById("buttonGrid");
+
+      //이걸 누르면 modal이 꺼짐
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(";").shift();
+        return null;
+      };
+
+      //squad 정보를 받아오도록 해보자.
+      const getSquad = async () => {
+        const register = await fetch("http://gureunda.shop:3017/api/tower/squad", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (register.ok) {
+          //각각의 id의 squad 칸들에 데이터를 채워넣도록 하자.
+          const result = await register.json();
+
+          console.log(result.data);
+
+          for (let i = 1; i <= 3; i++) {
+            const squadId = `squad${i}`;
+            console.log(squadId);
+            document.getElementById(squadId).innerHTML = ``;
+            if (result.data.length > i - 1) {
+              const towerId = result.data[i - 1].OWN_TOWERS.ID;
+              const upgrade = result.data[i - 1].OWN_TOWERS.UPGRADE;
+              console.log(result.data);
+              document.getElementById(squadId).innerHTML +=
+                `<img src="./images/tower_${towerId}.png" />
+          <div class="card-body">
+            <h5 class="card-title">현재 타워</h5>
+            <p class="card-text">
+              타워 강화 수치 : ${upgrade}
+            </p>
+          </div>`;
+            } else {
+              document.getElementById(squadId).innerHTML +=
+                `<img src="./images/tower_1.png" />
+          <div class="card-body">
+            <h5 class="card-title">현재 타워</h5>
+            <p class="card-text">
+              빈 슬롯
+            </p>
+          </div>`;
+            }
+          }
+        }
+      };
+
+      //현재 가지고 있는 타워의 리스트를 가져오도록 하자.
+      const ownTower = async (squad, type) => {
+        while (buttongrid.hasChildNodes()) {
+          buttongrid.removeChild(buttongrid.firstChild);
+        }
+
+        const ownTower = await fetch(
+          "http://gureunda.shop:3017/api/tower/ownTower",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (ownTower.ok) {
+          const result = await ownTower.json();
+          //result 안에서 data라고 하는 데이터를 배열로 받았으니 나열하자.
+          console.log(result.data.length);
+          if (result.data.length === 0) {
+            for (let i = 1; i <= 5; i++) {
+              const button = document.createElement("button");
+              button.innerHTML = `
+              <img src="./images/tower_${i}.png">
+              <h5>타워 종류 : ${i}, 강화 정도 : 1</h5>
+              `;
+
+              buttongrid.appendChild(button);
+            }
+          } else {
+            result.data.forEach((element) => {
+              const button = document.createElement("button");
+              const id = element.ID;
+              const upgrade = element.UPGRADE;
+              const towerid = element.TOWER_ID;
+              button.innerHTML = `
+              <img src="./images/tower_${id}.png">
+              <h5>타워 종류 : ${id}, 강화 정도 : ${upgrade}</h5>
+              `;
+
+              switch (type) {
+                case 1: //스쿼드를 변경한다.
+                  //element에 tower_ID를 등록해 놓았으니 그걸 바로 부르면 되겠다.
+                  //equiptowerid는 현재 선택된 놈이 equip_squad_id를 가지고 있어야 한다는 의미.
+                  button.addEventListener("click", async () => {
+                    const upgrade = await fetch(
+                      "http://gureunda.shop:3017/api/tower/squad",
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          equipTowerId: squad,
+                          equipingID: element.TOWER_ID,
+                        }),
+                      }
+                    );
+
+                    if (upgrade.ok) {
+                      const result = await upgrade.json();
+                      await getSquad();
+                      modal.style.display = "none";
+                    }
+                  });
+                  break;
+                case 2: //해당 타겟을 강화한다.
+                  console.log("업그레이드 누름");
+                  button.addEventListener("click", async () => {
+                    const upgrade = await fetch(
+                      "http://gureunda.shop:3017/api/tower/upgrade",
+                      {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          towerID: towerid,
+                          ingredient: 0,
+                        }),
+                      }
+                    );
+
+                    if (upgrade.ok) {
+                      const result = await upgrade.json();
+                      console.log(result.message);
+                    }
+                    modal.style.display = "none";
+                  });
+
+                  break;
+              }
+
+              buttongrid.appendChild(button);
+            });
+          }
+        }
+
+        modal.style.display = "flex";
+      };
+
+      document.getElementById("squad1").addEventListener("click", async () => {
+        const equipTowerId = 1;
+
+        const params = {
+          towerid: equipTowerId,
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (register.ok) {
+          const result = await register.json();
+          const data = result.data;
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
+        }
+      });
+
+      document.getElementById("squad2").addEventListener("click", async () => {
+        const equipTowerId = 2;
+
+        const params = {
+          towerid: equipTowerId,
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (register.ok) {
+          const result = await register.json();
+          const data = result.data;
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
+        }
+      });
+
+      document.getElementById("squad3").addEventListener("click", async () => {
+        const equipTowerId = 3;
+        const params = {
+          towerid: equipTowerId,
+        };
+
+        const queryString = new URLSearchParams(params).toString();
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
+
+        //여기에선 선택한 타워의 equip_id를 받아야만 한다.
+        const register = await fetch(address, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (register.ok) {
+          const result = await register.json();
+          const data = result.data;
+          if (data.length >= equipTowerId) {
+            ownTower(data[equipTowerId-1].EQUIP_TOWER_ID, 1);
+          } else {
+            ownTower(0, 1);
+          }
+        }
+      });
+
+      //가챠 담당 함수
+      document.getElementById("gacha").addEventListener("click", async () => {
+        //alert(getCookie("authorization"))
+        const gacha = await fetch("http://gureunda.shop:3017/api/tower/draw", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ authorization: getCookie("authorization") }),
+        });
+
+        if (gacha.ok) {
+          const result = await gacha.json();
+          alert(result.message);
+        } else {
+          alert("연결 안 됨");
+        }
+      });
+
+      //타워 강화
+      document.getElementById("inhance").addEventListener("click", async () => {
+        ownTower(2, 2);
+      });
+
+      document.getElementById("back").addEventListener("click", () => {
+        window.location.href = "beforeGame.html";
+      });
+    </script>
+  </body>
+</html>
