@@ -204,7 +204,7 @@
 
       //squad 정보를 받아오도록 해보자.
       const getSquad = async () => {
-        const register = await fetch("http://localhost:3017/api/tower/squad", {
+        const register = await fetch("http://gureunda.shop:3017/api/tower/squad", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -254,7 +254,7 @@
         }
 
         const ownTower = await fetch(
-          "http://localhost:3017/api/tower/ownTower",
+          "http://gureunda.shop:3017/api/tower/ownTower",
           {
             method: "GET",
             headers: {
@@ -294,7 +294,7 @@
                   //equiptowerid는 현재 선택된 놈이 equip_squad_id를 가지고 있어야 한다는 의미.
                   button.addEventListener("click", async () => {
                     const upgrade = await fetch(
-                      "http://localhost:3017/api/tower/squad",
+                      "http://gureunda.shop:3017/api/tower/squad",
                       {
                         method: "PUT",
                         headers: {
@@ -318,7 +318,7 @@
                   console.log("업그레이드 누름");
                   button.addEventListener("click", async () => {
                     const upgrade = await fetch(
-                      "http://localhost:3017/api/tower/upgrade",
+                      "http://gureunda.shop:3017/api/tower/upgrade",
                       {
                         method: "PUT",
                         headers: {
@@ -357,7 +357,7 @@
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -386,7 +386,7 @@
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -414,7 +414,7 @@
         };
 
         const queryString = new URLSearchParams(params).toString();
-        const address = `http://localhost:3017/api/tower/squad?${queryString}`;
+        const address = `http://gureunda.shop:3017/api/tower/squad?${queryString}`;
 
         //여기에선 선택한 타워의 equip_id를 받아야만 한다.
         const register = await fetch(address, {
@@ -438,7 +438,7 @@
       //가챠 담당 함수
       document.getElementById("gacha").addEventListener("click", async () => {
         //alert(getCookie("authorization"))
-        const gacha = await fetch("http://localhost:3017/api/tower/draw", {
+        const gacha = await fetch("http://gureunda.shop:3017/api/tower/draw", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
