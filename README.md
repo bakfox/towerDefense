@@ -13,7 +13,6 @@
 ### TowerDefense Game v1.0
 > **TeamName: 불4조, 사**<br>
 > **1.0v :  2024.12.23 ~ 2025.01.02**</br>
-> 임시 배포 링크 : [타워 디펜스](http://gureunda.shop:3017)
 
 <br>
 
